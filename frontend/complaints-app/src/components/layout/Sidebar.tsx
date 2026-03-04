@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import {
     LayoutDashboard,
     ClipboardList,
@@ -18,6 +19,11 @@ export default function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
     const { logout, user } = useAuthStore();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const handleLogout = () => {
         logout();
@@ -95,7 +101,7 @@ export default function Sidebar() {
             </nav>
 
             {/* User Profile / Status */}
-            {user && (
+            {mounted && user && (
                 <div className="px-4 py-3 mx-3 mb-2 bg-slate-800/50 rounded-xl border border-slate-800">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-xs uppercase">
