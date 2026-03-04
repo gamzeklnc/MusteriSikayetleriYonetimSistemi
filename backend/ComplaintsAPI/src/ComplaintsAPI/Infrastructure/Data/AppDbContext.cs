@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ComplaintsAPI.Domain.Entities;
+using ComplaintsAPI.Domain.Enums;
 
 namespace ComplaintsAPI.Infrastructure.Data;
 
@@ -43,6 +44,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Complaint>(e =>
         {
             e.HasKey(x => x.Id);
+            e.Property(x => x.ComplaintNumber).IsRequired().HasMaxLength(50);
 
             e.Property(x => x.Status).IsRequired().HasMaxLength(20).HasDefaultValue("Acik");
             e.Property(x => x.CustomerName).IsRequired().HasMaxLength(200);
@@ -104,7 +106,7 @@ public class AppDbContext : DbContext
                 Name = "Sistem Yöneticisi", 
                 Email = "admin@sirket.com", 
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"), 
-                Role = Domain.Enums.UserRole.Admin, 
+                Role = UserRole.Admin, 
                 DepartmentId = 5 
             }
         );

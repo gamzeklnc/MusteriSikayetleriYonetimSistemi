@@ -1,66 +1,60 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
-import { departmentService } from '@/services/departmentService';
 import { CreateComplaintRequest } from '@/types/complaint';
-import { Department } from '@/types/department';
 
 export default function NewComplaintPage() {
     const router = useRouter();
-    const [departments, setDepartments] = useState<Department[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const [formData, setFormData] = useState<CreateComplaintRequest>({
-        currentDepartmentId: 0,
+    // Otomatik dolan alanlar (Örnek eşleme)
+    const stockCodeMapping: Record<string, { brand: string, modulePower: string }> = {
+        'EL-450': { brand: 'Elin', modulePower: '450W' },
+        'EL-550': { brand: 'Elin', modulePower: '550W' },
+        'CW-550': { brand: 'CW Enerji', modulePower: '550W' },
+        'CW-450': { brand: 'CW Enerji', modulePower: '450W' },
+    };
+
+    const [formData, setFormData] = useState<CreateComplaintRequest & { brand?: string, modulePower?: string }>({
         customerName: '',
         projectName: '',
         projectLocation: '',
         complaintDate: new Date().toISOString().split('T')[0],
         stockCode: '',
         defectiveQuantity: 0,
-        brand: '',
         hsa1: undefined,
         hsa2: undefined,
-        modulePower: '',
-        productionDate: '',
-        errorDefinition: '',
-        isValidComplaint: undefined
+        brand: '',
+        modulePower: ''
     });
 
-    useEffect(() => {
-        const fetchDepartments = async () => {
-            try {
-                const deps = await departmentService.getAll();
-                setDepartments(deps);
-                if (deps.length > 0) {
-                    setFormData(prev => ({ ...prev, currentDepartmentId: deps[0].id }));
-                }
-            } catch (err) {
-                console.error('Departmanlar yüklenemedi:', err);
-                setError('Departman bilgileri yüklenirken bir hata oluştu.');
-            }
-        };
-        fetchDepartments();
-    }, []);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
-
         let parsedValue: any = value;
+
         if (type === 'number') {
             parsedValue = value === '' ? undefined : Number(value);
-        } else if (name === 'isValidComplaint') {
-            parsedValue = value === 'true' ? true : value === 'false' ? false : undefined;
         }
 
-        setFormData(prev => ({
-            ...prev,
-            [name]: parsedValue
-        }));
+        const newFormData = { ...formData, [name]: parsedValue };
+
+        // Stok Kodu bazlı otomatik dolum simülasyonu
+        if (name === 'stockCode') {
+            const info = stockCodeMapping[value.toUpperCase()];
+            if (info) {
+                newFormData.brand = info.brand;
+                newFormData.modulePower = info.modulePower;
+            } else if (value === '') {
+                newFormData.brand = '';
+                newFormData.modulePower = '';
+            }
+        }
+
+        setFormData(newFormData);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -69,6 +63,7 @@ export default function NewComplaintPage() {
         setError(null);
 
         try {
+            // brand ve modulePower eklenmiş halini gönderiyoruz
             await complaintService.create(formData);
             router.push('/complaints');
         } catch (err: any) {
@@ -81,245 +76,168 @@ export default function NewComplaintPage() {
 
     return (
         <AppLayout>
-            <div className="max-w-4xl mx-auto">
-                <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-slate-800">Yeni Şikayet Kaydı</h1>
-                    <p className="text-slate-500 text-sm mt-1">Müşteri şikayetini detaylarıyla birlikte sisteme kaydedin.</p>
+            <div className="max-w-3xl mx-auto py-8">
+                <div className="mb-8">
+                    <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Yeni Şikayet Kaydı</h1>
+                    <p className="text-slate-500 text-sm mt-1">Lütfen aşağıdaki şikayet bilgilerini eksiksiz doldurun.</p>
                 </div>
 
                 {error && (
-                    <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm flex items-center gap-3">
+                        <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
                         {error}
                     </div>
                 )}
 
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                    <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-8">
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <form onSubmit={handleSubmit} className="p-8 space-y-8">
 
-                        {/* 1. Müşteri ve Proje Bilgileri */}
-                        <section>
-                            <h2 className="text-lg font-semibold text-slate-800 border-b border-slate-200 pb-2 mb-4">
-                                Müşteri ve Proje Bilgileri
-                            </h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                                        Müşteri İsmi <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="customerName"
-                                        required
-                                        value={formData.customerName}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-2 text-black bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                        placeholder="Örn: ABC A.Ş."
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                                        Proje İsmi <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="projectName"
-                                        required
-                                        value={formData.projectName}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-2 text-black bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                        placeholder="Örn: GES Projesi Faz-1"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                                        Proje Lokasyonu (İl) <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="projectLocation"
-                                        required
-                                        value={formData.projectLocation}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-2 text-black bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                        placeholder="Örn: Ankara"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                                        Şikayet Tarihi <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="date"
-                                        name="complaintDate"
-                                        required
-                                        value={formData.complaintDate}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-2 text-black bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                    />
-                                </div>
-                            </div>
-                        </section>
+                        {/* Manuel Giriş Alanları */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
 
-                        {/* 2. Ürün ve Şikayet Detayları */}
-                        <section>
-                            <h2 className="text-lg font-semibold text-slate-800 border-b border-slate-200 pb-2 mb-4">
-                                Ürün Detayları
-                            </h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                                        Stok Kodu <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="stockCode"
-                                        required
-                                        value={formData.stockCode}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-2 text-black bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                        placeholder="Örn: STK-001"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                                        Kusurlu Ürün Miktarı <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="defectiveQuantity"
-                                        required
-                                        min="1"
-                                        value={formData.defectiveQuantity || ''}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-2 text-black bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                        placeholder="Örn: 5"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                                        Marka <span className="text-slate-400 font-normal text-xs ml-1">(Opsiyonel)</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="brand"
-                                        value={formData.brand || ''}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-2 text-black bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                                        Modül Gücü <span className="text-slate-400 font-normal text-xs ml-1">(Opsiyonel)</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="modulePower"
-                                        value={formData.modulePower || ''}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-2 text-black bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                        placeholder="Örn: 400W"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                                        Ürün Üretim Tarihi <span className="text-slate-400 font-normal text-xs ml-1">(Opsiyonel)</span>
-                                    </label>
-                                    <input
-                                        type="date"
-                                        name="productionDate"
-                                        value={formData.productionDate || ''}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-2 text-black bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                    />
-                                </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Müşteri İsmi</label>
+                                <input
+                                    type="text"
+                                    name="customerName"
+                                    required
+                                    value={formData.customerName}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300"
+                                    placeholder="Müşteri adını girin..."
+                                />
                             </div>
-                        </section>
 
-                        {/* 3. Operasyonel & Hata Detayları */}
-                        <section>
-                            <h2 className="text-lg font-semibold text-slate-800 border-b border-slate-200 pb-2 mb-4">
-                                Süreç ve Hata Değerlendirmesi
-                            </h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                                        Bekleyen Departman <span className="text-red-500">*</span>
-                                    </label>
-                                    <select
-                                        name="currentDepartmentId"
-                                        required
-                                        value={formData.currentDepartmentId}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-2 text-black bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                    >
-                                        <option value={0} disabled>Departman Seçin</option>
-                                        {departments.map(dept => (
-                                            <option key={dept.id} value={dept.id}>
-                                                {dept.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                                        Hata Tanımı <span className="text-slate-400 font-normal text-xs ml-1">(Opsiyonel)</span>
-                                    </label>
-                                    <select
-                                        name="errorDefinition"
-                                        value={formData.errorDefinition || ''}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-2 text-black bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                    >
-                                        <option value="" disabled>Seçiniz</option>
-                                        <option value="Busbar Lehim Hatası">Busbar Lehim Hatası</option>
-                                        <option value="Cam Çiziği">Cam Çiziği</option>
-                                        <option value="Cam Kirliliği">Cam Kirliliği</option>
-                                        <option value="Çerçeve Köşe Açıklığı">Çerçeve Köşe Açıklığı</option>
-                                        <option value="Diyot Hatası">Diyot Hatası</option>
-                                        <option value="EL hatası">EL hatası</option>
-                                        <option value="Etiket Hatası">Etiket Hatası</option>
-                                        <option value="EVA Lekesi">EVA Lekesi</option>
-                                        <option value="Finger Kırığı">Finger Kırığı</option>
-                                        <option value="Gökkuşağı">Gökkuşağı</option>
-                                        <option value="Güç Hatası">Güç Hatası</option>
-                                        <option value="Hava Kabarcığı">Hava Kabarcığı</option>
-                                        <option value="J.B Lehim Hatası">J.B Lehim Hatası</option>
-                                        <option value="Kırık Cam">Kırık Cam</option>
-                                        <option value="Konnektör Hatası">Konnektör Hatası</option>
-                                        <option value="Mikro Kırık">Mikro Kırık</option>
-                                        <option value="Ribon Kayması">Ribon Kayması</option>
-                                        <option value="Sehim">Sehim</option>
-                                        <option value="Silikon Hatası">Silikon Hatası</option>
-                                        <option value="String Ara Mesafe">String Ara Mesafe</option>
-                                        <option value="Toz tutma">Toz tutma</option>
-                                        <option value="Yabancı Madde">Yabancı Madde</option>
-                                        <option value="Yanma">Yanma</option>
-                                    </select>
-                                </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Proje İsmi</label>
+                                <input
+                                    type="text"
+                                    name="projectName"
+                                    required
+                                    value={formData.projectName}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300"
+                                    placeholder="Proje adını girin..."
+                                />
                             </div>
-                        </section>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Proje Lokasyonu (İl)</label>
+                                <input
+                                    type="text"
+                                    name="projectLocation"
+                                    required
+                                    value={formData.projectLocation}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300"
+                                    placeholder="İl bilgisi..."
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Şikayet Tarihi</label>
+                                <input
+                                    type="date"
+                                    name="complaintDate"
+                                    required
+                                    value={formData.complaintDate}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black"
+                                />
+                            </div>
+
+                            <div className="border-t border-slate-100 md:col-span-2 my-2" />
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Stok Kodu</label>
+                                <input
+                                    type="text"
+                                    name="stockCode"
+                                    required
+                                    value={formData.stockCode}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300"
+                                    placeholder="Örn: EL-450"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Marka</label>
+                                <input
+                                    type="text"
+                                    name="brand"
+                                    value={formData.brand}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300"
+                                    placeholder="Marka girin veya stok kodundan gelsin..."
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Modül Gücü</label>
+                                <input
+                                    type="text"
+                                    name="modulePower"
+                                    value={formData.modulePower}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300"
+                                    placeholder="Güç girin veya stok kodundan gelsin..."
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Kusurlu Ürün Miktarı</label>
+                                <input
+                                    type="number"
+                                    name="defectiveQuantity"
+                                    required
+                                    min="1"
+                                    value={formData.defectiveQuantity || ''}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 uppercase">Hsa1 (Barkod Sayılan)</label>
+                                <input
+                                    type="number"
+                                    name="hsa1"
+                                    value={formData.hsa1 || ''}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 uppercase">Hsa2 (Barkod Sayılan)</label>
+                                <input
+                                    type="number"
+                                    name="hsa2"
+                                    value={formData.hsa2 || ''}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300"
+                                />
+                            </div>
+                        </div>
 
                         {/* Submit Actions */}
-                        <div className="flex items-center justify-end gap-4 pt-4 border-t border-slate-200 mt-8">
+                        <div className="flex items-center justify-end gap-4 pt-8 border-t border-slate-100">
                             <button
                                 type="button"
                                 onClick={() => router.push('/complaints')}
-                                className="px-6 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors border border-transparent hover:border-slate-200"
+                                className="px-6 py-3 text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors"
                             >
-                                İptal
+                                VAZGEÇ
                             </button>
                             <button
                                 type="submit"
-                                disabled={loading || formData.currentDepartmentId === 0}
-                                className="px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                disabled={loading}
+                                className="px-8 py-3 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 uppercase tracking-wider"
                             >
-                                {loading && (
-                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                )}
-                                Şikayeti Kaydet
+                                {loading ? 'KAYDEDİLİYOR...' : 'ŞİKAYETİ KAYDET'}
                             </button>
                         </div>
 

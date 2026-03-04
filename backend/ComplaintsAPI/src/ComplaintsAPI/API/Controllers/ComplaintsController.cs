@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 using ComplaintsAPI.Application.DTOs;
 using ComplaintsAPI.Application.Interfaces;
 using ComplaintsAPI.Domain.Entities;
@@ -49,28 +50,60 @@ public class ComplaintsController : ControllerBase
         // TODO: createdById JWT claim'den alınacak
         var complaint = new Complaint
         {
-            CurrentDepartmentId = req.CurrentDepartmentId,
             CustomerName       = req.CustomerName,
             ProjectName        = req.ProjectName,
             ProjectLocation    = req.ProjectLocation,
             ComplaintDate      = req.ComplaintDate,
             StockCode          = req.StockCode,
             DefectiveQuantity  = req.DefectiveQuantity,
-            Brand              = req.Brand,
             Hsa1               = req.Hsa1,
             Hsa2               = req.Hsa2,
-            ModulePower        = req.ModulePower,
-            ProductionDate     = req.ProductionDate,
-            ErrorDefinition    = req.ErrorDefinition,
-            IsValidComplaint   = req.IsValidComplaint,
-            CreatedById        = 1  // placeholder
+            Brand              = req.Brand,       // Manuel girilen
+            ModulePower        = req.ModulePower, // Manuel girilen
+            CreatedById        = 1, // placeholder
+            Status             = "Acik",
+            CurrentDepartmentId = 2 // Varsayılan "Kalite" departmanı (ID: 2)
         };
 
+        // Stok kodundan marka ve güç bilgisi türet (Simülasyon)
+        DeriveFieldsFromStockCode(complaint);
+        
         // Şikayet tarihinden yıl/ay/hafta türet
         complaint.SetDerivedDateFields();
 
+        // Şikayet Numarası Üret (Örn: SH-20240304-001)
+        var today = DateTime.Now;
+        var datePart = today.ToString("yyyyMMdd");
+        
+        var countToday = (await _repo.GetAllAsync(null, null))
+            .Count(x => x.RegistrationDate.Date == today.Date);
+        
+        var nextId = countToday + 1;
+        complaint.ComplaintNumber = $"SH-{datePart}-{nextId:D3}";
+
         var created = await _repo.CreateAsync(complaint);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created.Id);
+    }
+
+    private void DeriveFieldsFromStockCode(Complaint c)
+    {
+        // Eğer marka veya güç zaten manuel girilmişse (ve boş değilse) dokunma
+        if (!string.IsNullOrWhiteSpace(c.Brand) && !string.IsNullOrWhiteSpace(c.ModulePower))
+        {
+            return;
+        }
+
+        // Sadece boş olan kısımları stok koduna göre doldur
+        if (c.StockCode.StartsWith("EL", StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.IsNullOrWhiteSpace(c.Brand)) c.Brand = "Elin";
+            if (string.IsNullOrWhiteSpace(c.ModulePower)) c.ModulePower = "450W";
+        }
+        else if (c.StockCode.StartsWith("CW", StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.IsNullOrWhiteSpace(c.Brand)) c.Brand = "CW Enerji";
+            if (string.IsNullOrWhiteSpace(c.ModulePower)) c.ModulePower = "550W";
+        }
     }
 
     /// <summary>Şikayeti güncelle</summary>
@@ -170,6 +203,7 @@ public class ComplaintsController : ControllerBase
     // ── Yardımcı Mapper ───────────────────────────────────────────────────────
     private static ComplaintDto MapToDto(Domain.Entities.Complaint c) => new(
         c.Id,
+        c.ComplaintNumber,
         c.Status,
         c.CurrentDepartment.Name,
         c.CustomerName,

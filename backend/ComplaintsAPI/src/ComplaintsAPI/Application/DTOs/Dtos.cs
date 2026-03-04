@@ -11,21 +11,16 @@ public record DepartmentDto(int Id, string Name);
 
 /// <summary>Yeni şikayet oluşturma isteği — kullanıcının gireceği alanlar</summary>
 public record CreateComplaintRequest(
-    int CurrentDepartmentId,           // Bekleyen Departman
-    string CustomerName,               // Müşteri İsmi
-    string ProjectName,                // Proje İsmi
-    string ProjectLocation,            // Proje Lokasyonu (İl)
-    DateTime ComplaintDate,            // Şikayet Tarihi
-    string StockCode,                  // Stok Kodu
-    int DefectiveQuantity,             // Kusurlu Ürün Miktarı
-    // Aşağıdakiler opsiyonel (bazıları barkod/stok'tan otomatik gelecek)
-    string? Brand,                     // Marka
-    int? Hsa1,                         // HSA1
-    int? Hsa2,                         // HSA2
-    string? ModulePower,               // Modül Gücü
-    DateTime? ProductionDate,          // Ürün Üretim Tarihi
-    string? ErrorDefinition,           // Hata Tanımı (virgülle ayrılmış)
-    bool? IsValidComplaint             // Haklı/Haksız
+    string CustomerName,
+    string ProjectName,
+    string ProjectLocation,
+    DateTime ComplaintDate,
+    string StockCode,
+    int DefectiveQuantity,
+    int? Hsa1,
+    int? Hsa2,
+    string? Brand,         // Manuel girilebilir
+    string? ModulePower    // Manuel girilebilir
 );
 
 /// <summary>Şikayet güncelleme</summary>
@@ -57,14 +52,15 @@ public record AddNoteRequest(string Note, int DepartmentId);
 
 /// <summary>Liste görünümü için özet DTO</summary>
 public record ComplaintDto(
-    int Id,                            // Şikayet No
+    int Id,
+    string ComplaintNumber,            // Şikayet No (Örn: SH-2024-001)
     string Status,                     // Durum
     string CurrentDepartmentName,      // Bekleyen Departman
     string CustomerName,
     string ProjectName,
     string ProjectLocation,
-    DateTime ComplaintDate,
-    DateTime RegistrationDate,         // Kayıt Tarihi
+    DateTime ComplaintDate,            // Şikayet Tarihi
+    DateTime RegistrationDate,         // Kayıt Tarihi (Sisteme giriş)
     string StockCode,
     string? Brand,
     int? Hsa1,

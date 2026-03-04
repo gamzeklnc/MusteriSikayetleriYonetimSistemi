@@ -4,6 +4,7 @@ export type ComplaintStatus = 'Acik' | 'Kapali';
 
 export interface ComplaintDto {
   id: number;
+  complaintNumber: string; // Şikayet No
   status: ComplaintStatus;
   currentDepartmentName: string;
   customerName: string;
@@ -44,21 +45,14 @@ export interface ComplaintDetailDto {
 }
 
 export interface CreateComplaintRequest {
-  currentDepartmentId: number;
   customerName: string;
   projectName: string;
   projectLocation: string;
   complaintDate: string;
   stockCode: string;
   defectiveQuantity: number;
-  // Opsiyonel
-  brand?: string;
   hsa1?: number;
   hsa2?: number;
-  modulePower?: string;
-  productionDate?: string;
-  errorDefinition?: string;
-  isValidComplaint?: boolean;
 }
 
 export interface UpdateComplaintRequest {

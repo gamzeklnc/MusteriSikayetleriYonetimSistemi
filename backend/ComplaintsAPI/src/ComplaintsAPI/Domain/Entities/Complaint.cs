@@ -5,6 +5,7 @@ namespace ComplaintsAPI.Domain.Entities;
 public class Complaint
 {
     public int Id { get; set; }
+    public string ComplaintNumber { get; set; } = string.Empty;
 
     // ── Durum & Departman ────────────────────────────────────────────────────
     /// <summary>Açık / Kapalı</summary>
