@@ -23,8 +23,15 @@ export default function LoginPage() {
             const res = await authService.login({ email, password });
             setToken(res.accessToken);
             router.push('/dashboard');
-        } catch {
-            setError('E-posta veya şifre hatalı. Lütfen tekrar deneyin.');
+        } catch (err: any) {
+            console.error('Login error:', err);
+            if (err.code === 'ERR_NETWORK' || !err.response) {
+                setError('Sunucuya bağlanılamadı. Lütfen backend uygulamasının çalıştığından ve internet bağlantınızdan emin olun.');
+            } else if (err.response?.status === 401) {
+                setError('E-posta veya şifre hatalı. Lütfen bilgilerinizi kontrol edin.');
+            } else {
+                setError('Giriş yapılırken teknik bir sorun oluştu. (Hata: ' + (err.response?.status || 'Bilinmiyor') + ')');
+            }
         } finally {
             setLoading(false);
         }

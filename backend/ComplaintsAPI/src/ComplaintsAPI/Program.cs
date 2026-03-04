@@ -85,12 +85,12 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// ── CORS (Next.js için) ───────────────────────────────────────────────────────
+// ── CORS (Next.js ve diğer bağlantılar için) ──────────────────────────────
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
+    options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("http://localhost:3000")
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -106,7 +106,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseSerilogRequestLogging();
-app.UseCors("AllowFrontend");
+app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

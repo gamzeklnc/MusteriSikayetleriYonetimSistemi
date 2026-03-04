@@ -5,32 +5,19 @@ import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard,
     ClipboardList,
-    Building2,
-    Users,
-    Settings,
-    BarChart3,
-    ChevronDown,
-    ChevronRight,
     LogOut,
+    FilePlus,
+    FileCheck,
+    UserCheck,
+    MessageCircle,
 } from 'lucide-react';
-import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
-
-const departments = [
-    { name: 'Satış', slug: 'sales', id: 1 },
-    { name: 'Kalite', slug: 'quality', id: 2 },
-    { name: 'Kalite Güvence', slug: 'quality-assurance', id: 3 },
-    { name: 'Yönetim', slug: 'management', id: 4 },
-    { name: 'Admin', slug: 'admin', id: 5 },
-];
 
 export default function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
-    const { logout } = useAuthStore();
-    const [complaintsOpen, setComplaintsOpen] = useState(true);
-    const [deptsOpen, setDeptsOpen] = useState(false);
+    const { logout, user } = useAuthStore();
 
     const handleLogout = () => {
         logout();
@@ -39,24 +26,35 @@ export default function Sidebar() {
 
     const isActive = (href: string) => pathname === href;
     const linkClass = (href: string) =>
-        `flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive(href)
-            ? 'bg-blue-600 text-white'
-            : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+        `flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${isActive(href)
+            ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
+            : 'text-slate-300 hover:bg-slate-800 hover:text-white'
         }`;
 
     return (
-        <aside className="flex flex-col w-64 min-h-screen bg-slate-900 border-r border-slate-700">
+        <aside className="flex flex-col w-64 min-h-screen bg-slate-900 border-r border-slate-800">
             {/* Logo */}
-            <div className="px-6 py-5 border-b border-slate-700">
-                <h1 className="text-white font-bold text-base leading-tight">
-                    Şikayet Yönetim
-                    <br />
-                    <span className="text-blue-400 text-xs font-normal">Sistemi</span>
-                </h1>
+            <div className="px-6 py-6 mb-2">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 className="text-white font-bold text-sm leading-tight">
+                            Şikayet Yönetim
+                        </h1>
+                        <span className="text-slate-500 text-[10px] uppercase tracking-wider font-semibold">Kurumsal Sistem</span>
+                    </div>
+                </div>
             </div>
 
             {/* Nav */}
-            <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+            <nav className="flex-1 overflow-y-auto px-3 space-y-1">
+                <div className="pb-2 px-3">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Genel</span>
+                </div>
 
                 {/* Dashboard */}
                 <Link href="/dashboard" className={linkClass('/dashboard')}>
@@ -65,78 +63,60 @@ export default function Sidebar() {
                 </Link>
 
                 {/* Şikayetler */}
-                <div>
-                    <button
-                        onClick={() => setComplaintsOpen(!complaintsOpen)}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
-                    >
-                        <ClipboardList size={18} />
-                        <span className="flex-1 text-left">Şikayetler</span>
-                        {complaintsOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                    </button>
-                    {complaintsOpen && (
-                        <div className="ml-6 mt-1 space-y-1">
-                            <Link href="/complaints" className={linkClass('/complaints')}>
-                                Tüm Şikayetler
-                            </Link>
-                        </div>
-                    )}
-                </div>
-
-                {/* Departmanlar */}
-                <div>
-                    <button
-                        onClick={() => setDeptsOpen(!deptsOpen)}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
-                    >
-                        <Building2 size={18} />
-                        <span className="flex-1 text-left">Departmanlar</span>
-                        {deptsOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                    </button>
-                    {deptsOpen && (
-                        <div className="ml-6 mt-1 space-y-1">
-                            {departments.map((dept) => (
-                                <Link
-                                    key={dept.id}
-                                    href={`/departments/${dept.slug}`}
-                                    className={linkClass(`/departments/${dept.slug}`)}
-                                >
-                                    {dept.name}
-                                </Link>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                <div className="border-t border-slate-700 my-2" />
-
-                {/* Kullanıcı Yönetimi */}
-                <Link href="/users" className={linkClass('/users')}>
-                    <Users size={18} />
-                    Kullanıcı Yönetimi
+                <Link href="/complaints" className={linkClass('/complaints')}>
+                    <ClipboardList size={18} />
+                    Şikayetler
                 </Link>
 
-                {/* Sistem Ayarları */}
-                <Link href="/settings" className={linkClass('/settings')}>
-                    <Settings size={18} />
-                    Sistem Ayarları
+                <div className="pt-6 pb-2 px-3">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">İş Akış Adımları</span>
+                </div>
+
+                {/* Workflow Steps - Herkese Görünür */}
+                <Link href="/complaints/new" className={linkClass('/complaints/new')}>
+                    <FilePlus size={18} />
+                    Şikayet Kaydı
                 </Link>
 
-                {/* Raporlar */}
-                <Link href="/reports" className={linkClass('/reports')}>
-                    <BarChart3 size={18} />
-                    Raporlar
+                <Link href="/complaints/quality-report" className={linkClass('/complaints/quality-report')}>
+                    <FileCheck size={18} />
+                    Kalite Raporlaması
+                </Link>
+
+                <Link href="/complaints/approval" className={linkClass('/complaints/approval')}>
+                    <UserCheck size={18} />
+                    Yönetim Onayı
+                </Link>
+
+                <Link href="/complaints/customer-response" className={linkClass('/complaints/customer-response')}>
+                    <MessageCircle size={18} />
+                    Müşteriye Geri Dönüş
                 </Link>
             </nav>
 
+            {/* User Profile / Status */}
+            {user && (
+                <div className="px-4 py-3 mx-3 mb-2 bg-slate-800/50 rounded-xl border border-slate-800">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-xs uppercase">
+                            {user.email[0]}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-white truncate">{user.email}</p>
+                            <p className="text-[10px] text-slate-500 font-medium">{user.role}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Logout */}
-            <div className="px-3 py-4 border-t border-slate-700">
+            <div className="px-3 py-4 border-t border-slate-800">
                 <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-red-600/20 hover:text-red-400 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-red-600/10 hover:text-red-400 transition-colors"
                 >
                     <LogOut size={18} />
-                    Çıkış Yap
+                    Güvenli Çıkış
                 </button>
             </div>
         </aside>
