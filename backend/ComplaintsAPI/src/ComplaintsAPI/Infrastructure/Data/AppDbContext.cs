@@ -95,5 +95,18 @@ public class AppDbContext : DbContext
             new Department { Id = 4, Name = "Yönetim" },
             new Department { Id = 5, Name = "Admin" }
         );
+
+        // Seed Admin User (Password: admin123)
+        modelBuilder.Entity<User>().HasData(
+            new User 
+            { 
+                Id = 1, 
+                Name = "Sistem Yöneticisi", 
+                Email = "admin@sirket.com", 
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"), 
+                Role = Domain.Enums.UserRole.Admin, 
+                DepartmentId = 5 
+            }
+        );
     }
 }
