@@ -1,0 +1,16 @@
+# Backend
+backend/ComplaintsAPI/src/ComplaintsAPI/bin/
+backend/ComplaintsAPI/src/ComplaintsAPI/obj/
+backend/ComplaintsAPI/src/ComplaintsAPI/logs/
+backend/ComplaintsAPI/src/ComplaintsAPI/appsettings.Development.json
+
+# Frontend
+frontend/complaints-app/.next/
+frontend/complaints-app/node_modules/
+frontend/complaints-app/.env.local
+
+# General
+.DS_Store
+Thumbs.db
+*.user
+.vs/
