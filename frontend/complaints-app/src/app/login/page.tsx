@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { authService } from '@/services/authService';
 import { useAuthStore } from '@/store/authStore';
 import { Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
-import Image from 'next/image';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -23,14 +22,15 @@ export default function LoginPage() {
             const res = await authService.login({ email, password });
             setToken(res.accessToken);
             router.push('/dashboard');
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Login error:', err);
-            if (err.code === 'ERR_NETWORK' || !err.response) {
+            const errorObj = err as { code?: string, response?: { status?: number } };
+            if (errorObj.code === 'ERR_NETWORK' || !errorObj.response) {
                 setError('Sunucuya bağlanılamadı. Lütfen backend uygulamasının çalıştığından ve internet bağlantınızdan emin olun.');
-            } else if (err.response?.status === 401) {
+            } else if (errorObj.response?.status === 401) {
                 setError('E-posta veya şifre hatalı. Lütfen bilgilerinizi kontrol edin.');
             } else {
-                setError('Giriş yapılırken teknik bir sorun oluştu. (Hata: ' + (err.response?.status || 'Bilinmiyor') + ')');
+                setError('Giriş yapılırken teknik bir sorun oluştu. (Hata: ' + (errorObj.response?.status || 'Bilinmiyor') + ')');
             }
         } finally {
             setLoading(false);

@@ -14,6 +14,7 @@ public record CreateComplaintRequest(
     string CustomerName,
     string ProjectName,
     string ProjectLocation,
+    string SellerName,
     DateTime ComplaintDate,
     string StockCode,
     List<string>? Barcodes,
@@ -21,7 +22,8 @@ public record CreateComplaintRequest(
     int? Hsa1,
     int? Hsa2,
     string? Brand,         // Manuel girilebilir
-    string? ModulePower    // Manuel girilebilir
+    string? ModulePower,   // Manuel girilebilir
+    string? Note           // Manuel girilebilir
 );
 
 /// <summary>Şikayet güncelleme</summary>
@@ -29,6 +31,7 @@ public record UpdateComplaintRequest(
     string CustomerName,
     string ProjectName,
     string ProjectLocation,
+    string? SellerName,
     DateTime ComplaintDate,
     string StockCode,
     List<string>? Barcodes,
@@ -61,6 +64,7 @@ public record ComplaintDto(
     string CustomerName,
     string ProjectName,
     string ProjectLocation,
+    string SellerName,
     DateTime ComplaintDate,            // Şikayet Tarihi
     DateTime RegistrationDate,         // Kayıt Tarihi (Sisteme giriş)
     string StockCode,
@@ -74,6 +78,7 @@ public record ComplaintDto(
     bool? IsValidComplaint,
     DateTime? LastResponseDate,
     DateTime? ProductionDate,
+    string? InitialNote,
     int ComplaintYear,
     int ComplaintMonth,
     int ComplaintWeek,

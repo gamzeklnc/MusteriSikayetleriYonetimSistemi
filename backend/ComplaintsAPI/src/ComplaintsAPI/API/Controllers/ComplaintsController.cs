@@ -53,6 +53,8 @@ public class ComplaintsController : ControllerBase
             CustomerName       = req.CustomerName,
             ProjectName        = req.ProjectName,
             ProjectLocation    = req.ProjectLocation,
+            SellerName         = req.SellerName,
+            InitialNote        = req.Note,
             ComplaintDate      = req.ComplaintDate,
             StockCode          = req.StockCode,
             Barcodes           = req.Barcodes != null ? string.Join(",", req.Barcodes) : "",
@@ -72,17 +74,32 @@ public class ComplaintsController : ControllerBase
         // Şikayet tarihinden yıl/ay/hafta türet
         complaint.SetDerivedDateFields();
 
-        // Şikayet Numarası Üret (Örn: SH-20240304-001)
+        // Şikayet Numarası Üret (Örn: 26-06)
         var today = DateTime.Now;
-        var datePart = today.ToString("yyyyMMdd");
+        var yearPart = today.ToString("yy"); // Son iki hane (Örn: 26)
         
-        var countToday = (await _repo.GetAllAsync(null, null))
-            .Count(x => x.RegistrationDate.Date == today.Date);
+        var countThisYear = (await _repo.GetAllAsync(null, null))
+            .Count(x => x.RegistrationDate.Year == today.Year);
         
-        var nextId = countToday + 1;
-        complaint.ComplaintNumber = $"SH-{datePart}-{nextId:D3}";
+        var nextId = countThisYear + 1;
+        complaint.ComplaintNumber = $"{yearPart}-{nextId:D2}";
 
         var created = await _repo.CreateAsync(complaint);
+        
+        // Eğer Formdan bir Not bilgisi de geldiyse, doğrudan şikayet geçmişine ilk not olarak ekleyelim.
+        if (!string.IsNullOrWhiteSpace(req.Note))
+        {
+            await _repo.AddHistoryAsync(new ComplaintHistory
+            {
+                ComplaintId = created.Id,
+                Note = req.Note,
+                DepartmentId = created.CurrentDepartmentId, // İlk açıldığı departman (Kalite)
+                FromStatus = null,
+                ToStatus = null,
+                ChangedById = created.CreatedById
+            });
+        }
+
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created.Id);
     }
 
@@ -94,17 +111,82 @@ public class ComplaintsController : ControllerBase
             return;
         }
 
-        // Sadece boş olan kısımları stok koduna göre doldur
-        if (c.StockCode.StartsWith("EL", StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrWhiteSpace(c.StockCode))
+            return;
+
+        // 1) HSA (Brand: Maviçam, Power: Before 'W')
+        if (c.StockCode.StartsWith("HSA", StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.IsNullOrWhiteSpace(c.Brand)) c.Brand = "Maviçam";
+            if (string.IsNullOrWhiteSpace(c.ModulePower)) c.ModulePower = ExtractPowerBeforeW(c.StockCode);
+        }
+        // 2) JKM (Brand: Jinko, Power: After 'JKM')
+        else if (c.StockCode.StartsWith("JKM", StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.IsNullOrWhiteSpace(c.Brand)) c.Brand = "Jinko";
+            if (string.IsNullOrWhiteSpace(c.ModulePower)) c.ModulePower = ExtractPowerAfterPrefix(c.StockCode, "JKM");
+        }
+        // 3) SunPwt (Brand: SunPwt, Power: Before 'W')
+        else if (c.StockCode.StartsWith("SunPwt", StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.IsNullOrWhiteSpace(c.Brand)) c.Brand = "SunPwt";
+            if (string.IsNullOrWhiteSpace(c.ModulePower)) c.ModulePower = ExtractPowerBeforeW(c.StockCode);
+        }
+        // 4) JAM (Brand: Ja solar, Power: Before 'W')
+        else if (c.StockCode.StartsWith("JAM", StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.IsNullOrWhiteSpace(c.Brand)) c.Brand = "Ja solar";
+            if (string.IsNullOrWhiteSpace(c.ModulePower)) c.ModulePower = ExtractPowerBeforeW(c.StockCode);
+        }
+        // Eski kural 
+        else if (c.StockCode.StartsWith("EL", StringComparison.OrdinalIgnoreCase))
         {
             if (string.IsNullOrWhiteSpace(c.Brand)) c.Brand = "Elin";
             if (string.IsNullOrWhiteSpace(c.ModulePower)) c.ModulePower = "450W";
         }
+        // Eski kural
         else if (c.StockCode.StartsWith("CW", StringComparison.OrdinalIgnoreCase))
         {
             if (string.IsNullOrWhiteSpace(c.Brand)) c.Brand = "CW Enerji";
             if (string.IsNullOrWhiteSpace(c.ModulePower)) c.ModulePower = "550W";
         }
+    }
+
+    private string ExtractPowerBeforeW(string stockCode)
+    {
+        // Example: HSA66M1CGGNS-610W-TR -> 610W
+        // Example: SunPwt-M1C-610W-T10 -> 610W
+        var match = System.Text.RegularExpressions.Regex.Match(stockCode, @"(\d+)[Ww]");
+        if (match.Success)
+        {
+            return match.Value.ToUpper();
+        }
+        return "";
+    }
+
+    private string ExtractPowerAfterPrefix(string stockCode, string prefix)
+    {
+        // Example: JKM610N-66HL4M-BDV -> 610W
+        // Expected result should append 'W' ? Wait, rule says: "Power: extracted digits right after JKM (e.g. 610)"
+        // It's probably better to append 'W' so it matches other power fields like "610W". 
+        // Let's extract digits right after JKM
+        
+        int prefixLength = prefix.Length;
+        if (stockCode.Length <= prefixLength) return "";
+
+        int end = prefixLength;
+        while (end < stockCode.Length && char.IsDigit(stockCode[end]))
+        {
+            end++;
+        }
+
+        if (end > prefixLength)
+        {
+            string power = stockCode.Substring(prefixLength, end - prefixLength);
+            return power + "W"; // standardizing format to 610W
+        }
+        
+        return "";
     }
 
     /// <summary>Şikayeti güncelle</summary>
@@ -117,6 +199,8 @@ public class ComplaintsController : ControllerBase
         complaint.CustomerName      = req.CustomerName;
         complaint.ProjectName       = req.ProjectName;
         complaint.ProjectLocation   = req.ProjectLocation;
+        if (req.SellerName != null)
+            complaint.SellerName    = req.SellerName;
         complaint.ComplaintDate     = req.ComplaintDate;
         complaint.StockCode         = req.StockCode;
         if (req.Barcodes != null)
@@ -212,6 +296,7 @@ public class ComplaintsController : ControllerBase
         c.CustomerName,
         c.ProjectName,
         c.ProjectLocation,
+        c.SellerName,
         c.ComplaintDate,
         c.RegistrationDate,
         c.StockCode,
@@ -225,6 +310,7 @@ public class ComplaintsController : ControllerBase
         c.IsValidComplaint,
         c.LastResponseDate,
         c.ProductionDate,
+        c.InitialNote,
         c.ComplaintYear,
         c.ComplaintMonth,
         c.ComplaintWeek,

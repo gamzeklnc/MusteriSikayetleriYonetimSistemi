@@ -33,7 +33,7 @@ const decodeToken = (token: string): UserInfo | null => {
             role: decoded.role,
             departmentId: parseInt(decoded.departmentId)
         };
-    } catch (e) {
+    } catch {
         return null;
     }
 };

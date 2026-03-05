@@ -24,6 +24,7 @@ export default function NewComplaintPage() {
         customerName: '',
         projectName: '',
         projectLocation: '',
+        sellerName: 'Mehmet Aybaş',
         complaintDate: new Date().toISOString().split('T')[0],
         stockCode: '',
         defectiveQuantity: 0,
@@ -31,6 +32,7 @@ export default function NewComplaintPage() {
         hsa2: 0,
         brand: '',
         modulePower: '',
+        note: '',
         barcodes: []
     });
 
@@ -52,7 +54,7 @@ export default function NewComplaintPage() {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
-        let parsedValue: any = value;
+        let parsedValue: string | number | undefined = value;
 
         if (type === 'number') {
             parsedValue = value === '' ? undefined : Number(value);
@@ -84,9 +86,26 @@ export default function NewComplaintPage() {
             // brand ve modulePower eklenmiş halini gönderiyoruz
             await complaintService.create(formData);
             router.push('/complaints');
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Şikayet oluşturulamadı:', err);
-            setError(err.response?.data?.title || err.response?.data || 'Şikayet kaydedilirken bir hata oluştu.');
+
+            let errorMessage = 'Şikayet kaydedilirken bir hata oluştu.';
+            if (err && typeof err === 'object') {
+                const errorObj = err as Record<string, unknown>;
+                if (errorObj.response && typeof errorObj.response === 'object') {
+                    const response = errorObj.response as Record<string, unknown>;
+                    if (response.data && typeof response.data === 'object') {
+                        const data = response.data as Record<string, unknown>;
+                        if (typeof data.title === 'string') {
+                            errorMessage = data.title;
+                        }
+                    } else if (typeof response.data === 'string') {
+                        errorMessage = response.data;
+                    }
+                }
+            }
+
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -126,6 +145,20 @@ export default function NewComplaintPage() {
                                     className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300"
                                     placeholder="Müşteri adını girin..."
                                 />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Satıcı</label>
+                                <select
+                                    name="sellerName"
+                                    required
+                                    value={formData.sellerName}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black"
+                                >
+                                    <option value="Mehmet Aybaş">Mehmet Aybaş</option>
+                                    <option value="Görkem Çam">Görkem Çam</option>
+                                </select>
                             </div>
 
                             <div>
@@ -240,11 +273,44 @@ export default function NewComplaintPage() {
                                 />
                             </div>
 
-                            <div className="hidden">
-                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 uppercase">Hsa1</label>
-                                <input type="number" name="hsa1" value={formData.hsa1 || 0} readOnly />
-                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 uppercase">Hsa2</label>
-                                <input type="number" name="hsa2" value={formData.hsa2 || 0} readOnly />
+                            <div className="md:col-span-2 border-t border-slate-100 my-2" />
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">HSA1 Sayısı</label>
+                                <input
+                                    type="number"
+                                    name="hsa1"
+                                    min="0"
+                                    value={formData.hsa1 || 0}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black"
+                                    placeholder="Manuel girilebilir veya barkoddan okunur"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">HSA2 Sayısı</label>
+                                <input
+                                    type="number"
+                                    name="hsa2"
+                                    min="0"
+                                    value={formData.hsa2 || 0}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black"
+                                    placeholder="Manuel girilebilir veya barkoddan okunur"
+                                />
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Şikayet Notu (İsteğe Bağlı)</label>
+                                <textarea
+                                    name="note"
+                                    value={formData.note || ''}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, note: e.target.value }))}
+                                    rows={3}
+                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300 text-sm"
+                                    placeholder="Şikayeti açarken eklemek istediğiniz ilk not/açıklama..."
+                                />
                             </div>
                         </div>
 

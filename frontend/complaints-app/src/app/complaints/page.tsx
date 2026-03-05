@@ -16,7 +16,7 @@ export default function ComplaintsPage() {
             try {
                 const data = await complaintService.getAll();
                 setComplaints(data);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error('Şikayetler yüklenemedi:', err);
                 setError('Şikayetler listelenirken bir hata oluştu.');
             } finally {
@@ -69,19 +69,27 @@ export default function ComplaintsPage() {
                             <thead className="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200 tracking-widest">
                                 <tr>
                                     <th className="px-6 py-4">Şikayet No</th>
-                                    <th className="px-6 py-4">Sistem Kayıt Tarihi</th>
+                                    <th className="px-6 py-4">Kayıt Tarihi</th>
                                     <th className="px-6 py-4">Şikayet Tarihi</th>
-                                    <th className="px-6 py-4">Müşteri / Proje</th>
-                                    <th className="px-6 py-4">Stok / Modül</th>
-                                    <th className="px-6 py-4">Miktar</th>
-                                    <th className="px-6 py-4">Durum / Dep.</th>
+                                    <th className="px-6 py-4">Müşteri</th>
+                                    <th className="px-6 py-4">Satıcı</th>
+                                    <th className="px-6 py-4">Proje</th>
+                                    <th className="px-6 py-4">Stok Kodu</th>
+                                    <th className="px-6 py-4">Marka</th>
+                                    <th className="px-6 py-4">Güç</th>
+                                    <th className="px-6 py-4">Sayı</th>
+                                    <th className="px-6 py-4">HSA1</th>
+                                    <th className="px-6 py-4">HSA2</th>
+                                    <th className="px-6 py-4">İlk Not</th>
+                                    <th className="px-6 py-4">Durum</th>
+                                    <th className="px-6 py-4">Departman</th>
                                     <th className="px-6 py-4 text-right">İşlem</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 italic font-medium">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={8} className="px-6 py-20 text-center">
+                                        <td colSpan={16} className="px-6 py-20 text-center">
                                             <div className="flex flex-col items-center justify-center text-slate-400">
                                                 <div className="w-10 h-10 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mb-4"></div>
                                                 <span className="text-xs font-bold uppercase tracking-widest">Veriler yükleniyor...</span>
@@ -90,7 +98,7 @@ export default function ComplaintsPage() {
                                     </tr>
                                 ) : complaints.length === 0 ? (
                                     <tr>
-                                        <td colSpan={8} className="px-6 py-20 text-center text-slate-400 text-xs uppercase tracking-widest font-bold">
+                                        <td colSpan={16} className="px-6 py-20 text-center text-slate-400 text-xs uppercase tracking-widest font-bold">
                                             Henüz kayıtlı şikayet bulunmuyor.
                                         </td>
                                     </tr>
@@ -106,23 +114,44 @@ export default function ComplaintsPage() {
                                             <td className="px-6 py-4">
                                                 {formatDate(complaint.complaintDate)}
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <div className="font-bold text-slate-800">{complaint.customerName}</div>
-                                                <div className="text-[10px] text-slate-400">{complaint.projectName}</div>
+                                            <td className="px-6 py-4 font-bold text-slate-800">
+                                                {complaint.customerName}
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <div className="font-bold">{complaint.stockCode}</div>
-                                                <div className="text-[10px] text-blue-500">{complaint.brand} - {complaint.modulePower}</div>
+                                            <td className="px-6 py-4 font-bold text-amber-600">
+                                                {complaint.sellerName}
+                                            </td>
+                                            <td className="px-6 py-4 text-[10px] text-slate-500">
+                                                {complaint.projectName}
+                                            </td>
+                                            <td className="px-6 py-4 font-bold">
+                                                {complaint.stockCode}
+                                            </td>
+                                            <td className="px-6 py-4 text-slate-800">
+                                                {complaint.brand || '-'}
+                                            </td>
+                                            <td className="px-6 py-4 text-blue-600 font-bold whitespace-nowrap">
+                                                {complaint.modulePower || '-'}
                                             </td>
                                             <td className="px-6 py-4 font-bold">
                                                 {complaint.defectiveQuantity}
                                             </td>
+                                            <td className="px-6 py-4 text-emerald-600 font-bold">
+                                                {complaint.hsa1 || 0}
+                                            </td>
+                                            <td className="px-6 py-4 text-indigo-600 font-bold">
+                                                {complaint.hsa2 || 0}
+                                            </td>
+                                            <td className="px-6 py-4 text-[10px] text-slate-500 max-w-xs truncate" title={complaint.initialNote || '-'}>
+                                                {complaint.initialNote || '-'}
+                                            </td>
                                             <td className="px-6 py-4">
-                                                <div className={`inline-flex items-center px-2 py-0.5 rounded-md mb-1 ${complaint.status === 'Acik' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
+                                                <div className={`inline-flex items-center px-2 py-0.5 rounded-md ${complaint.status === 'Acik' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
                                                     }`}>
                                                     {complaint.status === 'Acik' ? 'Açık' : 'Kapalı'}
                                                 </div>
-                                                <div className="text-[10px] text-slate-400">{complaint.currentDepartmentName}</div>
+                                            </td>
+                                            <td className="px-6 py-4 text-[10px] text-slate-500 whitespace-nowrap">
+                                                {complaint.currentDepartmentName}
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">

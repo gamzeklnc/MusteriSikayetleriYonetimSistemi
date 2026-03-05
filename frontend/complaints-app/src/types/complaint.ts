@@ -10,6 +10,7 @@ export interface ComplaintDto {
   customerName: string;
   projectName: string;
   projectLocation: string;
+  sellerName: string;
   complaintDate: string;
   registrationDate: string;
   stockCode: string;
@@ -23,6 +24,7 @@ export interface ComplaintDto {
   isValidComplaint?: boolean;
   lastResponseDate?: string;
   productionDate?: string;
+  initialNote?: string;
   complaintYear: number;
   complaintMonth: number;
   complaintWeek: number;
@@ -49,18 +51,21 @@ export interface CreateComplaintRequest {
   customerName: string;
   projectName: string;
   projectLocation: string;
+  sellerName: string;
   complaintDate: string;
   stockCode: string;
   barcodes?: string[];
   defectiveQuantity: number;
   hsa1?: number;
   hsa2?: number;
+  note?: string;
 }
 
 export interface UpdateComplaintRequest {
   customerName: string;
   projectName: string;
   projectLocation: string;
+  sellerName?: string;
   complaintDate: string;
   stockCode: string;
   barcodes?: string[];

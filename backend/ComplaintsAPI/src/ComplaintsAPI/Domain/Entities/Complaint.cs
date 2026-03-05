@@ -18,6 +18,8 @@ public class Complaint
     public string CustomerName { get; set; } = string.Empty;
     public string ProjectName { get; set; } = string.Empty;
     public string ProjectLocation { get; set; } = string.Empty;
+    public string SellerName { get; set; } = string.Empty;
+    public string? InitialNote { get; set; }
 
     // ── Tarih Alanları ───────────────────────────────────────────────────────
     /// <summary>Şikayet Tarihi — kullanıcı tarafından girilir</summary>
