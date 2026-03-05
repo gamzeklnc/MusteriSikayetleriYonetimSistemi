@@ -42,6 +42,10 @@ public class Complaint
     // ── Stok & Ürün Bilgileri ────────────────────────────────────────────────
     public string StockCode { get; set; } = string.Empty;
 
+    /// <summary>Barkodlar (Çoklu barkod için virgülle ayrılmış liste, ör: B1,B2,B3)</summary>
+    public string Barcodes { get; set; } = string.Empty;
+
+
     /// <summary>Marka — stok kodundan otomatik çekilecek</summary>
     public string? Brand { get; set; }
 

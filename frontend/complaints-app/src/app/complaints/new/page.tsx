@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
 import { CreateComplaintRequest } from '@/types/complaint';
+import { aggregateBarcodes } from '@/utils/barcodeParser';
 
 export default function NewComplaintPage() {
     const router = useRouter();
@@ -26,11 +27,28 @@ export default function NewComplaintPage() {
         complaintDate: new Date().toISOString().split('T')[0],
         stockCode: '',
         defectiveQuantity: 0,
-        hsa1: undefined,
-        hsa2: undefined,
+        hsa1: 0,
+        hsa2: 0,
         brand: '',
-        modulePower: ''
+        modulePower: '',
+        barcodes: []
     });
+
+    const [barcodesInput, setBarcodesInput] = useState('');
+
+    const handleBarcodesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const value = e.target.value;
+        setBarcodesInput(value);
+
+        const aggregated = aggregateBarcodes(value);
+
+        setFormData(prev => ({
+            ...prev,
+            barcodes: aggregated.barcodes,
+            hsa1: aggregated.hsa1Count,
+            hsa2: aggregated.hsa2Count
+        }));
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
@@ -187,6 +205,28 @@ export default function NewComplaintPage() {
                                 />
                             </div>
 
+                            <div className="md:col-span-2">
+                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                                    Barkodlar (Kopyala/Yapıştır - Alt alta veya virgülle ayrılmış)
+                                </label>
+                                <textarea
+                                    name="barcodesInput"
+                                    value={barcodesInput}
+                                    onChange={handleBarcodesChange}
+                                    rows={4}
+                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300 font-mono text-sm"
+                                    placeholder="2490108MC2023041&#10;2490108BW0023041&#10;E4FXT325H129990048205538"
+                                />
+                                <div className="mt-2 flex items-center justify-between text-xs text-slate-500 font-medium">
+                                    <span>Toplam Okunan: {formData.barcodes?.length || 0}</span>
+                                    <div className="flex items-center gap-4">
+                                        <span className="bg-green-100 text-green-700 px-2 py-1 rounded">HSA1: {formData.hsa1 || 0}</span>
+                                        <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">HSA2: {formData.hsa2 || 0}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Kusurlu Ürün Miktarı ayrı kalabilir veya Barkod sayısı ile senkronize edilebilir, şimdilik ayrı tutuyoruz ancak kullanıcıdan hatalı giriş olmasın. */}
                             <div>
                                 <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Kusurlu Ürün Miktarı</label>
                                 <input
@@ -200,26 +240,11 @@ export default function NewComplaintPage() {
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 uppercase">Hsa1 (Barkod Sayılan)</label>
-                                <input
-                                    type="number"
-                                    name="hsa1"
-                                    value={formData.hsa1 || ''}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 uppercase">Hsa2 (Barkod Sayılan)</label>
-                                <input
-                                    type="number"
-                                    name="hsa2"
-                                    value={formData.hsa2 || ''}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300"
-                                />
+                            <div className="hidden">
+                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 uppercase">Hsa1</label>
+                                <input type="number" name="hsa1" value={formData.hsa1 || 0} readOnly />
+                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 uppercase">Hsa2</label>
+                                <input type="number" name="hsa2" value={formData.hsa2 || 0} readOnly />
                             </div>
                         </div>
 

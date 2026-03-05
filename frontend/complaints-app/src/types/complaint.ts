@@ -13,6 +13,7 @@ export interface ComplaintDto {
   complaintDate: string;
   registrationDate: string;
   stockCode: string;
+  barcodes?: string[];
   brand?: string;
   hsa1?: number;
   hsa2?: number;
@@ -50,6 +51,7 @@ export interface CreateComplaintRequest {
   projectLocation: string;
   complaintDate: string;
   stockCode: string;
+  barcodes?: string[];
   defectiveQuantity: number;
   hsa1?: number;
   hsa2?: number;
@@ -61,6 +63,7 @@ export interface UpdateComplaintRequest {
   projectLocation: string;
   complaintDate: string;
   stockCode: string;
+  barcodes?: string[];
   defectiveQuantity: number;
   brand?: string;
   hsa1?: number;

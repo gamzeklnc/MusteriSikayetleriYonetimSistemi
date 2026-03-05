@@ -55,6 +55,7 @@ public class ComplaintsController : ControllerBase
             ProjectLocation    = req.ProjectLocation,
             ComplaintDate      = req.ComplaintDate,
             StockCode          = req.StockCode,
+            Barcodes           = req.Barcodes != null ? string.Join(",", req.Barcodes) : "",
             DefectiveQuantity  = req.DefectiveQuantity,
             Hsa1               = req.Hsa1,
             Hsa2               = req.Hsa2,
@@ -118,6 +119,8 @@ public class ComplaintsController : ControllerBase
         complaint.ProjectLocation   = req.ProjectLocation;
         complaint.ComplaintDate     = req.ComplaintDate;
         complaint.StockCode         = req.StockCode;
+        if (req.Barcodes != null)
+            complaint.Barcodes      = string.Join(",", req.Barcodes);
         complaint.DefectiveQuantity = req.DefectiveQuantity;
         complaint.Brand             = req.Brand;
         complaint.Hsa1              = req.Hsa1;
@@ -212,6 +215,7 @@ public class ComplaintsController : ControllerBase
         c.ComplaintDate,
         c.RegistrationDate,
         c.StockCode,
+        string.IsNullOrEmpty(c.Barcodes) ? new List<string>() : c.Barcodes.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList(),
         c.Brand,
         c.Hsa1,
         c.Hsa2,
