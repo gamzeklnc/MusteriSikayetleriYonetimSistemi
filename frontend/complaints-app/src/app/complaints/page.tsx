@@ -5,11 +5,34 @@ import Link from 'next/link';
 import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
 import { ComplaintDto } from '@/types/complaint';
+import ComplaintDetailModal from '@/components/complaints/ComplaintDetailModal';
 
 export default function ComplaintsPage() {
     const [complaints, setComplaints] = useState<ComplaintDto[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [selectedComplaint, setSelectedComplaint] = useState<ComplaintDto | null>(null);
+
+    const [filters, setFilters] = useState({
+        complaintNumber: '',
+        registrationDate: '',
+        complaintDate: '',
+        customerName: '',
+        sellerName: '',
+        projectName: '',
+        stockCode: '',
+        brand: '',
+        modulePower: '',
+        defectiveQuantity: '',
+        hsa1: '',
+        hsa2: '',
+        status: '',
+        currentDepartmentName: ''
+    });
+
+    const handleFilterChange = (key: keyof typeof filters, value: string) => {
+        setFilters(prev => ({ ...prev, [key]: value }));
+    };
 
     useEffect(() => {
         const fetchComplaints = async () => {
@@ -28,12 +51,39 @@ export default function ComplaintsPage() {
     }, []);
 
     const formatDate = (dateString: string) => {
+        if (!dateString) return '';
         return new Date(dateString).toLocaleDateString('tr-TR', {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit'
         });
     };
+
+    const filteredComplaints = complaints.filter(c => {
+        const safeMatch = (val: string | undefined | null, search: string) => 
+            !search || (val && val.toLowerCase().includes(search.toLowerCase()));
+        
+        const regDate = formatDate(c.registrationDate);
+        const compDate = formatDate(c.complaintDate);
+        const statusText = c.status === 'Acik' ? 'Açık' : 'Kapalı';
+
+        return (
+            safeMatch(c.complaintNumber, filters.complaintNumber) &&
+            safeMatch(regDate, filters.registrationDate) &&
+            safeMatch(compDate, filters.complaintDate) &&
+            safeMatch(c.customerName, filters.customerName) &&
+            safeMatch(c.sellerName, filters.sellerName) &&
+            safeMatch(c.projectName, filters.projectName) &&
+            safeMatch(c.stockCode, filters.stockCode) &&
+            safeMatch(c.brand, filters.brand) &&
+            safeMatch(c.modulePower, filters.modulePower) &&
+            safeMatch(c.defectiveQuantity?.toString(), filters.defectiveQuantity) &&
+            safeMatch((c.hsa1 || 0).toString(), filters.hsa1) &&
+            safeMatch((c.hsa2 || 0).toString(), filters.hsa2) &&
+            safeMatch(statusText, filters.status) &&
+            safeMatch(c.currentDepartmentName, filters.currentDepartmentName)
+        );
+    });
 
     return (
         <AppLayout>
@@ -66,27 +116,68 @@ export default function ComplaintsPage() {
 
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm">
-                            <thead className="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200 tracking-widest">
+                            <thead className="bg-slate-50 text-[11px] uppercase font-bold text-slate-500 border-b border-slate-200 tracking-wider">
                                 <tr>
-                                    <th className="px-6 py-4">Şikayet No</th>
-                                    <th className="px-6 py-4">Kayıt Tarihi</th>
-                                    <th className="px-6 py-4">Şikayet Tarihi</th>
-                                    <th className="px-6 py-4">Müşteri</th>
-                                    <th className="px-6 py-4">Satıcı</th>
-                                    <th className="px-6 py-4">Proje</th>
-                                    <th className="px-6 py-4">Stok Kodu</th>
-                                    <th className="px-6 py-4">Marka</th>
-                                    <th className="px-6 py-4">Güç</th>
-                                    <th className="px-6 py-4">Sayı</th>
-                                    <th className="px-6 py-4">HSA1</th>
-                                    <th className="px-6 py-4">HSA2</th>
-                                    <th className="px-6 py-4">İlk Not</th>
-                                    <th className="px-6 py-4">Durum</th>
-                                    <th className="px-6 py-4">Departman</th>
-                                    <th className="px-6 py-4 text-right">İşlem</th>
+                                    <th className="px-3 py-4">
+                                        <div className="mb-2">Şikayet No</div>
+                                        <input type="text" placeholder="Ara..." value={filters.complaintNumber} onChange={e => handleFilterChange('complaintNumber', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-3 py-4">
+                                        <div className="mb-2">Kayıt Tarihi</div>
+                                        <input type="text" placeholder="Ara..." value={filters.registrationDate} onChange={e => handleFilterChange('registrationDate', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-3 py-4">
+                                        <div className="mb-2">Şikayet Tarihi</div>
+                                        <input type="text" placeholder="Ara..." value={filters.complaintDate} onChange={e => handleFilterChange('complaintDate', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-3 py-4">
+                                        <div className="mb-2">Müşteri</div>
+                                        <input type="text" placeholder="Ara..." value={filters.customerName} onChange={e => handleFilterChange('customerName', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-3 py-4">
+                                        <div className="mb-2">Satıcı</div>
+                                        <input type="text" placeholder="Ara..." value={filters.sellerName} onChange={e => handleFilterChange('sellerName', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-3 py-4">
+                                        <div className="mb-2">Proje</div>
+                                        <input type="text" placeholder="Ara..." value={filters.projectName} onChange={e => handleFilterChange('projectName', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-3 py-4">
+                                        <div className="mb-2">Stok Kodu</div>
+                                        <input type="text" placeholder="Ara..." value={filters.stockCode} onChange={e => handleFilterChange('stockCode', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-3 py-4">
+                                        <div className="mb-2">Marka</div>
+                                        <input type="text" placeholder="Ara..." value={filters.brand} onChange={e => handleFilterChange('brand', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-3 py-4">
+                                        <div className="mb-2">Güç</div>
+                                        <input type="text" placeholder="Ara..." value={filters.modulePower} onChange={e => handleFilterChange('modulePower', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-3 py-4">
+                                        <div className="mb-2">Sayı</div>
+                                        <input type="text" placeholder="Ara..." value={filters.defectiveQuantity} onChange={e => handleFilterChange('defectiveQuantity', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-3 py-4">
+                                        <div className="mb-2">HSA1</div>
+                                        <input type="text" placeholder="Ara..." value={filters.hsa1} onChange={e => handleFilterChange('hsa1', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-3 py-4">
+                                        <div className="mb-2">HSA2</div>
+                                        <input type="text" placeholder="Ara..." value={filters.hsa2} onChange={e => handleFilterChange('hsa2', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-3 py-4">
+                                        <div className="mb-2">Durum</div>
+                                        <input type="text" placeholder="Ara..." value={filters.status} onChange={e => handleFilterChange('status', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-3 py-4">
+                                        <div className="mb-2">Departman</div>
+                                        <input type="text" placeholder="Ara..." value={filters.currentDepartmentName} onChange={e => handleFilterChange('currentDepartmentName', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-3 py-4 text-right align-top">İşlem</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 italic font-medium">
+                            <tbody className="divide-y divide-slate-100">
                                 {loading ? (
                                     <tr>
                                         <td colSpan={16} className="px-6 py-20 text-center">
@@ -96,68 +187,72 @@ export default function ComplaintsPage() {
                                             </div>
                                         </td>
                                     </tr>
-                                ) : complaints.length === 0 ? (
+                                ) : filteredComplaints.length === 0 ? (
                                     <tr>
                                         <td colSpan={16} className="px-6 py-20 text-center text-slate-400 text-xs uppercase tracking-widest font-bold">
-                                            Henüz kayıtlı şikayet bulunmuyor.
+                                            Arama kriterlerine uygun şikayet bulunamadı.
                                         </td>
                                     </tr>
                                 ) : (
-                                    complaints.map((complaint) => (
-                                        <tr key={complaint.id} className="hover:bg-slate-50/50 transition-colors group text-xs text-slate-600">
-                                            <td className="px-6 py-4 font-bold text-blue-600">
+                                    filteredComplaints.map((complaint) => (
+                                        <tr key={complaint.id} className="hover:bg-blue-50/30 transition-colors group text-[13px] text-slate-700">
+                                            <td className="px-3 py-4 font-semibold text-slate-900">
                                                 {complaint.complaintNumber}
                                             </td>
-                                            <td className="px-6 py-4 text-slate-400">
+                                            <td className="px-3 py-4 whitespace-nowrap text-slate-500 text-xs">
                                                 {formatDate(complaint.registrationDate)}
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-3 py-4 whitespace-nowrap text-slate-500 text-xs">
                                                 {formatDate(complaint.complaintDate)}
                                             </td>
-                                            <td className="px-6 py-4 font-bold text-slate-800">
+                                            <td className="px-3 py-4 font-medium text-slate-800">
                                                 {complaint.customerName}
                                             </td>
-                                            <td className="px-6 py-4 font-bold text-amber-600">
+                                            <td className="px-3 py-4 text-slate-600">
                                                 {complaint.sellerName}
                                             </td>
-                                            <td className="px-6 py-4 text-[10px] text-slate-500">
-                                                {complaint.projectName}
+                                            <td className="px-3 py-4 text-slate-500 text-xs">
+                                                {complaint.projectName || '-'}
                                             </td>
-                                            <td className="px-6 py-4 font-bold">
+                                            <td className="px-3 py-4 font-medium text-slate-800">
                                                 {complaint.stockCode}
                                             </td>
-                                            <td className="px-6 py-4 text-slate-800">
+                                            <td className="px-3 py-4 text-slate-600 whitespace-nowrap">
                                                 {complaint.brand || '-'}
                                             </td>
-                                            <td className="px-6 py-4 text-blue-600 font-bold whitespace-nowrap">
+                                            <td className="px-3 py-4 text-slate-600 whitespace-nowrap">
                                                 {complaint.modulePower || '-'}
                                             </td>
-                                            <td className="px-6 py-4 font-bold">
+                                            <td className="px-3 py-4 font-medium text-slate-800 text-center">
                                                 {complaint.defectiveQuantity}
                                             </td>
-                                            <td className="px-6 py-4 text-emerald-600 font-bold">
+                                            <td className="px-3 py-4 font-medium text-slate-800 text-center">
                                                 {complaint.hsa1 || 0}
                                             </td>
-                                            <td className="px-6 py-4 text-indigo-600 font-bold">
+                                            <td className="px-3 py-4 font-medium text-slate-800 text-center">
                                                 {complaint.hsa2 || 0}
                                             </td>
-                                            <td className="px-6 py-4 text-[10px] text-slate-500 max-w-xs truncate" title={complaint.initialNote || '-'}>
-                                                {complaint.initialNote || '-'}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className={`inline-flex items-center px-2 py-0.5 rounded-md ${complaint.status === 'Acik' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
+                                            <td className="px-3 py-4">
+                                                <div className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${complaint.status === 'Acik' ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'
                                                     }`}>
+                                                    <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${complaint.status === 'Acik' ? 'bg-amber-500' : 'bg-emerald-500'}`}></span>
                                                     {complaint.status === 'Acik' ? 'Açık' : 'Kapalı'}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-[10px] text-slate-500 whitespace-nowrap">
+                                            <td className="px-3 py-4 text-[11px] font-semibold text-slate-500 uppercase tracking-widest whitespace-nowrap">
                                                 {complaint.currentDepartmentName}
                                             </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+                                            <td className="px-3 py-4 text-right">
+                                                <button 
+                                                    onClick={() => setSelectedComplaint(complaint)}
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 text-[11px] font-bold rounded-lg hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"
+                                                    title="Detayları Görüntüle"
+                                                >
                                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                     </svg>
+                                                    Detay
                                                 </button>
                                             </td>
                                         </tr>
@@ -168,6 +263,13 @@ export default function ComplaintsPage() {
                     </div>
                 </div>
             </div>
+
+            {selectedComplaint && (
+                <ComplaintDetailModal
+                    complaint={selectedComplaint}
+                    onClose={() => setSelectedComplaint(null)}
+                />
+            )}
         </AppLayout>
     );
 }
