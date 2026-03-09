@@ -6,6 +6,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
 import { ComplaintDto } from '@/types/complaint';
 import ComplaintDetailModal from '@/components/complaints/ComplaintDetailModal';
+import * as XLSX from 'xlsx-js-style';
 
 export default function ComplaintsPage() {
     const [complaints, setComplaints] = useState<ComplaintDto[]>([]);
@@ -61,9 +62,9 @@ export default function ComplaintsPage() {
     };
 
     const filteredComplaints = complaints.filter(c => {
-        const safeMatch = (val: string | undefined | null, search: string) => 
+        const safeMatch = (val: string | undefined | null, search: string) =>
             !search || (val && val.toLowerCase().includes(search.toLowerCase()));
-        
+
         const regDate = formatDate(c.registrationDate);
         const compDate = formatDate(c.complaintDate);
         const statusText = c.status === 'Acik' ? 'Açık' : 'Kapalı';
@@ -87,6 +88,64 @@ export default function ComplaintsPage() {
         );
     });
 
+    const handleExportExcel = () => {
+        const exportData = filteredComplaints.map(c => ({
+            'Şikayet No': c.complaintNumber,
+            'Kayıt Tarihi': formatDate(c.registrationDate),
+            'Şikayet Tarihi': formatDate(c.complaintDate),
+            'Müşteri': c.customerName,
+            'Satıcı': c.sellerName,
+            'Proje': c.projectName || '',
+            'Stok Kodu': c.stockCode,
+            'Marka': c.brand || '',
+            'Güç': c.modulePower || '',
+            'Sayı': c.defectiveQuantity,
+            'Hata Tanımı': c.errorDefinition || '',
+            'HSA1': c.hsa1 || 0,
+            'HSA2': c.hsa2 || 0,
+            'Durum': c.status === 'Acik' ? 'Açık' : 'Kapalı',
+            'Departman': c.currentDepartmentName
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+        // Header styling
+        const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+            const address = XLSX.utils.encode_cell({ c: C, r: 0 });
+            if (!worksheet[address]) continue;
+            worksheet[address].s = {
+                font: { bold: true, color: { rgb: "FFFFFF" } },
+                fill: { fgColor: { rgb: "4F81BD" } }
+            };
+        }
+
+        // Adjust column widths
+        const wscols = [
+            { wch: 15 }, // Şikayet No
+            { wch: 15 }, // Kayıt Tarihi
+            { wch: 15 }, // Şikayet Tarihi
+            { wch: 25 }, // Müşteri
+            { wch: 20 }, // Satıcı
+            { wch: 20 }, // Proje
+            { wch: 20 }, // Stok Kodu
+            { wch: 15 }, // Marka
+            { wch: 10 }, // Güç
+            { wch: 10 }, // Sayı
+            { wch: 30 }, // Hata Tanımı
+            { wch: 10 }, // HSA1
+            { wch: 10 }, // HSA2
+            { wch: 15 }, // Durum
+            { wch: 20 }, // Departman
+        ];
+        worksheet['!cols'] = wscols;
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Şikayetler');
+
+        XLSX.writeFile(workbook, `Sikayet_Listesi_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
+
     return (
         <AppLayout>
             <div className="space-y-6">
@@ -95,15 +154,27 @@ export default function ComplaintsPage() {
                         <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Şikayet Listesi</h1>
                         <p className="text-slate-500 text-sm mt-1">Sistemde kayıtlı tüm müşteri şikayetleri.</p>
                     </div>
-                    <Link
-                        href="/complaints/new"
-                        className="px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2 uppercase tracking-wider"
-                    >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                        YENİ ŞİKAYET KAYDI
-                    </Link>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={handleExportExcel}
+                            className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 uppercase tracking-wider"
+                            title="Excel'e Aktar"
+                        >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            EXCEL'E AKTAR
+                        </button>
+                        <Link
+                            href="/complaints/new"
+                            className="px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2 uppercase tracking-wider"
+                        >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            YENİ ŞİKAYET KAYDI
+                        </Link>
+                    </div>
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -252,7 +323,7 @@ export default function ComplaintsPage() {
                                                 {complaint.currentDepartmentName}
                                             </td>
                                             <td className="px-3 py-4 text-right">
-                                                <button 
+                                                <button
                                                     onClick={() => setSelectedComplaint(complaint)}
                                                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 text-[11px] font-bold rounded-lg hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"
                                                     title="Detayları Görüntüle"
