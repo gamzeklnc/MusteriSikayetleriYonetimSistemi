@@ -63,6 +63,7 @@ public class ComplaintsController : ControllerBase
             Hsa2               = req.Hsa2,
             Brand              = req.Brand,       // Manuel girilen
             ModulePower        = req.ModulePower, // Manuel girilen
+            ErrorDefinition    = req.ErrorDefinition,
             CreatedById        = 1, // placeholder
             Status             = "Acik",
             CurrentDepartmentId = 2 // Varsayılan "Kalite" departmanı (ID: 2)

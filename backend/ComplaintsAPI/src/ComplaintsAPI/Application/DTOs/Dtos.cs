@@ -23,7 +23,8 @@ public record CreateComplaintRequest(
     int? Hsa2,
     string? Brand,         // Manuel girilebilir
     string? ModulePower,   // Manuel girilebilir
-    string? Note           // Manuel girilebilir
+    string? Note,          // Manuel girilebilir
+    string? ErrorDefinition
 );
 
 /// <summary>Şikayet güncelleme</summary>

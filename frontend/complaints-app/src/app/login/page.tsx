@@ -40,17 +40,22 @@ export default function LoginPage() {
     return (
         <div className="min-h-screen bg-slate-50 flex">
             {/* Sol Taraf - Dekoratif Görsel ve Sistem Tanıtımı */}
-            <div className="hidden lg:flex lg:w-1/2 relative bg-indigo-900 overflow-hidden items-center justify-center">
+            <div className="hidden lg:flex lg:w-1/2 relative bg-[#0D2E3F] overflow-hidden items-center justify-center">
                 {/* Arkaplan Şekilleri (Glassmorphism & Gradient Effects) */}
-                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-600/20 to-indigo-900/90 z-10" />
-                <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-blue-500/20 blur-3xl" />
-                <div className="absolute -bottom-[20%] -right-[10%] w-[70%] h-[70%] rounded-full bg-purple-500/20 blur-3xl" />
+                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-900/20 to-[#0D2E3F]/90 z-10" />
+                <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-blue-500/10 blur-3xl" />
+                <div className="absolute -bottom-[20%] -right-[10%] w-[70%] h-[70%] rounded-full bg-transparent blur-3xl" />
 
-                <div className="relative z-20 px-16 text-white max-w-2xl">
-                    <div className="mb-8 inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20">
-                        <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                        </svg>
+                <div className="relative z-20 px-16 text-white max-w-2xl text-center">
+                    <div className="mb-12 flex justify-center">
+                        <div className="inline-flex items-center justify-center bg-white p-6 rounded-3xl shadow-xl border border-white/20">
+                            {/* Logo Image */}
+                            <img 
+                                src="/hsa-logo.png" 
+                                alt="HSA Enerji Logo" 
+                                className="h-24 md:h-32 w-auto object-contain"
+                            />
+                        </div>
                     </div>
                     <h1 className="text-4xl lg:text-5xl font-bold tracking-tight mb-6 leading-tight">
                         Müşteri Şikayetleri <br />

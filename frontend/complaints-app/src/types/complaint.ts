@@ -59,6 +59,7 @@ export interface CreateComplaintRequest {
   hsa1?: number;
   hsa2?: number;
   note?: string;
+  errorDefinition?: string;
 }
 
 export interface UpdateComplaintRequest {

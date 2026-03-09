@@ -24,6 +24,7 @@ export default function ComplaintsPage() {
         brand: '',
         modulePower: '',
         defectiveQuantity: '',
+        errorDefinition: '',
         hsa1: '',
         hsa2: '',
         status: '',
@@ -78,6 +79,7 @@ export default function ComplaintsPage() {
             safeMatch(c.brand, filters.brand) &&
             safeMatch(c.modulePower, filters.modulePower) &&
             safeMatch(c.defectiveQuantity?.toString(), filters.defectiveQuantity) &&
+            safeMatch(c.errorDefinition, filters.errorDefinition) &&
             safeMatch((c.hsa1 || 0).toString(), filters.hsa1) &&
             safeMatch((c.hsa2 || 0).toString(), filters.hsa2) &&
             safeMatch(statusText, filters.status) &&
@@ -118,63 +120,67 @@ export default function ComplaintsPage() {
                         <table className="w-full text-left text-sm">
                             <thead className="bg-slate-50 text-[11px] uppercase font-bold text-slate-500 border-b border-slate-200 tracking-wider">
                                 <tr>
-                                    <th className="px-3 py-4">
-                                        <div className="mb-2">Şikayet No</div>
+                                    <th className="px-3 py-4 align-bottom">
+                                        <div className="mb-2 text-slate-500">Şikayet No</div>
                                         <input type="text" placeholder="Ara..." value={filters.complaintNumber} onChange={e => handleFilterChange('complaintNumber', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" />
                                     </th>
-                                    <th className="px-3 py-4">
-                                        <div className="mb-2">Kayıt Tarihi</div>
+                                    <th className="px-3 py-4 align-bottom">
+                                        <div className="mb-2 text-slate-500">Kayıt Tarihi</div>
                                         <input type="text" placeholder="Ara..." value={filters.registrationDate} onChange={e => handleFilterChange('registrationDate', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
-                                    <th className="px-3 py-4">
-                                        <div className="mb-2">Şikayet Tarihi</div>
+                                    <th className="px-3 py-4 align-bottom">
+                                        <div className="mb-2 text-slate-500">Şikayet Tarihi</div>
                                         <input type="text" placeholder="Ara..." value={filters.complaintDate} onChange={e => handleFilterChange('complaintDate', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
-                                    <th className="px-3 py-4">
-                                        <div className="mb-2">Müşteri</div>
+                                    <th className="px-3 py-4 align-bottom">
+                                        <div className="mb-2 text-slate-500">Müşteri</div>
                                         <input type="text" placeholder="Ara..." value={filters.customerName} onChange={e => handleFilterChange('customerName', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
-                                    <th className="px-3 py-4">
-                                        <div className="mb-2">Satıcı</div>
+                                    <th className="px-3 py-4 align-bottom">
+                                        <div className="mb-2 text-slate-500">Satıcı</div>
                                         <input type="text" placeholder="Ara..." value={filters.sellerName} onChange={e => handleFilterChange('sellerName', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
-                                    <th className="px-3 py-4">
-                                        <div className="mb-2">Proje</div>
+                                    <th className="px-3 py-4 align-bottom">
+                                        <div className="mb-2 text-slate-500">Proje</div>
                                         <input type="text" placeholder="Ara..." value={filters.projectName} onChange={e => handleFilterChange('projectName', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
-                                    <th className="px-3 py-4">
-                                        <div className="mb-2">Stok Kodu</div>
+                                    <th className="px-3 py-4 align-bottom">
+                                        <div className="mb-2 text-slate-500">Stok Kodu</div>
                                         <input type="text" placeholder="Ara..." value={filters.stockCode} onChange={e => handleFilterChange('stockCode', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
-                                    <th className="px-3 py-4">
-                                        <div className="mb-2">Marka</div>
+                                    <th className="px-3 py-4 align-bottom">
+                                        <div className="mb-2 text-slate-500">Marka</div>
                                         <input type="text" placeholder="Ara..." value={filters.brand} onChange={e => handleFilterChange('brand', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
-                                    <th className="px-3 py-4">
-                                        <div className="mb-2">Güç</div>
+                                    <th className="px-3 py-4 align-bottom">
+                                        <div className="mb-2 text-slate-500">Güç</div>
                                         <input type="text" placeholder="Ara..." value={filters.modulePower} onChange={e => handleFilterChange('modulePower', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
-                                    <th className="px-3 py-4">
-                                        <div className="mb-2">Sayı</div>
+                                    <th className="px-3 py-4 align-bottom">
+                                        <div className="mb-2 text-slate-500">Sayı</div>
                                         <input type="text" placeholder="Ara..." value={filters.defectiveQuantity} onChange={e => handleFilterChange('defectiveQuantity', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
-                                    <th className="px-3 py-4">
-                                        <div className="mb-2">HSA1</div>
+                                    <th className="px-3 py-4 align-bottom">
+                                        <div className="mb-2 text-slate-500 leading-tight">Hata Tanımı</div>
+                                        <input type="text" placeholder="Ara..." value={filters.errorDefinition} onChange={e => handleFilterChange('errorDefinition', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-3 py-4 align-bottom">
+                                        <div className="mb-2 text-slate-500">HSA1</div>
                                         <input type="text" placeholder="Ara..." value={filters.hsa1} onChange={e => handleFilterChange('hsa1', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
-                                    <th className="px-3 py-4">
-                                        <div className="mb-2">HSA2</div>
+                                    <th className="px-3 py-4 align-bottom">
+                                        <div className="mb-2 text-slate-500">HSA2</div>
                                         <input type="text" placeholder="Ara..." value={filters.hsa2} onChange={e => handleFilterChange('hsa2', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
-                                    <th className="px-3 py-4">
-                                        <div className="mb-2">Durum</div>
+                                    <th className="px-3 py-4 align-bottom">
+                                        <div className="mb-2 text-slate-500">Durum</div>
                                         <input type="text" placeholder="Ara..." value={filters.status} onChange={e => handleFilterChange('status', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
-                                    <th className="px-3 py-4">
-                                        <div className="mb-2">Departman</div>
+                                    <th className="px-3 py-4 align-bottom">
+                                        <div className="mb-2 text-slate-500">Departman</div>
                                         <input type="text" placeholder="Ara..." value={filters.currentDepartmentName} onChange={e => handleFilterChange('currentDepartmentName', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
-                                    <th className="px-3 py-4 text-right align-top">İşlem</th>
+                                    <th className="px-3 py-4 text-right align-bottom pb-6 whitespace-nowrap">İşlem</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -225,6 +231,9 @@ export default function ComplaintsPage() {
                                             </td>
                                             <td className="px-3 py-4 font-medium text-slate-800 text-center">
                                                 {complaint.defectiveQuantity}
+                                            </td>
+                                            <td className="px-3 py-4 text-slate-600">
+                                                {complaint.errorDefinition || '-'}
                                             </td>
                                             <td className="px-3 py-4 font-medium text-slate-800 text-center">
                                                 {complaint.hsa1 || 0}

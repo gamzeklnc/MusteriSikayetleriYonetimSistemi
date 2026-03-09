@@ -113,225 +113,187 @@ export default function NewComplaintPage() {
 
     return (
         <AppLayout>
-            <div className="max-w-3xl mx-auto py-8">
-                <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Yeni Şikayet Kaydı</h1>
-                    <p className="text-slate-500 text-sm mt-1">Lütfen aşağıdaki şikayet bilgilerini eksiksiz doldurun.</p>
+            <div className="max-w-7xl mx-auto px-2">
+                <div className="mb-3 flex justify-between items-center">
+                    <h1 className="text-xl font-bold text-slate-900 tracking-tight">Yeni Şikayet Kaydı</h1>
                 </div>
 
                 {error && (
-                    <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm flex items-center gap-3">
-                        <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="mb-2 p-2 bg-red-50 border border-red-200 text-red-600 rounded-lg text-xs flex items-center gap-2">
+                        <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        {error}
+                        <span className="font-medium">{error}</span>
                     </div>
                 )}
 
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <form onSubmit={handleSubmit} className="p-8 space-y-8">
+                <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+                    <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
 
-                        {/* Manuel Giriş Alanları */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-
-                            <div>
-                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Müşteri İsmi</label>
+                        {/* Bilgiler Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
+                            {/* Müşteri Bilgileri */}
+                            <div className="space-y-1">
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Müşteri İsmi</label>
                                 <input
-                                    type="text"
-                                    name="customerName"
-                                    required
-                                    value={formData.customerName}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300"
-                                    placeholder="Müşteri adını girin..."
+                                    type="text" name="customerName" required value={formData.customerName} onChange={handleChange}
+                                    className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 placeholder:text-slate-400"
+                                    placeholder="Müşteri..."
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Satıcı</label>
+                            <div className="space-y-1">
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Satıcı</label>
                                 <select
-                                    name="sellerName"
-                                    required
-                                    value={formData.sellerName}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black"
+                                    name="sellerName" required value={formData.sellerName} onChange={handleChange}
+                                    className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
                                 >
                                     <option value="Mehmet Aybaş">Mehmet Aybaş</option>
                                     <option value="Görkem Çam">Görkem Çam</option>
                                 </select>
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Proje İsmi</label>
+                            <div className="space-y-1">
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Proje İsmi</label>
                                 <input
-                                    type="text"
-                                    name="projectName"
-                                    required
-                                    value={formData.projectName}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300"
-                                    placeholder="Proje adını girin..."
+                                    type="text" name="projectName" required value={formData.projectName} onChange={handleChange}
+                                    className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
+                                    placeholder="Proje..."
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Proje Lokasyonu (İl)</label>
+                            <div className="space-y-1">
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Lokasyon</label>
                                 <input
-                                    type="text"
-                                    name="projectLocation"
-                                    required
-                                    value={formData.projectLocation}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300"
-                                    placeholder="İl bilgisi..."
+                                    type="text" name="projectLocation" required value={formData.projectLocation} onChange={handleChange}
+                                    className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
+                                    placeholder="İl..."
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Şikayet Tarihi</label>
+                            {/* Ürün Detayları */}
+                            <div className="space-y-1">
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Şikayet Tarihi</label>
                                 <input
-                                    type="date"
-                                    name="complaintDate"
-                                    required
-                                    value={formData.complaintDate}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black"
+                                    type="date" name="complaintDate" required value={formData.complaintDate} onChange={handleChange}
+                                    className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
                                 />
                             </div>
 
-                            <div className="border-t border-slate-100 md:col-span-2 my-2" />
-
-                            <div>
-                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Stok Kodu</label>
+                            <div className="space-y-1">
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Stok Kodu</label>
                                 <input
-                                    type="text"
-                                    name="stockCode"
-                                    required
-                                    value={formData.stockCode}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300"
-                                    placeholder="Örn: EL-450"
+                                    type="text" name="stockCode" required value={formData.stockCode} onChange={handleChange}
+                                    className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 font-medium"
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Marka</label>
+                            <div className="space-y-1">
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Marka</label>
                                 <input
-                                    type="text"
-                                    name="brand"
-                                    value={formData.brand}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300"
-                                    placeholder="Marka girin veya stok kodundan gelsin..."
+                                    type="text" name="brand" value={formData.brand} onChange={handleChange}
+                                    className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Modül Gücü</label>
+                            <div className="space-y-1">
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Modül Gücü</label>
                                 <input
-                                    type="text"
-                                    name="modulePower"
-                                    value={formData.modulePower}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300"
-                                    placeholder="Güç girin veya stok kodundan gelsin..."
+                                    type="text" name="modulePower" value={formData.modulePower} onChange={handleChange}
+                                    className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
                                 />
                             </div>
 
-                            <div className="md:col-span-2">
-                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
-                                    Barkodlar (Kopyala/Yapıştır - Alt alta veya virgülle ayrılmış)
-                                </label>
-                                <textarea
-                                    name="barcodesInput"
-                                    value={barcodesInput}
-                                    onChange={handleBarcodesChange}
-                                    rows={4}
-                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300 font-mono text-sm"
-                                    placeholder="2490108MC2023041&#10;2490108BW0023041&#10;E4FXT325H129990048205538"
-                                />
-                                <div className="mt-2 flex items-center justify-between text-xs text-slate-500 font-medium">
-                                    <span>Toplam Okunan: {formData.barcodes?.length || 0}</span>
-                                    <div className="flex items-center gap-4">
-                                        <span className="bg-green-100 text-green-700 px-2 py-1 rounded">HSA1: {formData.hsa1 || 0}</span>
-                                        <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">HSA2: {formData.hsa2 || 0}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Kusurlu Ürün Miktarı ayrı kalabilir veya Barkod sayısı ile senkronize edilebilir, şimdilik ayrı tutuyoruz ancak kullanıcıdan hatalı giriş olmasın. */}
-                            <div>
-                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Kusurlu Ürün Miktarı</label>
-                                <input
-                                    type="number"
-                                    name="defectiveQuantity"
-                                    required
-                                    min="1"
-                                    value={formData.defectiveQuantity || ''}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300"
-                                />
-                            </div>
-
-                            <div className="md:col-span-2 border-t border-slate-100 my-2" />
-
-                            <div>
-                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">HSA1 Sayısı</label>
-                                <input
-                                    type="number"
-                                    name="hsa1"
-                                    min="0"
-                                    value={formData.hsa1 || 0}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black"
-                                    placeholder="Manuel girilebilir veya barkoddan okunur"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">HSA2 Sayısı</label>
-                                <input
-                                    type="number"
-                                    name="hsa2"
-                                    min="0"
-                                    value={formData.hsa2 || 0}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black"
-                                    placeholder="Manuel girilebilir veya barkoddan okunur"
-                                />
-                            </div>
-
-                            <div className="md:col-span-2">
-                                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Şikayet Notu (İsteğe Bağlı)</label>
-                                <textarea
-                                    name="note"
-                                    value={formData.note || ''}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, note: e.target.value }))}
-                                    rows={3}
-                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black placeholder:text-slate-300 text-sm"
-                                    placeholder="Şikayeti açarken eklemek istediğiniz ilk not/açıklama..."
-                                />
+                            <div className="space-y-1">
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Hata Tanımı</label>
+                                <select
+                                    name="errorDefinition" required value={formData.errorDefinition || ''} onChange={handleChange}
+                                    className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
+                                >
+                                    <option value="">Seçiniz...</option>
+                                    <option value="Busbar Lehim Hatası">Busbar Lehim Hatası</option>
+                                    <option value="Cam Çiziği">Cam Çiziği</option>
+                                    <option value="Cam Kirliliği">Cam Kirliliği</option>
+                                    <option value="Çerçeve Köşe Açıklığı">Çerçeve Köşe Açıklığı</option>
+                                    <option value="Diyot Hatası">Diyot Hatası</option>
+                                    <option value="EL hatası">EL hatası</option>
+                                    <option value="Etiket Hatası">Etiket Hatası</option>
+                                    <option value="EVA Lekesi">EVA Lekesi</option>
+                                    <option value="Finger Kırığı">Finger Kırığı</option>
+                                    <option value="Gökkuşağı">Gökkuşağı</option>
+                                    <option value="Güç Hatası">Güç Hatası</option>
+                                </select>
                             </div>
                         </div>
 
-                        {/* Submit Actions */}
-                        <div className="flex items-center justify-end gap-4 pt-8 border-t border-slate-100">
+                        {/* Alt Bölüm: Barkod ve Notlar */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-2 border-t border-slate-100">
+                            <div className="space-y-2">
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Barkodlar</label>
+                                <textarea
+                                    name="barcodesInput" value={barcodesInput} onChange={handleBarcodesChange} rows={3}
+                                    className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-xl focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 font-mono resize-none"
+                                    placeholder="Barkod listesi..."
+                                />
+                                <div className="flex items-center gap-3 text-[10px] font-bold">
+                                    <div className="bg-slate-100 text-slate-600 px-2 py-1 rounded-md">TOPLAM: {formData.barcodes?.length || 0}</div>
+                                    <div className="text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100">HSA1: {formData.hsa1 || 0}</div>
+                                    <div className="text-blue-600 bg-blue-50 px-2 py-1 rounded-md border border-blue-100">HSA2: {formData.hsa2 || 0}</div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4">
+                                <div className="grid grid-cols-3 gap-3">
+                                    <div className="space-y-1">
+                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Kusurlu</label>
+                                        <input
+                                            type="number" name="defectiveQuantity" required min="1" value={formData.defectiveQuantity || ''} onChange={handleChange}
+                                            className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 font-bold"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">HSA1</label>
+                                        <input
+                                            type="number" name="hsa1" min="0" value={formData.hsa1 || 0} onChange={handleChange}
+                                            className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">HSA2</label>
+                                        <input
+                                            type="number" name="hsa2" min="0" value={formData.hsa2 || 0} onChange={handleChange}
+                                            className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Şikayet Notu</label>
+                                    <textarea
+                                        name="note" value={formData.note || ''} onChange={(e) => setFormData(prev => ({ ...prev, note: e.target.value }))} rows={2}
+                                        className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 resize-none font-sans"
+                                        placeholder="Not..."
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Alt Butonlar */}
+                        <div className="flex items-center justify-end gap-4 pt-4 border-t border-slate-100">
                             <button
                                 type="button"
                                 onClick={() => router.push('/complaints')}
-                                className="px-6 py-3 text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors"
+                                className="px-5 py-2 text-xs font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest transition-colors"
                             >
-                                VAZGEÇ
+                                Vazgeç
                             </button>
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="px-8 py-3 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 uppercase tracking-wider"
+                                className="px-10 py-3 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.98] rounded-xl transition-all shadow-lg shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 uppercase tracking-wide"
                             >
                                 {loading ? 'KAYDEDİLİYOR...' : 'ŞİKAYETİ KAYDET'}
                             </button>
                         </div>
-
                     </form>
                 </div>
             </div>

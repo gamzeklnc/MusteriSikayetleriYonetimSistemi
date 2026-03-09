@@ -38,20 +38,18 @@ export default function Sidebar() {
         }`;
 
     return (
-        <aside className="flex flex-col w-64 min-h-screen bg-slate-900 border-r border-slate-800">
+        <aside className="flex flex-col w-64 min-h-screen bg-[#0D2E3F] border-r border-slate-700/50">
             {/* Logo */}
             <div className="px-6 py-6 mb-2">
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                        </svg>
+                    <div className="bg-white p-1.5 rounded-lg flex items-center justify-center">
+                        <img src="/hsa-logo.png" alt="HSA Enerji" className="h-6 w-auto object-contain" />
                     </div>
                     <div>
                         <h1 className="text-white font-bold text-sm leading-tight">
                             Şikayet Yönetim
                         </h1>
-                        <span className="text-slate-500 text-[10px] uppercase tracking-wider font-semibold">Kurumsal Sistem</span>
+                        <span className="text-slate-400 text-[10px] uppercase tracking-wider font-semibold">Kurumsal Sistem</span>
                     </div>
                 </div>
             </div>

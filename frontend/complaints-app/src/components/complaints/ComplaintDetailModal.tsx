@@ -42,6 +42,7 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
             'Sayı',
             'HSA1',
             'HSA2',
+            'Hata Tanımı',
             'Durum',
             'Departman',
             'Barkod',
@@ -62,6 +63,7 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
             complaint.defectiveQuantity.toString(),
             (complaint.hsa1 || 0).toString(),
             (complaint.hsa2 || 0).toString(),
+            complaint.errorDefinition || '-',
             complaint.status === 'Acik' ? 'Açık' : 'Kapalı',
             complaint.currentDepartmentName,
         ];
@@ -88,7 +90,7 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
             { wch: 15 }, { wch: 20 }, { wch: 20 }, { wch: 25 }, 
             { wch: 25 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, 
             { wch: 15 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, 
-            { wch: 15 }, { wch: 20 }, { wch: 30 }, { wch: 15 }
+            { wch: 20 }, { wch: 15 }, { wch: 20 }, { wch: 30 }, { wch: 15 }
         ];
 
         // Apply styles to header row (row 0)
@@ -107,8 +109,8 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
         const totalRows = combinedData.length;
         if (totalRows > 2) { 
             const merges = [];
-            // Columns 0 to 13 are common data. We merge from row 1 to totalRows - 1
-            for (let c = 0; c <= 13; c++) {
+            // Columns 0 to 14 are common data. We merge from row 1 to totalRows - 1
+            for (let c = 0; c <= 14; c++) {
                 merges.push({ s: { r: 1, c: c }, e: { r: totalRows - 1, c: c } });
             }
             ws['!merges'] = merges;
@@ -116,7 +118,7 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
 
         // Apply basic vertical centering style for merged data cells
         for (let R = 1; R <= range.e.r; ++R) {
-             for (let C = 0; C <= 13; ++C) { // Only first 14 columns
+             for (let C = 0; C <= 14; ++C) { // Only first 15 columns
                 const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
                 if (!ws[cellAddress]) continue;
                 if (!ws[cellAddress].s) ws[cellAddress].s = {};
@@ -245,6 +247,13 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
                                         <div>
                                             <div className="text-[10px] text-slate-400 uppercase font-bold">Güç</div>
                                             <div className="font-medium text-slate-800">{complaint.modulePower || '-'}</div>
+                                        </div>
+                                        
+                                        <div className="col-span-2">
+                                            <div className="text-[10px] text-slate-400 uppercase font-bold">Hata Tanımı</div>
+                                            <div className="font-bold text-blue-700 bg-blue-50 px-2.5 py-1.5 rounded-lg border border-blue-100 inline-block mt-1">
+                                                {complaint.errorDefinition || 'Tanımlanmamış'}
+                                            </div>
                                         </div>
                                         
                                         <div className="col-span-2 pt-2 mt-2 border-t border-slate-200 grid grid-cols-2 gap-3">
