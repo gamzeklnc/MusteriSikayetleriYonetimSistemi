@@ -288,6 +288,20 @@ public class ComplaintsController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>Kalite Raporu Güncelle</summary>
+    [HttpPatch("{id}/quality-report")]
+    public async Task<IActionResult> UpdateQualityReport(int id, [FromBody] QualityReportUpdateRequest req)
+    {
+        var complaint = await _repo.GetByIdAsync(id);
+        if (complaint is null) return NotFound();
+
+        complaint.IsQualityReported = req.IsQualityReported;
+        complaint.QualityReportNote = req.Note;
+
+        await _repo.UpdateAsync(complaint);
+        return NoContent();
+    }
+
     // ── Yardımcı Mapper ───────────────────────────────────────────────────────
     private static ComplaintDto MapToDto(Domain.Entities.Complaint c) => new(
         c.Id,
@@ -316,6 +330,8 @@ public class ComplaintsController : ControllerBase
         c.ComplaintMonth,
         c.ComplaintWeek,
         c.CreatedBy.Name,
-        c.CreatedAt
+        c.CreatedAt,
+        c.IsQualityReported,
+        c.QualityReportNote
     );
 }

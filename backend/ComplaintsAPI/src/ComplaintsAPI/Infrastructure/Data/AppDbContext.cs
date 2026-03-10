@@ -54,6 +54,8 @@ public class AppDbContext : DbContext
             e.Property(x => x.Brand).HasMaxLength(100);
             e.Property(x => x.ModulePower).HasMaxLength(50);
             e.Property(x => x.ErrorDefinition).HasColumnType("nvarchar(max)");
+            e.Property(x => x.QualityReportNote).HasColumnType("nvarchar(max)");
+            e.Property(x => x.IsQualityReported).HasDefaultValue(false);
 
             e.HasOne(x => x.CurrentDepartment)
              .WithMany(d => d.Complaints)

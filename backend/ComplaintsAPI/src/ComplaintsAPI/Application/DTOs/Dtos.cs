@@ -56,6 +56,9 @@ public record TransferDepartmentRequest(int TargetDepartmentId, string? Note);
 /// <summary>Not ekleme isteği</summary>
 public record AddNoteRequest(string Note, int DepartmentId);
 
+/// <summary>Kalite raporu güncelleme isteği</summary>
+public record QualityReportUpdateRequest(bool IsQualityReported, string? Note);
+
 /// <summary>Liste görünümü için özet DTO</summary>
 public record ComplaintDto(
     int Id,
@@ -84,7 +87,9 @@ public record ComplaintDto(
     int ComplaintMonth,
     int ComplaintWeek,
     string CreatedByName,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    bool IsQualityReported,
+    string? QualityReportNote
 );
 
 /// <summary>Geçmiş satırı</summary>

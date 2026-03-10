@@ -73,6 +73,10 @@ public class Complaint
     /// <summary>Haklı/Haksız Şikayet — null: henüz belirlenmedi</summary>
     public bool? IsValidComplaint { get; set; }
 
+    // ── Kalite Raporu ────────────────────────────────────────────────────────
+    public bool IsQualityReported { get; set; } = false;
+    public string? QualityReportNote { get; set; }
+
     // ── Sistem Alanları ──────────────────────────────────────────────────────
     public int CreatedById { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

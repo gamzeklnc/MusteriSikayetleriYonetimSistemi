@@ -5,7 +5,8 @@ import type {
     CreateComplaintRequest,
     ChangeStatusRequest,
     TransferDepartmentRequest,
-    AddNoteRequest
+    AddNoteRequest,
+    UpdateQualityReportRequest
 } from '@/types/complaint';
 
 export const complaintService = {
@@ -36,5 +37,9 @@ export const complaintService = {
 
     addNote: async (id: number, data: AddNoteRequest): Promise<void> => {
         await apiClient.post(`/api/complaints/${id}/notes`, data);
+    },
+
+    updateQualityReport: async (id: number, data: UpdateQualityReportRequest): Promise<void> => {
+        await apiClient.patch(`/api/complaints/${id}/quality-report`, data);
     },
 };

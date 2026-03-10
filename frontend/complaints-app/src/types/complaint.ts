@@ -30,6 +30,8 @@ export interface ComplaintDto {
   complaintWeek: number;
   createdByName: string;
   createdAt: string;
+  isQualityReported: boolean;
+  qualityReportNote?: string;
 }
 
 export interface ComplaintHistoryDto {
@@ -95,4 +97,9 @@ export interface TransferDepartmentRequest {
 export interface AddNoteRequest {
   note: string;
   departmentId: number;
+}
+
+export interface UpdateQualityReportRequest {
+  isQualityReported: boolean;
+  note?: string;
 }
