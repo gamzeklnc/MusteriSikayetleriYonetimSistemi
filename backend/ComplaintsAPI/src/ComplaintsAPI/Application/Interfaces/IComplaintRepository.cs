@@ -8,5 +8,6 @@ public interface IComplaintRepository
     Task<Complaint?> GetByIdAsync(int id);
     Task<Complaint> CreateAsync(Complaint complaint);
     Task<Complaint> UpdateAsync(Complaint complaint);
+    Task DeleteAsync(Complaint complaint);
     Task AddHistoryAsync(ComplaintHistory history);
 }

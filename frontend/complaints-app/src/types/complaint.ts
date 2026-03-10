@@ -32,6 +32,10 @@ export interface ComplaintDto {
   createdAt: string;
   isQualityReported: boolean;
   qualityReportNote?: string;
+  qualityReportedByName?: string;
+  isManagementApproved?: boolean | null;
+  managementApprovalNote?: string;
+  managementApprovedByName?: string;
 }
 
 export interface ComplaintHistoryDto {
@@ -81,6 +85,10 @@ export interface UpdateComplaintRequest {
   errorDefinition?: string;
   isValidComplaint?: boolean;
   lastResponseDate?: string;
+  status?: string;
+  currentDepartmentId?: number;
+  isQualityReported?: boolean;
+  isManagementApproved?: boolean | null;
 }
 
 export interface ChangeStatusRequest {
@@ -101,5 +109,10 @@ export interface AddNoteRequest {
 
 export interface UpdateQualityReportRequest {
   isQualityReported: boolean;
+  note?: string;
+}
+
+export interface ManagementApprovalRequest {
+  isApproved: boolean | null;
   note?: string;
 }

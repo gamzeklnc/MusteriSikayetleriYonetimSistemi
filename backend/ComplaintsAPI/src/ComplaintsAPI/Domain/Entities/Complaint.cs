@@ -76,6 +76,12 @@ public class Complaint
     // ── Kalite Raporu ────────────────────────────────────────────────────────
     public bool IsQualityReported { get; set; } = false;
     public string? QualityReportNote { get; set; }
+    public int? QualityReportedById { get; set; }
+
+    // ── Yönetim Onayı ────────────────────────────────────────────────────────
+    public bool? IsManagementApproved { get; set; }
+    public string? ManagementApprovalNote { get; set; }
+    public int? ManagementApprovedById { get; set; }
 
     // ── Sistem Alanları ──────────────────────────────────────────────────────
     public int CreatedById { get; set; }
@@ -85,6 +91,8 @@ public class Complaint
     // ── Navigation ───────────────────────────────────────────────────────────
     public Department CurrentDepartment { get; set; } = null!;
     public User CreatedBy { get; set; } = null!;
+    public User? QualityReportedBy { get; set; }
+    public User? ManagementApprovedBy { get; set; }
     public ICollection<ComplaintHistory> History { get; set; } = new List<ComplaintHistory>();
 
     // ── Domain Metodu: tarih alanlarını otomatik doldur ─────────────────────

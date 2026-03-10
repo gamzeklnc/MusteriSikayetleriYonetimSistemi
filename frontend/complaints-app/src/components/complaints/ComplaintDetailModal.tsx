@@ -44,7 +44,7 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
             'HSA2',
             'Hata Tanımı',
             'Durum',
-            'Departman',
+            'Aşama',
             'Barkod',
             'Fabrika'
         ];
@@ -219,7 +219,7 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
                                         </div>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <div className="text-[10px] text-slate-400 uppercase font-bold">Mevcut Departman</div>
+                                        <div className="text-[10px] text-slate-400 uppercase font-bold">Mevcut Aşama</div>
                                         <div className="font-medium text-blue-600">{complaint.currentDepartmentName}</div>
                                     </div>
                                 </div>

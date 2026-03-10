@@ -12,6 +12,8 @@ public class AppDbContext : DbContext
     public DbSet<Department> Departments => Set<Department>();
     public DbSet<Complaint> Complaints => Set<Complaint>();
     public DbSet<ComplaintHistory> ComplaintHistories => Set<ComplaintHistory>();
+    public DbSet<ErrorDefinitionOption> ErrorDefinitionOptions => Set<ErrorDefinitionOption>();
+    public DbSet<UserActivityLog> UserActivityLogs => Set<UserActivityLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -56,6 +58,7 @@ public class AppDbContext : DbContext
             e.Property(x => x.ErrorDefinition).HasColumnType("nvarchar(max)");
             e.Property(x => x.QualityReportNote).HasColumnType("nvarchar(max)");
             e.Property(x => x.IsQualityReported).HasDefaultValue(false);
+            e.Property(x => x.ManagementApprovalNote).HasColumnType("nvarchar(max)");
 
             e.HasOne(x => x.CurrentDepartment)
              .WithMany(d => d.Complaints)
@@ -65,6 +68,16 @@ public class AppDbContext : DbContext
             e.HasOne(x => x.CreatedBy)
              .WithMany(u => u.CreatedComplaints)
              .HasForeignKey(x => x.CreatedById)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasOne(x => x.QualityReportedBy)
+             .WithMany()
+             .HasForeignKey(x => x.QualityReportedById)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasOne(x => x.ManagementApprovedBy)
+             .WithMany()
+             .HasForeignKey(x => x.ManagementApprovedById)
              .OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -91,13 +104,41 @@ public class AppDbContext : DbContext
              .OnDelete(DeleteBehavior.SetNull);
         });
 
+        // UserActivityLog
+        modelBuilder.Entity<UserActivityLog>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.UserFullName).IsRequired().HasMaxLength(150);
+            e.Property(x => x.Action).IsRequired().HasMaxLength(150);
+
+            e.HasOne(x => x.User)
+             .WithMany()
+             .HasForeignKey(x => x.UserId)
+             .OnDelete(DeleteBehavior.SetNull); // Keep the log if the user is deleted
+        });
+
         // Seed Departments
         modelBuilder.Entity<Department>().HasData(
             new Department { Id = 1, Name = "Satış" },
             new Department { Id = 2, Name = "Kalite" },
             new Department { Id = 3, Name = "Kalite Güvence" },
             new Department { Id = 4, Name = "Yönetim" },
-            new Department { Id = 5, Name = "Admin" }
+            new Department { Id = 5, Name = "IT" }
+        );
+
+        // Seed Error Options
+        modelBuilder.Entity<ErrorDefinitionOption>().HasData(
+            new ErrorDefinitionOption { Id = 1, Label = "Busbar Lehim Hatası" },
+            new ErrorDefinitionOption { Id = 2, Label = "Cam Çiziği" },
+            new ErrorDefinitionOption { Id = 3, Label = "Cam Kirliliği" },
+            new ErrorDefinitionOption { Id = 4, Label = "Çerçeve Köşe Açıklığı" },
+            new ErrorDefinitionOption { Id = 5, Label = "Diyot Hatası" },
+            new ErrorDefinitionOption { Id = 6, Label = "EL hatası" },
+            new ErrorDefinitionOption { Id = 7, Label = "Etiket Hatası" },
+            new ErrorDefinitionOption { Id = 8, Label = "EVA Lekesi" },
+            new ErrorDefinitionOption { Id = 9, Label = "Finger Kırığı" },
+            new ErrorDefinitionOption { Id = 10, Label = "Gökkuşağı" },
+            new ErrorDefinitionOption { Id = 11, Label = "Güç Hatası" }
         );
 
         // Seed Admin User (Password: admin123)

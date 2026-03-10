@@ -3,6 +3,7 @@ using System.Linq;
 using ComplaintsAPI.Application.DTOs;
 using ComplaintsAPI.Application.Interfaces;
 using ComplaintsAPI.Domain.Entities;
+using ComplaintsAPI.Infrastructure.Data;
 
 namespace ComplaintsAPI.API.Controllers;
 
@@ -11,10 +12,25 @@ namespace ComplaintsAPI.API.Controllers;
 public class ComplaintsController : ControllerBase
 {
     private readonly IComplaintRepository _repo;
+    private readonly AppDbContext _context;
 
-    public ComplaintsController(IComplaintRepository repo)
+    public ComplaintsController(IComplaintRepository repo, AppDbContext context)
     {
         _repo = repo;
+        _context = context;
+    }
+
+    private async Task LogActivityAsync(string action, string details)
+    {
+        _context.UserActivityLogs.Add(new UserActivityLog
+        {
+            UserId = 1,
+            UserFullName = "Sistem Yöneticisi",
+            Action = action,
+            Details = details,
+            CreatedAt = DateTime.UtcNow
+        });
+        await _context.SaveChangesAsync();
     }
 
     /// <summary>Şikayetleri listele — departman ve durum filtresi</summary>
@@ -100,6 +116,8 @@ public class ComplaintsController : ControllerBase
                 ChangedById = created.CreatedById
             });
         }
+
+        await LogActivityAsync("Şikayet Oluşturuldu", $"Şikayet No: {created.ComplaintNumber}");
 
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created.Id);
     }
@@ -216,9 +234,19 @@ public class ComplaintsController : ControllerBase
         complaint.IsValidComplaint  = req.IsValidComplaint;
         complaint.LastResponseDate  = req.LastResponseDate;
 
+        if (!string.IsNullOrEmpty(req.Status))
+            complaint.Status = req.Status;
+        if (req.CurrentDepartmentId.HasValue)
+            complaint.CurrentDepartmentId = req.CurrentDepartmentId.Value;
+        if (req.IsQualityReported.HasValue)
+            complaint.IsQualityReported = req.IsQualityReported.Value;
+        if (req.IsManagementApproved.HasValue)
+            complaint.IsManagementApproved = req.IsManagementApproved.Value;
+
         complaint.SetDerivedDateFields();
 
         await _repo.UpdateAsync(complaint);
+        await LogActivityAsync("Şikayet Güncellendi", $"Şikayet No: {complaint.ComplaintNumber}");
         return NoContent();
     }
 
@@ -242,6 +270,8 @@ public class ComplaintsController : ControllerBase
             DepartmentId = req.DepartmentId,
             ChangedById  = 1  // placeholder
         });
+
+        await LogActivityAsync("Durum Değiştirildi", $"Şikayet No: {complaint.ComplaintNumber}, {oldStatus} -> {req.Status}");
 
         return NoContent();
     }
@@ -267,6 +297,8 @@ public class ComplaintsController : ControllerBase
             ChangedById  = 1  // placeholder
         });
 
+        await LogActivityAsync("Departman Değiştirildi", $"Şikayet No: {complaint.ComplaintNumber}, Yeni Dept: {req.TargetDepartmentId}");
+
         return NoContent();
     }
 
@@ -285,6 +317,8 @@ public class ComplaintsController : ControllerBase
             ChangedById  = 1  // placeholder
         });
 
+        await LogActivityAsync("Not Eklendi", $"Şikayet No: {complaint.ComplaintNumber}");
+
         return NoContent();
     }
 
@@ -297,8 +331,61 @@ public class ComplaintsController : ControllerBase
 
         complaint.IsQualityReported = req.IsQualityReported;
         complaint.QualityReportNote = req.Note;
+        
+        // Mark who did the report (placeholder)
+        if (req.IsQualityReported)
+            complaint.QualityReportedById = 1; 
+        else
+            complaint.QualityReportedById = null;
 
         await _repo.UpdateAsync(complaint);
+        await LogActivityAsync("Kalite Raporu Güncellendi", $"Şikayet No: {complaint.ComplaintNumber}, Durum: {(req.IsQualityReported ? "Yapıldı" : "Bekliyor")}");
+        return Ok(MapToDto(complaint));
+    }
+
+    /// <summary>Yönetim onayı ver/reddet</summary>
+    [HttpPatch("{id}/management-approval")]
+    public async Task<IActionResult> ApproveComplaint(int id, [FromBody] ManagementApprovalRequest req)
+    {
+        var complaint = await _repo.GetByIdAsync(id);
+        if (complaint is null) return NotFound();
+
+        complaint.IsManagementApproved = req.IsApproved;
+        complaint.ManagementApprovalNote = req.Note;
+        
+        // placeholder
+        complaint.ManagementApprovedById = 1; 
+
+        await _repo.UpdateAsync(complaint);
+        
+        // Geçmişe ekle
+        await _repo.AddHistoryAsync(new ComplaintHistory
+        {
+            ComplaintId = complaint.Id,
+            FromStatus = complaint.Status,
+            ToStatus = req.IsApproved == true ? "Onaylandi" : "Reddedildi",
+            Note = $"Yönetim Onayı: {(req.IsApproved == true ? "Onaylandı" : "Reddedildi")}. Not: {req.Note}",
+            ChangedById = 1,
+            DepartmentId = complaint.CurrentDepartmentId
+        });
+
+        await LogActivityAsync("Yönetim Onayı Güncellendi", $"Şikayet No: {complaint.ComplaintNumber}, Durum: {(req.IsApproved == true ? "Onaylandı" : req.IsApproved == false ? "Reddedildi" : "Bekliyor")}");
+
+        return Ok(MapToDto(complaint));
+    }
+
+    /// <summary>Şikayeti sil (Sadece Admin)</summary>
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var complaint = await _repo.GetByIdAsync(id);
+        if (complaint is null) return NotFound();
+
+        var complaintNumber = complaint.ComplaintNumber;
+        await _repo.DeleteAsync(complaint);
+        
+        await LogActivityAsync("Şikayet Silindi", $"Şikayet No: {complaintNumber}");
+        
         return NoContent();
     }
 
@@ -307,7 +394,7 @@ public class ComplaintsController : ControllerBase
         c.Id,
         c.ComplaintNumber,
         c.Status,
-        c.CurrentDepartment.Name,
+        c.IsManagementApproved != null ? "Müşteri Dönüşü" : (c.IsQualityReported ? "Yönetim Onayı" : c.CurrentDepartment.Name),
         c.CustomerName,
         c.ProjectName,
         c.ProjectLocation,
@@ -329,9 +416,13 @@ public class ComplaintsController : ControllerBase
         c.ComplaintYear,
         c.ComplaintMonth,
         c.ComplaintWeek,
-        c.CreatedBy.Name,
+        c.CreatedBy?.Name ?? "Sistem",
         c.CreatedAt,
         c.IsQualityReported,
-        c.QualityReportNote
+        c.QualityReportNote,
+        c.QualityReportedBy?.Name,
+        c.IsManagementApproved,
+        c.ManagementApprovalNote,
+        c.ManagementApprovedBy?.Name
     );
 }

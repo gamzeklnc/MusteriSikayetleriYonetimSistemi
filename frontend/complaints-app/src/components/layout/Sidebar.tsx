@@ -11,6 +11,7 @@ import {
     FileCheck,
     UserCheck,
     MessageCircle,
+    Settings,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
@@ -95,6 +96,15 @@ export default function Sidebar() {
                 <Link href="/complaints/customer-response" className={linkClass('/complaints/customer-response')}>
                     <MessageCircle size={18} />
                     Müşteriye Geri Dönüş
+                </Link>
+
+                <div className="pt-6 pb-2 px-3">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Yönetim</span>
+                </div>
+
+                <Link href="/complaints/admin" className={linkClass('/complaints/admin')}>
+                    <Settings size={18} />
+                    Admin Paneli
                 </Link>
             </nav>
 

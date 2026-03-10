@@ -44,7 +44,11 @@ public record UpdateComplaintRequest(
     DateTime? ProductionDate,
     string? ErrorDefinition,
     bool? IsValidComplaint,
-    DateTime? LastResponseDate
+    DateTime? LastResponseDate,
+    string? Status,
+    int? CurrentDepartmentId,
+    bool? IsQualityReported,
+    bool? IsManagementApproved
 );
 
 /// <summary>Durum değişikliği (Açık → Kapalı)</summary>
@@ -58,6 +62,9 @@ public record AddNoteRequest(string Note, int DepartmentId);
 
 /// <summary>Kalite raporu güncelleme isteği</summary>
 public record QualityReportUpdateRequest(bool IsQualityReported, string? Note);
+
+/// <summary>Yönetim onayı isteği</summary>
+public record ManagementApprovalRequest(bool? IsApproved, string? Note);
 
 /// <summary>Liste görünümü için özet DTO</summary>
 public record ComplaintDto(
@@ -89,7 +96,11 @@ public record ComplaintDto(
     string CreatedByName,
     DateTime CreatedAt,
     bool IsQualityReported,
-    string? QualityReportNote
+    string? QualityReportNote,
+    string? QualityReportedByName,
+    bool? IsManagementApproved,
+    string? ManagementApprovalNote,
+    string? ManagementApprovedByName
 );
 
 /// <summary>Geçmiş satırı</summary>
@@ -114,6 +125,10 @@ public record CreateUserRequest(
     string Name, string Email, string Password, string Role, int DepartmentId
 );
 
+public record UpdateUserRequest(
+    string Name, string Email, string? Password, string Role, int DepartmentId
+);
+
 public record UserDto(
     int Id, string Name, string Email, string Role,
     int DepartmentId, string DepartmentName, DateTime CreatedAt
@@ -127,3 +142,17 @@ public record ComplaintStatisticsDto(
     IEnumerable<DepartmentStatDto> ByDepartment
 );
 public record DepartmentStatDto(string DepartmentName, int Count);
+
+// ── Error Options ─────────────────────────────────────────────────────────────
+public record ErrorDefinitionOptionDto(int Id, string Label);
+public record CreateErrorOptionRequest(string Label);
+
+// ── User Activity Logs ────────────────────────────────────────────────────────
+public record UserActivityLogDto(
+    int Id,
+    int? UserId,
+    string UserFullName,
+    string Action,
+    string Details,
+    DateTime CreatedAt
+);

@@ -4,6 +4,7 @@ using ComplaintsAPI.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ComplaintsAPI.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260310101051_AddErrorOptions")]
+    partial class AddErrorOptions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -243,7 +246,7 @@ namespace ComplaintsAPI.Infrastructure.Data.Migrations
                         new
                         {
                             Id = 5,
-                            Name = "IT"
+                            Name = "Admin"
                         });
                 });
 
@@ -254,6 +257,10 @@ namespace ComplaintsAPI.Infrastructure.Data.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Label")
                         .IsRequired()
@@ -267,56 +274,67 @@ namespace ComplaintsAPI.Infrastructure.Data.Migrations
                         new
                         {
                             Id = 1,
+                            Category = "Mekanik",
                             Label = "Busbar Lehim Hatası"
                         },
                         new
                         {
                             Id = 2,
+                            Category = "Mekanik",
                             Label = "Cam Çiziği"
                         },
                         new
                         {
                             Id = 3,
+                            Category = "Görsel",
                             Label = "Cam Kirliliği"
                         },
                         new
                         {
                             Id = 4,
+                            Category = "Mekanik",
                             Label = "Çerçeve Köşe Açıklığı"
                         },
                         new
                         {
                             Id = 5,
+                            Category = "Elektriksel",
                             Label = "Diyot Hatası"
                         },
                         new
                         {
                             Id = 6,
+                            Category = "Elektriksel",
                             Label = "EL hatası"
                         },
                         new
                         {
                             Id = 7,
+                            Category = "Görsel",
                             Label = "Etiket Hatası"
                         },
                         new
                         {
                             Id = 8,
+                            Category = "Mekanik",
                             Label = "EVA Lekesi"
                         },
                         new
                         {
                             Id = 9,
+                            Category = "Hücre",
                             Label = "Finger Kırığı"
                         },
                         new
                         {
                             Id = 10,
+                            Category = "Görsel",
                             Label = "Gökkuşağı"
                         },
                         new
                         {
                             Id = 11,
+                            Category = "Elektriksel",
                             Label = "Güç Hatası"
                         });
                 });
@@ -367,48 +385,13 @@ namespace ComplaintsAPI.Infrastructure.Data.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 3, 10, 11, 51, 3, 285, DateTimeKind.Utc).AddTicks(138),
+                            CreatedAt = new DateTime(2026, 3, 10, 10, 10, 49, 996, DateTimeKind.Utc).AddTicks(4190),
                             DepartmentId = 5,
                             Email = "admin@sirket.com",
                             Name = "Sistem Yöneticisi",
-                            PasswordHash = "$2a$11$eU3sim5JUE2O/lzvlHYNQeKZft0SmZ4m75.YO5lRCet1Wo8xGqYDu",
+                            PasswordHash = "$2a$11$nhdOCFZp9ZfdfrDWCzQ1rOGvsb4DCEe40CIYKJ5Tz9WyVlAofLMAu",
                             Role = "Admin"
                         });
-                });
-
-            modelBuilder.Entity("ComplaintsAPI.Domain.Entities.UserActivityLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Details")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserFullName")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserActivityLogs");
                 });
 
             modelBuilder.Entity("ComplaintsAPI.Domain.Entities.Complaint", b =>
@@ -479,16 +462,6 @@ namespace ComplaintsAPI.Infrastructure.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Department");
-                });
-
-            modelBuilder.Entity("ComplaintsAPI.Domain.Entities.UserActivityLog", b =>
-                {
-                    b.HasOne("ComplaintsAPI.Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ComplaintsAPI.Domain.Entities.Complaint", b =>

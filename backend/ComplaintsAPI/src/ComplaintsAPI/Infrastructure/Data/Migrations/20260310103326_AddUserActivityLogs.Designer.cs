@@ -4,6 +4,7 @@ using ComplaintsAPI.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ComplaintsAPI.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260310103326_AddUserActivityLogs")]
+    partial class AddUserActivityLogs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -243,7 +246,7 @@ namespace ComplaintsAPI.Infrastructure.Data.Migrations
                         new
                         {
                             Id = 5,
-                            Name = "IT"
+                            Name = "Admin"
                         });
                 });
 
@@ -367,11 +370,11 @@ namespace ComplaintsAPI.Infrastructure.Data.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 3, 10, 11, 51, 3, 285, DateTimeKind.Utc).AddTicks(138),
+                            CreatedAt = new DateTime(2026, 3, 10, 10, 33, 25, 737, DateTimeKind.Utc).AddTicks(425),
                             DepartmentId = 5,
                             Email = "admin@sirket.com",
                             Name = "Sistem Yöneticisi",
-                            PasswordHash = "$2a$11$eU3sim5JUE2O/lzvlHYNQeKZft0SmZ4m75.YO5lRCet1Wo8xGqYDu",
+                            PasswordHash = "$2a$11$PEuH8MfKgZLSOQa8bVRxwO0hBZn9t0Lz8gkC6QczFUFL.QlN1iQzO",
                             Role = "Admin"
                         });
                 });

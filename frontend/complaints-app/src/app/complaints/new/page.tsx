@@ -1,16 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
+import { errorOptionService } from '@/services/errorOptionService';
+import { userService } from '@/services/userService';
 import { CreateComplaintRequest } from '@/types/complaint';
+import { ErrorDefinitionOption } from '@/types/errorOption';
+import { User } from '@/types/user';
 import { aggregateBarcodes } from '@/utils/barcodeParser';
 
 export default function NewComplaintPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [errorOptions, setErrorOptions] = useState<ErrorDefinitionOption[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
 
     // Otomatik dolan alanlar (Örnek eşleme)
     const stockCodeMapping: Record<string, { brand: string, modulePower: string }> = {
@@ -20,11 +26,18 @@ export default function NewComplaintPage() {
         'CW-450': { brand: 'CW Enerji', modulePower: '450W' },
     };
 
+    useEffect(() => {
+        errorOptionService.getAll().then(setErrorOptions).catch(err => console.error('Hata opsiyonları yüklenemedi:', err));
+        userService.getAll().then(setUsers).catch(err => console.error('Kullanıcılar yüklenemedi:', err));
+    }, []);
+
+
+
     const [formData, setFormData] = useState<CreateComplaintRequest & { brand?: string, modulePower?: string }>({
         customerName: '',
         projectName: '',
         projectLocation: '',
-        sellerName: 'Mehmet Aybaş',
+        sellerName: '',
         complaintDate: new Date().toISOString().split('T')[0],
         stockCode: '',
         defectiveQuantity: 0,
@@ -137,7 +150,7 @@ export default function NewComplaintPage() {
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Müşteri İsmi</label>
                                 <input
                                     type="text" name="customerName" required value={formData.customerName} onChange={handleChange}
-                                    className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 placeholder:text-slate-400"
+                                    className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 placeholder:text-slate-400"
                                     placeholder="Müşteri..."
                                 />
                             </div>
@@ -146,10 +159,12 @@ export default function NewComplaintPage() {
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Satıcı</label>
                                 <select
                                     name="sellerName" required value={formData.sellerName} onChange={handleChange}
-                                    className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
+                                    className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
                                 >
-                                    <option value="Mehmet Aybaş">Mehmet Aybaş</option>
-                                    <option value="Görkem Çam">Görkem Çam</option>
+                                    <option value="">Seçiniz...</option>
+                                    {users.filter(u => u.departmentName === 'Satış' || u.departmentId === 1).map(u => (
+                                        <option key={u.id} value={u.name}>{u.name}</option>
+                                    ))}
                                 </select>
                             </div>
 
@@ -157,7 +172,7 @@ export default function NewComplaintPage() {
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Proje İsmi</label>
                                 <input
                                     type="text" name="projectName" required value={formData.projectName} onChange={handleChange}
-                                    className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
+                                    className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
                                     placeholder="Proje..."
                                 />
                             </div>
@@ -166,7 +181,7 @@ export default function NewComplaintPage() {
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Lokasyon</label>
                                 <input
                                     type="text" name="projectLocation" required value={formData.projectLocation} onChange={handleChange}
-                                    className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
+                                    className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
                                     placeholder="İl..."
                                 />
                             </div>
@@ -176,7 +191,7 @@ export default function NewComplaintPage() {
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Şikayet Tarihi</label>
                                 <input
                                     type="date" name="complaintDate" required value={formData.complaintDate} onChange={handleChange}
-                                    className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
+                                    className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
                                 />
                             </div>
 
@@ -184,7 +199,7 @@ export default function NewComplaintPage() {
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Stok Kodu</label>
                                 <input
                                     type="text" name="stockCode" required value={formData.stockCode} onChange={handleChange}
-                                    className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 font-medium"
+                                    className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 font-medium"
                                 />
                             </div>
 
@@ -192,7 +207,7 @@ export default function NewComplaintPage() {
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Marka</label>
                                 <input
                                     type="text" name="brand" value={formData.brand} onChange={handleChange}
-                                    className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
+                                    className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
                                 />
                             </div>
 
@@ -200,7 +215,7 @@ export default function NewComplaintPage() {
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Modül Gücü</label>
                                 <input
                                     type="text" name="modulePower" value={formData.modulePower} onChange={handleChange}
-                                    className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
+                                    className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
                                 />
                             </div>
 
@@ -208,20 +223,10 @@ export default function NewComplaintPage() {
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Hata Tanımı</label>
                                 <select
                                     name="errorDefinition" required value={formData.errorDefinition || ''} onChange={handleChange}
-                                    className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
+                                    className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 font-bold text-blue-700"
                                 >
                                     <option value="">Seçiniz...</option>
-                                    <option value="Busbar Lehim Hatası">Busbar Lehim Hatası</option>
-                                    <option value="Cam Çiziği">Cam Çiziği</option>
-                                    <option value="Cam Kirliliği">Cam Kirliliği</option>
-                                    <option value="Çerçeve Köşe Açıklığı">Çerçeve Köşe Açıklığı</option>
-                                    <option value="Diyot Hatası">Diyot Hatası</option>
-                                    <option value="EL hatası">EL hatası</option>
-                                    <option value="Etiket Hatası">Etiket Hatası</option>
-                                    <option value="EVA Lekesi">EVA Lekesi</option>
-                                    <option value="Finger Kırığı">Finger Kırığı</option>
-                                    <option value="Gökkuşağı">Gökkuşağı</option>
-                                    <option value="Güç Hatası">Güç Hatası</option>
+                                    {errorOptions.map(o => <option key={o.id} value={o.label}>{o.label}</option>)}
                                 </select>
                             </div>
                         </div>
@@ -232,7 +237,7 @@ export default function NewComplaintPage() {
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Barkodlar</label>
                                 <textarea
                                     name="barcodesInput" value={barcodesInput} onChange={handleBarcodesChange} rows={3}
-                                    className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-xl focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 font-mono resize-none"
+                                    className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-xl focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 font-mono resize-none"
                                     placeholder="Barkod listesi..."
                                 />
                                 <div className="flex items-center gap-3 text-[10px] font-bold">
@@ -248,21 +253,21 @@ export default function NewComplaintPage() {
                                         <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Kusurlu</label>
                                         <input
                                             type="number" name="defectiveQuantity" required min="1" value={formData.defectiveQuantity || ''} onChange={handleChange}
-                                            className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 font-bold"
+                                            className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 font-bold"
                                         />
                                     </div>
                                     <div className="space-y-1">
                                         <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">HSA1</label>
                                         <input
                                             type="number" name="hsa1" min="0" value={formData.hsa1 || 0} onChange={handleChange}
-                                            className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
+                                            className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
                                         />
                                     </div>
                                     <div className="space-y-1">
                                         <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">HSA2</label>
                                         <input
                                             type="number" name="hsa2" min="0" value={formData.hsa2 || 0} onChange={handleChange}
-                                            className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
+                                            className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
                                         />
                                     </div>
                                 </div>
@@ -270,7 +275,7 @@ export default function NewComplaintPage() {
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Şikayet Notu</label>
                                     <textarea
                                         name="note" value={formData.note || ''} onChange={(e) => setFormData(prev => ({ ...prev, note: e.target.value }))} rows={2}
-                                        className="w-full px-3 py-2 text-sm bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 resize-none font-sans"
+                                        className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 resize-none font-sans"
                                         placeholder="Not..."
                                     />
                                 </div>

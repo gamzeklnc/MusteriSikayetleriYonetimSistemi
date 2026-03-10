@@ -142,7 +142,7 @@ export default function LoginPage() {
 
                         <p className="text-center text-sm text-slate-500 mt-8">
                             Sistem erişimi veya hesap oluşturma işlemleri için <br className="hidden sm:block" />
-                            <span className="font-medium text-slate-700">IT (Admin) Departmanı</span> ile iletişime geçin.
+                            <span className="font-medium text-slate-700">IT Departmanı</span> ile iletişime geçin.
                         </p>
                     </form>
                 </div>

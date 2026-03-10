@@ -19,6 +19,19 @@ public class UsersController : ControllerBase
         _context = context;
     }
 
+    private async Task LogActivityAsync(string action, string details)
+    {
+        _context.UserActivityLogs.Add(new UserActivityLog
+        {
+            UserId = 1,
+            UserFullName = "Sistem Yöneticisi",
+            Action = action,
+            Details = details,
+            CreatedAt = DateTime.UtcNow
+        });
+        await _context.SaveChangesAsync();
+    }
+
     /// <summary>Tüm kullanıcıları listele</summary>
     [HttpGet]
     public async Task<IActionResult> GetAll()
@@ -51,12 +64,14 @@ public class UsersController : ControllerBase
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
+        await LogActivityAsync("Kullanıcı Eklendi", $"İsim: {user.Name}, E-posta: {user.Email}");
+
         return CreatedAtAction(nameof(GetAll), new { id = user.Id }, user.Id);
     }
 
     /// <summary>Kullanıcıyı güncelle</summary>
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] CreateUserRequest request)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateUserRequest request)
     {
         var user = await _context.Users.FindAsync(id);
         if (user is null) return NotFound();
@@ -66,7 +81,14 @@ public class UsersController : ControllerBase
         user.Role = Enum.Parse<UserRole>(request.Role);
         user.DepartmentId = request.DepartmentId;
 
+        if (!string.IsNullOrWhiteSpace(request.Password))
+        {
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+        }
+
         await _context.SaveChangesAsync();
+        await LogActivityAsync("Kullanıcı Güncellendi", $"Güncellenen: {user.Name} ({user.Email})");
+
         return NoContent();
     }
 
@@ -77,8 +99,12 @@ public class UsersController : ControllerBase
         var user = await _context.Users.FindAsync(id);
         if (user is null) return NotFound();
 
+        var userName = user.Name;
         _context.Users.Remove(user);
         await _context.SaveChangesAsync();
+
+        await LogActivityAsync("Kullanıcı Silindi", $"Silinen: {userName}");
+
         return NoContent();
     }
 }

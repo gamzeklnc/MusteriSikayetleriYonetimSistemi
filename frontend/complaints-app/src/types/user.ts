@@ -17,3 +17,19 @@ export interface LoginResponse {
     accessToken: string;
     tokenType: string;
 }
+
+export interface CreateUserRequest {
+    name: string;
+    email: string;
+    password: string;
+    role: string;
+    departmentId: number;
+}
+
+export interface UpdateUserRequest {
+    name: string;
+    email: string;
+    password?: string;
+    role: string;
+    departmentId: number;
+}

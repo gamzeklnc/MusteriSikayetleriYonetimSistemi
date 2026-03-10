@@ -19,6 +19,8 @@ public class ComplaintRepository : IComplaintRepository
         var query = _context.Complaints
             .Include(c => c.CurrentDepartment)
             .Include(c => c.CreatedBy)
+            .Include(c => c.QualityReportedBy)
+            .Include(c => c.ManagementApprovedBy)
             .AsQueryable();
 
         if (departmentId.HasValue)
@@ -35,6 +37,8 @@ public class ComplaintRepository : IComplaintRepository
         return await _context.Complaints
             .Include(c => c.CurrentDepartment)
             .Include(c => c.CreatedBy)
+            .Include(c => c.QualityReportedBy)
+            .Include(c => c.ManagementApprovedBy)
             .Include(c => c.History)
                 .ThenInclude(h => h.ChangedBy)
             .FirstOrDefaultAsync(c => c.Id == id);
@@ -53,6 +57,12 @@ public class ComplaintRepository : IComplaintRepository
         _context.Complaints.Update(complaint);
         await _context.SaveChangesAsync();
         return complaint;
+    }
+
+    public async Task DeleteAsync(Complaint complaint)
+    {
+        _context.Complaints.Remove(complaint);
+        await _context.SaveChangesAsync();
     }
 
     public async Task AddHistoryAsync(ComplaintHistory history)

@@ -6,7 +6,8 @@ import type {
     ChangeStatusRequest,
     TransferDepartmentRequest,
     AddNoteRequest,
-    UpdateQualityReportRequest
+    UpdateQualityReportRequest,
+    ManagementApprovalRequest
 } from '@/types/complaint';
 
 export const complaintService = {
@@ -42,4 +43,16 @@ export const complaintService = {
     updateQualityReport: async (id: number, data: UpdateQualityReportRequest): Promise<void> => {
         await apiClient.patch(`/api/complaints/${id}/quality-report`, data);
     },
+    
+    approve: async (id: number, data: ManagementApprovalRequest): Promise<void> => {
+        await apiClient.patch(`/api/complaints/${id}/management-approval`, data);
+    },
+
+    update: async (id: number, data: any): Promise<void> => {
+        await apiClient.put(`/api/complaints/${id}`, data);
+    },
+
+    delete: async (id: number): Promise<void> => {
+        await apiClient.delete(`/api/complaints/${id}`);
+    }
 };

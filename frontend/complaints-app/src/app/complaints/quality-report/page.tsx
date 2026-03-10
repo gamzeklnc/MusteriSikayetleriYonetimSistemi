@@ -115,39 +115,39 @@ export default function QualityReportPage() {
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm">
-                            <thead className="bg-slate-50 text-[11px] uppercase font-bold text-slate-500 border-b border-slate-200 tracking-wider">
+                            <thead className="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200 tracking-wider">
                                 <tr>
-                                    <th className="px-3 py-4 w-10"></th>
-                                    <th className="px-3 py-4">
+                                    <th className="px-1 py-1 w-6"></th>
+                                    <th className="px-1 py-1">
                                         <div className="mb-2 text-slate-500">Şikayet No</div>
-                                        <input type="text" placeholder="Ara..." value={filters.complaintNumber} onChange={e => handleFilterChange('complaintNumber', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                        <input type="text" placeholder="Ara..." value={filters.complaintNumber} onChange={e => handleFilterChange('complaintNumber', e.target.value)} className="w-full px-1 py-0.5 border border-slate-200 rounded text-[9px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
-                                    <th className="px-3 py-4">
+                                    <th className="px-1 py-1">
                                         <div className="mb-2 text-slate-500">Müşteri</div>
-                                        <input type="text" placeholder="Ara..." value={filters.customerName} onChange={e => handleFilterChange('customerName', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                        <input type="text" placeholder="Ara..." value={filters.customerName} onChange={e => handleFilterChange('customerName', e.target.value)} className="w-full px-1 py-0.5 border border-slate-200 rounded text-[9px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
-                                    <th className="px-3 py-4">
+                                    <th className="px-1 py-1">
                                         <div className="mb-2 text-slate-500">Satıcı</div>
-                                        <input type="text" placeholder="Ara..." value={filters.sellerName} onChange={e => handleFilterChange('sellerName', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                        <input type="text" placeholder="Ara..." value={filters.sellerName} onChange={e => handleFilterChange('sellerName', e.target.value)} className="w-full px-1 py-0.5 border border-slate-200 rounded text-[9px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
-                                    <th className="px-3 py-4">
+                                    <th className="px-1 py-1">
                                         <div className="mb-2 text-slate-500">Proje</div>
-                                        <input type="text" placeholder="Ara..." value={filters.projectName} onChange={e => handleFilterChange('projectName', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                        <input type="text" placeholder="Ara..." value={filters.projectName} onChange={e => handleFilterChange('projectName', e.target.value)} className="w-full px-1 py-0.5 border border-slate-200 rounded text-[9px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
-                                    <th className="px-3 py-4">
+                                    <th className="px-1 py-1">
                                         <div className="mb-2 text-slate-500 leading-tight">Stok Kodu</div>
-                                        <input type="text" placeholder="Ara..." value={filters.stockCode} onChange={e => handleFilterChange('stockCode', e.target.value)} className="w-full px-2 py-1.5 border border-slate-200 rounded-md text-xs font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                        <input type="text" placeholder="Ara..." value={filters.stockCode} onChange={e => handleFilterChange('stockCode', e.target.value)} className="w-full px-1 py-0.5 border border-slate-200 rounded text-[9px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
-                                    <th className="px-2 py-4 text-center">Marka</th>
-                                    <th className="px-2 py-4 text-center">Güç</th>
-                                    <th className="px-2 py-4 text-center">Sayı</th>
-                                    <th className="px-3 py-4">Hata Tanımı</th>
-                                    <th className="px-2 py-4 text-center">HSA1</th>
-                                    <th className="px-2 py-4 text-center">HSA2</th>
-                                    <th className="px-3 py-4 text-center">Durum</th>
-                                    <th className="px-3 py-4">Departman</th>
-                                    <th className="px-3 py-4 w-40 text-center">Kalite Raporu</th>
-                                    <th className="px-3 py-4 w-40 text-center">Not</th>
+                                    <th className="px-1 py-1 text-center">Marka</th>
+                                    <th className="px-1 py-1 text-center">Güç</th>
+                                    <th className="px-1 py-1 text-center">Sayı</th>
+                                    <th className="px-1 py-1">Hata Tanımı</th>
+                                    <th className="px-1 py-1 text-center">HSA1</th>
+                                    <th className="px-1 py-1 text-center">HSA2</th>
+                                    <th className="px-1 py-1 text-center">Durum</th>
+                                    <th className="px-1 py-1">Aşama</th>
+                                    <th className="px-1 py-1 text-center">Kalite Raporu</th>
+                                    <th className="px-1 py-1 text-center">Not</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -169,8 +169,8 @@ export default function QualityReportPage() {
                                 ) : (
                                     filteredComplaints.map((c) => (
                                         <>
-                                            <tr key={c.id} className={`hover:bg-slate-50 transition-colors group text-[13px] ${expandedRows.includes(c.id) ? 'bg-blue-50/10' : ''}`}>
-                                                <td className="px-3 py-4 text-center">
+                                            <tr key={c.id} className={`hover:bg-slate-50 transition-colors group text-[10px] ${expandedRows.includes(c.id) ? 'bg-blue-50/10' : ''}`}>
+                                                <td className="px-1 py-1 text-center">
                                                     {c.barcodes && c.barcodes.length > 0 && (
                                                         <button 
                                                             onClick={() => toggleRow(c.id)}
@@ -182,28 +182,28 @@ export default function QualityReportPage() {
                                                         </button>
                                                     )}
                                                 </td>
-                                                <td className="px-3 py-4 font-semibold text-slate-900 whitespace-nowrap">{c.complaintNumber}</td>
-                                                <td className="px-3 py-4 font-medium text-slate-800">{c.customerName}</td>
-                                                <td className="px-3 py-4 text-slate-600">{c.sellerName}</td>
-                                                <td className="px-3 py-4 text-slate-500 text-[11px] font-medium">{c.projectName || '-'}</td>
-                                                <td className="px-3 py-4 font-medium text-slate-800">{c.stockCode}</td>
-                                                <td className="px-2 py-4 text-center text-slate-600 font-medium">{c.brand || '-'}</td>
-                                                <td className="px-2 py-4 text-center text-slate-600 font-medium whitespace-nowrap">{c.modulePower || '-'}</td>
-                                                <td className="px-2 py-4 text-center font-bold text-slate-800 text-[14px]">{c.defectiveQuantity}</td>
-                                                <td className="px-3 py-4 text-slate-600 text-[11px] leading-snug">{c.errorDefinition || '-'}</td>
-                                                <td className="px-2 py-4 text-center font-bold text-emerald-600">{c.hsa1 || 0}</td>
-                                                <td className="px-2 py-4 text-center font-bold text-indigo-600">{c.hsa2 || 0}</td>
-                                                <td className="px-3 py-4 text-center">
+                                                <td className="px-1 py-1 font-semibold text-slate-900 whitespace-nowrap">{c.complaintNumber}</td>
+                                                <td className="px-1 py-1 font-medium text-slate-800">{c.customerName}</td>
+                                                <td className="px-1 py-1 text-slate-600">{c.sellerName}</td>
+                                                <td className="px-1 py-1 text-slate-500 text-[10px] font-medium">{c.projectName || '-'}</td>
+                                                <td className="px-1 py-1 font-medium text-slate-800">{c.stockCode}</td>
+                                                <td className="px-1 py-1 text-center text-slate-600 font-medium">{c.brand || '-'}</td>
+                                                <td className="px-1 py-1 text-center text-slate-600 font-medium whitespace-nowrap">{c.modulePower || '-'}</td>
+                                                <td className="px-1 py-1 text-center font-bold text-slate-800 text-[14px]">{c.defectiveQuantity}</td>
+                                                <td className="px-1 py-1 text-slate-600 text-[10px] leading-snug">{c.errorDefinition || '-'}</td>
+                                                <td className="px-1 py-1 text-center font-bold text-emerald-600">{c.hsa1 || 0}</td>
+                                                <td className="px-1 py-1 text-center font-bold text-indigo-600">{c.hsa2 || 0}</td>
+                                                <td className="px-1 py-1 text-center">
                                                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${c.status === 'Acik' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`}>
                                                         {c.status === 'Acik' ? 'Açık' : 'Kapalı'}
                                                     </span>
                                                 </td>
-                                                <td className="px-3 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">{c.currentDepartmentName}</td>
-                                                <td className="px-3 py-4 text-center">
+                                                <td className="px-1 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">{c.currentDepartmentName}</td>
+                                                <td className="px-1 py-1 text-center">
                                                     <button
                                                         onClick={() => handleQualityReportToggle(c)}
                                                         disabled={updatingId === c.id}
-                                                        className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[11px] font-bold transition-all border shadow-sm ${
+                                                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[9px] font-bold transition-all border shadow-sm ${
                                                             c.isQualityReported 
                                                             ? 'bg-emerald-600 text-white border-emerald-700 hover:bg-emerald-700' 
                                                             : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
@@ -217,7 +217,7 @@ export default function QualityReportPage() {
                                                         {c.isQualityReported ? 'YAPILDI' : 'YAPILMADI'}
                                                     </button>
                                                 </td>
-                                                <td className="px-3 py-4">
+                                                <td className="px-1 py-1">
                                                     <div className="flex items-center gap-2">
                                                         <input 
                                                             type="text" 
@@ -228,7 +228,7 @@ export default function QualityReportPage() {
                                                                     handleNoteSave(c.id, e.target.value);
                                                                 }
                                                             }}
-                                                            className="flex-1 px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400 bg-white"
+                                                            className="flex-1 px-1.5 py-1 border border-slate-300 rounded text-[9px] font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400 bg-white"
                                                         />
                                                     </div>
                                                 </td>

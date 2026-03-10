@@ -9,7 +9,7 @@ const departmentNames: Record<string, string> = {
     quality: 'Kalite',
     'quality-assurance': 'Kalite Güvence',
     management: 'Yönetim',
-    admin: 'Admin',
+    admin: 'IT',
 };
 
 export default async function DepartmentPage({ params }: Props) {
