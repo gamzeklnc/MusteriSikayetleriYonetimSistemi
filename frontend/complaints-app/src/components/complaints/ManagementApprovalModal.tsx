@@ -119,6 +119,23 @@ export default function ManagementApprovalModal({ complaint, onClose, onSuccess 
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Yönetim Onayı Bilgisi */}
+                            {complaint.isManagementApproved !== null && (
+                                <div className={`bg-${complaint.isManagementApproved ? 'emerald' : 'red'}-50 rounded-xl p-4 space-y-3 border border-${complaint.isManagementApproved ? 'emerald' : 'red'}-100`}>
+                                    <h3 className={`text-[10px] font-bold text-${complaint.isManagementApproved ? 'emerald' : 'red'}-600 uppercase tracking-widest border-b border-${complaint.isManagementApproved ? 'emerald' : 'red'}-200 pb-2`}>Yönetim Kararı</h3>
+                                    <div>
+                                        <div className={`text-[10px] text-${complaint.isManagementApproved ? 'emerald' : 'red'}-600/60 uppercase font-bold`}>Onaylayan / Reddeden</div>
+                                        <div className={`text-sm text-${complaint.isManagementApproved ? 'emerald' : 'red'}-900`}>{complaint.managementApprovedByName || '-'}</div>
+                                    </div>
+                                    <div>
+                                        <div className={`text-[10px] text-${complaint.isManagementApproved ? 'emerald' : 'red'}-600/60 uppercase font-bold`}>Onay Notu</div>
+                                        <div className={`text-sm text-${complaint.isManagementApproved ? 'emerald' : 'red'}-800 italic bg-white/50 p-2 rounded-lg mt-1 border border-${complaint.isManagementApproved ? 'emerald' : 'red'}-100 min-h-[60px]`}>
+                                            {complaint.managementApprovalNote || 'Not bırakılmamış.'}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Sağ Kolon - Barkodlar */}

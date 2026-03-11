@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using ComplaintsAPI.Application.DTOs;
 using ComplaintsAPI.Domain.Entities;
 using ComplaintsAPI.Domain.Enums;
@@ -8,6 +10,7 @@ using BCrypt.Net;
 
 namespace ComplaintsAPI.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class UsersController : ControllerBase
@@ -19,12 +22,15 @@ public class UsersController : ControllerBase
         _context = context;
     }
 
+    private int CurrentUserId => int.TryParse(User.FindFirstValue("userId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub"), out var id) ? id : 0;
+    private string CurrentUserName => User.FindFirstValue("userName") ?? User.FindFirstValue(ClaimTypes.Name) ?? User.FindFirstValue("unique_name") ?? "Bilinmeyen Kullanıcı";
+
     private async Task LogActivityAsync(string action, string details)
     {
         _context.UserActivityLogs.Add(new UserActivityLog
         {
-            UserId = 1,
-            UserFullName = "Sistem Yöneticisi",
+            UserId = CurrentUserId,
+            UserFullName = CurrentUserName,
             Action = action,
             Details = details,
             CreatedAt = DateTime.UtcNow

@@ -208,6 +208,13 @@ export default function QualityReportModal({ complaint, onClose, onSuccess }: Pr
                             </div>
                         </div>
                     </div>
+                    {/* Üst Bilgi Satırı 3: Raporlayan */}
+                    {complaint.isQualityReported && (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50/50 rounded-lg border border-emerald-100/50">
+                            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-tight">Raporlayan:</span>
+                            <span className="text-[10px] font-bold text-emerald-700">{complaint.qualityReportedByName}</span>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

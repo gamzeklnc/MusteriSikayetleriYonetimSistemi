@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using ComplaintsAPI.Application.DTOs;
 using ComplaintsAPI.Application.Interfaces;
 using ComplaintsAPI.Domain.Entities;
@@ -7,6 +9,7 @@ using ComplaintsAPI.Infrastructure.Data;
 
 namespace ComplaintsAPI.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ComplaintsController : ControllerBase
@@ -20,12 +23,15 @@ public class ComplaintsController : ControllerBase
         _context = context;
     }
 
+    private int CurrentUserId => int.TryParse(User.FindFirstValue("userId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub"), out var id) ? id : 0;
+    private string CurrentUserName => User.FindFirstValue("userName") ?? User.FindFirstValue(ClaimTypes.Name) ?? User.FindFirstValue("unique_name") ?? "Bilinmeyen Kullanıcı";
+
     private async Task LogActivityAsync(string action, string details)
     {
         _context.UserActivityLogs.Add(new UserActivityLog
         {
-            UserId = 1,
-            UserFullName = "Sistem Yöneticisi",
+            UserId = CurrentUserId,
+            UserFullName = CurrentUserName,
             Action = action,
             Details = details,
             CreatedAt = DateTime.UtcNow
@@ -63,7 +69,6 @@ public class ComplaintsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateComplaintRequest req)
     {
-        // TODO: createdById JWT claim'den alınacak
         var complaint = new Complaint
         {
             CustomerName       = req.CustomerName,
@@ -80,7 +85,7 @@ public class ComplaintsController : ControllerBase
             Brand              = req.Brand,       // Manuel girilen
             ModulePower        = req.ModulePower, // Manuel girilen
             ErrorDefinition    = req.ErrorDefinition,
-            CreatedById        = 1, // placeholder
+            CreatedById        = CurrentUserId,
             Status             = "Acik",
             CurrentDepartmentId = 2 // Varsayılan "Kalite" departmanı (ID: 2)
         };
@@ -268,7 +273,7 @@ public class ComplaintsController : ControllerBase
             ToStatus     = req.Status,
             Note         = req.Note,
             DepartmentId = req.DepartmentId,
-            ChangedById  = 1  // placeholder
+            ChangedById  = CurrentUserId
         });
 
         await LogActivityAsync("Durum Değiştirildi", $"Şikayet No: {complaint.ComplaintNumber}, {oldStatus} -> {req.Status}");
@@ -294,7 +299,7 @@ public class ComplaintsController : ControllerBase
             ToStatus     = $"Dept:{req.TargetDepartmentId}",
             Note         = req.Note,
             DepartmentId = req.TargetDepartmentId,
-            ChangedById  = 1  // placeholder
+            ChangedById  = CurrentUserId
         });
 
         await LogActivityAsync("Departman Değiştirildi", $"Şikayet No: {complaint.ComplaintNumber}, Yeni Dept: {req.TargetDepartmentId}");
@@ -314,7 +319,7 @@ public class ComplaintsController : ControllerBase
             ComplaintId  = id,
             Note         = req.Note,
             DepartmentId = req.DepartmentId,
-            ChangedById  = 1  // placeholder
+            ChangedById  = CurrentUserId
         });
 
         await LogActivityAsync("Not Eklendi", $"Şikayet No: {complaint.ComplaintNumber}");
@@ -332,9 +337,8 @@ public class ComplaintsController : ControllerBase
         complaint.IsQualityReported = req.IsQualityReported;
         complaint.QualityReportNote = req.Note;
         
-        // Mark who did the report (placeholder)
         if (req.IsQualityReported)
-            complaint.QualityReportedById = 1; 
+            complaint.QualityReportedById = CurrentUserId; 
         else
             complaint.QualityReportedById = null;
 
@@ -353,8 +357,7 @@ public class ComplaintsController : ControllerBase
         complaint.IsManagementApproved = req.IsApproved;
         complaint.ManagementApprovalNote = req.Note;
         
-        // placeholder
-        complaint.ManagementApprovedById = 1; 
+        complaint.ManagementApprovedById = CurrentUserId; 
 
         await _repo.UpdateAsync(complaint);
         
@@ -365,7 +368,7 @@ public class ComplaintsController : ControllerBase
             FromStatus = complaint.Status,
             ToStatus = req.IsApproved == true ? "Onaylandi" : "Reddedildi",
             Note = $"Yönetim Onayı: {(req.IsApproved == true ? "Onaylandı" : "Reddedildi")}. Not: {req.Note}",
-            ChangedById = 1,
+            ChangedById = CurrentUserId,
             DepartmentId = complaint.CurrentDepartmentId
         });
 
@@ -394,7 +397,7 @@ public class ComplaintsController : ControllerBase
         c.Id,
         c.ComplaintNumber,
         c.Status,
-        c.IsManagementApproved != null ? "Müşteri Dönüşü" : (c.IsQualityReported ? "Yönetim Onayı" : c.CurrentDepartment.Name),
+        c.IsManagementApproved != null ? "Müşteri Geri Dönüşü" : (c.IsQualityReported ? "Yönetim Onayı" : "Kalite Raporlaması"),
         c.CustomerName,
         c.ProjectName,
         c.ProjectLocation,

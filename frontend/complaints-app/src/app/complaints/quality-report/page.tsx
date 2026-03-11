@@ -103,8 +103,9 @@ export default function QualityReportPage() {
                                     <th className="px-1.5 py-1.5 text-center">HSA1</th>
                                     <th className="px-1.5 py-1.5 text-center">HSA2</th>
                                     <th className="px-1.5 py-1.5 text-center">Durum</th>
-                                    <th className="px-1.5 py-1.5">Aşama</th>
+                                    <th className="px-1.5 py-1.5 text-center">Aşama</th>
                                     <th className="px-1.5 py-1.5 text-center">Rapor</th>
+                                    <th className="px-1.5 py-1.5 text-center">Raporlayan</th>
                                     <th className="px-1.5 py-1.5 text-right">İşlem</th>
                                 </tr>
                             </thead>
@@ -144,7 +145,21 @@ export default function QualityReportPage() {
                                                     {c.status === 'Acik' ? 'Açık' : 'Kapalı'}
                                                 </div>
                                             </td>
-                                            <td className="px-1.5 py-1.5 text-[10px] font-semibold text-slate-500 uppercase tracking-widest whitespace-nowrap">{c.currentDepartmentName}</td>
+                                            <td className="px-1.5 py-1.5 text-center">
+                                                {c.currentDepartmentName === 'Müşteri Geri Dönüşü' ? (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-purple-500 inline-block"></span>Müşteri Geri Dönüşü
+                                                    </span>
+                                                ) : c.currentDepartmentName === 'Yönetim Onayı' ? (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block"></span>Yönetim Onayı
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>Kalite Raporlaması
+                                                    </span>
+                                                )}
+                                            </td>
                                             <td className="px-1.5 py-1.5 text-center">
                                                 <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[9px] font-bold border shadow-sm ${
                                                     c.isQualityReported 
@@ -154,6 +169,9 @@ export default function QualityReportPage() {
                                                     <div className={`w-1.5 h-1.5 rounded-full ${c.isQualityReported ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
                                                     {c.isQualityReported ? 'YAPILDI' : 'YOK'}
                                                 </div>
+                                            </td>
+                                            <td className="px-1.5 py-1.5 text-center text-[10px] font-medium text-slate-600 whitespace-nowrap">
+                                                {c.isQualityReported ? (c.qualityReportedByName || '-') : '-'}
                                             </td>
                                             <td className="px-1.5 py-1.5 text-right">
                                                 <button

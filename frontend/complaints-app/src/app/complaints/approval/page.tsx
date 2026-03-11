@@ -85,6 +85,7 @@ export default function ApprovalPage() {
                                     <th className="px-1.5 py-1.5 text-center">Durum</th>
                                     <th className="px-1.5 py-1.5">Kalite Raporu</th>
                                     <th className="px-1.5 py-1.5">Raporu Yapan</th>
+                                    <th className="px-1.5 py-1.5 text-center">Aşama</th>
                                     <th className="px-1.5 py-1.5 w-40 text-center">Yönetim</th>
                                     <th className="px-1.5 py-1.5 text-right">İşlem</th>
                                 </tr>
@@ -126,12 +127,33 @@ export default function ApprovalPage() {
                                                     {c.isQualityReported ? 'YAPILDI' : 'YAPILMADI'}
                                                 </div>
                                             </td>
-                                            <td className="px-1.5 py-1.5 text-slate-800">{c.qualityReportedByName || '-'}</td>
+                                            <td className="px-1.5 py-1.5 text-slate-800 text-[10px] font-medium">{c.isQualityReported ? (c.qualityReportedByName || '-') : '-'}</td>
+                                            <td className="px-1.5 py-1.5 whitespace-nowrap">
+                                                {c.currentDepartmentName === 'Müşteri Geri Dönüşü' ? (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-purple-500 inline-block"></span>Müşteri Geri Dönüşü
+                                                    </span>
+                                                ) : c.currentDepartmentName === 'Yönetim Onayı' ? (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block"></span>Yönetim Onayı
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>Kalite Raporlaması
+                                                    </span>
+                                                )}
+                                            </td>
                                             <td className="px-1.5 py-1.5 text-center">
                                                 {c.isManagementApproved === true ? (
-                                                    <span className="px-2 py-1 rounded-md bg-emerald-100 text-emerald-700 text-[10px] font-bold">ONAYLANDI</span>
+                                                    <div className="flex flex-col items-center gap-0.5">
+                                                        <span className="px-2 py-1 rounded-md bg-emerald-100 text-emerald-700 text-[10px] font-bold">ONAYLANDI</span>
+                                                        <span className="text-[9px] text-slate-400 font-medium">{c.managementApprovedByName || ''}</span>
+                                                    </div>
                                                 ) : c.isManagementApproved === false ? (
-                                                    <span className="px-2 py-1 rounded-md bg-red-100 text-red-700 text-[10px] font-bold">REDDEDİLDİ</span>
+                                                    <div className="flex flex-col items-center gap-0.5">
+                                                        <span className="px-2 py-1 rounded-md bg-red-100 text-red-700 text-[10px] font-bold">REDDEDİLDİ</span>
+                                                        <span className="text-[9px] text-slate-400 font-medium">{c.managementApprovedByName || ''}</span>
+                                                    </div>
                                                 ) : (
                                                     <span className="px-2 py-1 rounded-md bg-slate-100 text-slate-500 text-[10px] font-bold italic">BEKLİYOR</span>
                                                 )}

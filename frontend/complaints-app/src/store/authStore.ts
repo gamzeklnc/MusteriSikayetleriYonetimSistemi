@@ -4,6 +4,10 @@ import { jwtDecode } from 'jwt-decode';
 interface DecodedToken {
     sub: string;
     email: string;
+    userId?: string;
+    userName?: string;
+    unique_name?: string;
+    name?: string;
     role: string;
     departmentId: string;
     exp: number;
@@ -11,6 +15,7 @@ interface DecodedToken {
 
 interface UserInfo {
     id: number;
+    name: string;
     email: string;
     role: string;
     departmentId: number;
@@ -29,6 +34,7 @@ const decodeToken = (token: string): UserInfo | null => {
         const decoded = jwtDecode<DecodedToken>(token);
         return {
             id: parseInt(decoded.sub),
+            name: decoded.userName || decoded.unique_name || decoded.name || decoded.email.split('@')[0],
             email: decoded.email,
             role: decoded.role,
             departmentId: parseInt(decoded.departmentId)

@@ -28,7 +28,7 @@ public class AuthService : IAuthService
         if (user is null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
             return null;
 
-        return GenerateToken(user.Id, user.Email, user.Role.ToString(), user.DepartmentId.ToString());
+        return GenerateToken(user.Id, user.Name, user.Email, user.Role.ToString(), user.DepartmentId.ToString());
     }
 
     public Task<string?> RefreshTokenAsync(string token)
@@ -37,7 +37,7 @@ public class AuthService : IAuthService
         return Task.FromResult<string?>(null);
     }
 
-    private string GenerateToken(int userId, string email, string role, string departmentId)
+    private string GenerateToken(int userId, string name, string email, string role, string departmentId)
     {
         var jwtKey = _config["Jwt:Key"] ?? throw new InvalidOperationException("JWT key not configured.");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
@@ -45,8 +45,10 @@ public class AuthService : IAuthService
 
         var claims = new[]
         {
+            new Claim("userId", userId.ToString()),
             new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, email),
+            new Claim("userName", name),
             new Claim(ClaimTypes.Role, role),
             new Claim("departmentId", departmentId),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())

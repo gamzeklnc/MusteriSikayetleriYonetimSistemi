@@ -113,11 +113,11 @@ export default function Sidebar() {
                 <div className="px-4 py-3 mx-3 mb-2 bg-slate-800/50 rounded-xl border border-slate-800">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-xs uppercase">
-                            {user.email[0]}
+                            {user.name[0]}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-xs font-semibold text-white truncate">{user.email}</p>
-                            <p className="text-[10px] text-slate-500 font-medium">{user.role}</p>
+                            <p className="text-xs font-semibold text-white truncate capitalize">{user.name}</p>
+                            <p className="text-[10px] text-slate-500 font-medium truncate">{user.email}</p>
                         </div>
                     </div>
                 </div>
