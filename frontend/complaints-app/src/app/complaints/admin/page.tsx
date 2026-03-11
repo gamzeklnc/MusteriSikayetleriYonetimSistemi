@@ -26,7 +26,7 @@ export default function AdminPage() {
     const [error, setError] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState<number | null>(null);
     const [editingComplaint, setEditingComplaint] = useState<ComplaintDto | null>(null);
-    
+
     // Accordion State
     const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
         basic: true,
@@ -187,7 +187,7 @@ export default function AdminPage() {
                         { id: 'history', icon: History, label: 'Kullanıcı Geçmişi' },
                         { id: 'settings', icon: Settings, label: 'Sistem Ayarları' }
                     ].map(tab => (
-                        <button 
+                        <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
                             className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === tab.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-slate-500 hover:text-slate-800'}`}
@@ -293,8 +293,8 @@ export default function AdminPage() {
                                         <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Tüm Hata Tanımları</span>
                                         <span className="px-2 py-0.5 rounded-full bg-slate-200 text-[10px] font-bold text-slate-600">{errorOptions.length}</span>
                                     </div>
-                                    <button 
-                                        onClick={() => { setEditingErrorOption(null); setErrorForm({label:''}); setIsErrorModalOpen(true); }}
+                                    <button
+                                        onClick={() => { setEditingErrorOption(null); setErrorForm({ label: '' }); setIsErrorModalOpen(true); }}
                                         className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-sm hover:bg-emerald-700 transition-all"
                                     >
                                         <Plus size={14} /> Yeni Hata Tanımı
@@ -305,7 +305,7 @@ export default function AdminPage() {
                                         <div key={o.id} className="group flex items-center justify-between px-3 py-2 hover:bg-slate-50 rounded-lg transition-colors border border-transparent hover:border-slate-100">
                                             <span className="text-xs font-medium text-slate-700">{o.label}</span>
                                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                                                <button onClick={() => { setEditingErrorOption(o); setErrorForm({label:o.label}); setIsErrorModalOpen(true); }} className="p-1.5 text-blue-500 hover:bg-blue-100 rounded-md transition-colors"><Edit2 size={14} /></button>
+                                                <button onClick={() => { setEditingErrorOption(o); setErrorForm({ label: o.label }); setIsErrorModalOpen(true); }} className="p-1.5 text-blue-500 hover:bg-blue-100 rounded-md transition-colors"><Edit2 size={14} /></button>
                                                 <button onClick={() => handleDeleteErrorOption(o.id)} className="p-1.5 text-red-500 hover:bg-red-100 rounded-md transition-colors"><Trash2 size={14} /></button>
                                             </div>
                                         </div>
@@ -320,7 +320,7 @@ export default function AdminPage() {
                                         <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Departman Kullanıcıları</span>
                                         <span className="px-2 py-0.5 rounded-full bg-slate-200 text-[10px] font-bold text-slate-600">{users.length}</span>
                                     </div>
-                                    <button 
+                                    <button
                                         onClick={() => { setIsUserModalOpen(true); setEditingUser(null); setUserForm({ name: '', email: '', password: '', role: 'User', departmentId: 2 }); }}
                                         className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold shadow-sm hover:bg-blue-700 transition-all"
                                     >
@@ -343,7 +343,7 @@ export default function AdminPage() {
                                                             </div>
                                                             <div className="flex items-center gap-1 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity">
                                                                 <button onClick={() => { handleEditUser(u); }} className="p-1.5 text-blue-500 hover:bg-blue-200 rounded-md transition-colors"><Edit2 size={12} /></button>
-                                                                <button onClick={() => { if(confirm('Silsin mi?')) userService.delete(u.id).then(fetchData) }} className="p-1.5 text-red-500 hover:bg-red-200 rounded-md transition-colors"><Trash2 size={12} /></button>
+                                                                <button onClick={() => { if (confirm('Silsin mi?')) userService.delete(u.id).then(fetchData) }} className="p-1.5 text-red-500 hover:bg-red-200 rounded-md transition-colors"><Trash2 size={12} /></button>
                                                             </div>
                                                         </div>
                                                     ))}
@@ -370,7 +370,7 @@ export default function AdminPage() {
 
                             <div className="space-y-1">
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Hata Tanımı</label>
-                                <input required value={errorForm.label} onChange={e => setErrorForm({...errorForm, label: e.target.value})} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none" placeholder="Örn: Cam Çiziği" />
+                                <input required value={errorForm.label} onChange={e => setErrorForm({ ...errorForm, label: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none" placeholder="Örn: Cam Çiziği" />
                             </div>
                         </div>
                         <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
@@ -390,7 +390,7 @@ export default function AdminPage() {
                             <span>Şikayet Düzenle - {editingComplaint.complaintNumber}</span>
                             <button type="button" onClick={() => setEditingComplaint(null)} className="p-1 hover:bg-slate-200 rounded-full"><XCircle size={20} /></button>
                         </div>
-                        
+
                         <div className="flex-1 overflow-y-auto p-4 space-y-4">
                             {/* Accordion 1: Temel Bilgiler */}
                             <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
@@ -405,18 +405,18 @@ export default function AdminPage() {
                                     <div className="p-4 grid grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-200">
                                         <div className="col-span-2 space-y-1">
                                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Müşteri İsmi</label>
-                                            <input type="text" value={editingComplaint.customerName} onChange={e => setEditingComplaint({...editingComplaint, customerName: e.target.value})} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white" />
+                                            <input type="text" value={editingComplaint.customerName} onChange={e => setEditingComplaint({ ...editingComplaint, customerName: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white" />
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Durum</label>
-                                            <select value={editingComplaint.status} onChange={e => setEditingComplaint({...editingComplaint, status: e.target.value as any})} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white">
+                                            <select value={editingComplaint.status} onChange={e => setEditingComplaint({ ...editingComplaint, status: e.target.value as any })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white">
                                                 <option value="Acik">Açık</option>
                                                 <option value="Kapali">Kapalı</option>
                                             </select>
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mevcut Aşama</label>
-                                            <select value={editingComplaint.currentDepartmentName} onChange={e => setEditingComplaint({...editingComplaint, currentDepartmentName: e.target.value})} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white">
+                                            <select value={editingComplaint.currentDepartmentName} onChange={e => setEditingComplaint({ ...editingComplaint, currentDepartmentName: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white">
                                                 {departments.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
                                             </select>
                                         </div>
@@ -438,11 +438,11 @@ export default function AdminPage() {
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-1">
                                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Stok Kodu</label>
-                                                <input type="text" value={editingComplaint.stockCode} onChange={e => setEditingComplaint({...editingComplaint, stockCode: e.target.value})} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white" />
+                                                <input type="text" value={editingComplaint.stockCode} onChange={e => setEditingComplaint({ ...editingComplaint, stockCode: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white" />
                                             </div>
                                             <div className="space-y-1">
                                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Hata Tanımı</label>
-                                                <select value={editingComplaint.errorDefinition || ''} onChange={e => setEditingComplaint({...editingComplaint, errorDefinition: e.target.value})} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white font-bold text-blue-700">
+                                                <select value={editingComplaint.errorDefinition || ''} onChange={e => setEditingComplaint({ ...editingComplaint, errorDefinition: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white font-bold text-blue-700">
                                                     <option value="">Seçiniz...</option>
                                                     {errorOptions.map(o => <option key={o.id} value={o.label}>{o.label}</option>)}
                                                 </select>
@@ -450,7 +450,7 @@ export default function AdminPage() {
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Hata Bölümü (Notlar)</label>
-                                            <textarea value={editingComplaint.errorDefinition || ''} onChange={e => setEditingComplaint({...editingComplaint, errorDefinition: e.target.value})} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white h-20" />
+                                            <textarea value={editingComplaint.errorDefinition || ''} onChange={e => setEditingComplaint({ ...editingComplaint, errorDefinition: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white h-20" />
                                         </div>
                                     </div>
                                 )}
@@ -469,14 +469,14 @@ export default function AdminPage() {
                                     <div className="p-4 space-y-4 animate-in slide-in-from-top-2 duration-200">
                                         <div className="flex items-center gap-8">
                                             <label className="flex items-center gap-3 cursor-pointer group">
-                                                <input type="checkbox" checked={editingComplaint.isQualityReported} onChange={e => setEditingComplaint({...editingComplaint, isQualityReported: e.target.checked})} className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                                                <input type="checkbox" checked={editingComplaint.isQualityReported} onChange={e => setEditingComplaint({ ...editingComplaint, isQualityReported: e.target.checked })} className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
                                                 <div className="flex flex-col">
                                                     <span className="text-sm font-bold text-slate-700 uppercase tracking-tight">Kalite Raporu</span>
                                                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{editingComplaint.isQualityReported ? 'YAPILDI' : 'BEKLİYOR'}</span>
                                                 </div>
                                             </label>
                                             <label className="flex items-center gap-3 cursor-pointer group">
-                                                <input type="checkbox" checked={editingComplaint.isManagementApproved === true} onChange={e => setEditingComplaint({...editingComplaint, isManagementApproved: e.target.checked ? true : null})} className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                                                <input type="checkbox" checked={editingComplaint.isManagementApproved === true} onChange={e => setEditingComplaint({ ...editingComplaint, isManagementApproved: e.target.checked ? true : null })} className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
                                                 <div className="flex flex-col">
                                                     <span className="text-sm font-bold text-slate-700 uppercase tracking-tight">Yönetim Onayı</span>
                                                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{editingComplaint.isManagementApproved === true ? 'ONAYLANDI' : 'BEKLİYOR'}</span>
@@ -507,27 +507,27 @@ export default function AdminPage() {
                         <div className="p-6 space-y-4">
                             <div className="space-y-1">
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">İsim</label>
-                                <input type="text" required value={userForm.name} onChange={e => setUserForm({...userForm, name: e.target.value})} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none" />
+                                <input type="text" required value={userForm.name} onChange={e => setUserForm({ ...userForm, name: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 bg-white outline-none" />
                             </div>
                             <div className="space-y-1">
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">E-posta</label>
-                                <input type="email" required value={userForm.email} onChange={e => setUserForm({...userForm, email: e.target.value})} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none" />
+                                <input type="email" required value={userForm.email} onChange={e => setUserForm({ ...userForm, email: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 bg-white outline-none" />
                             </div>
                             <div className="space-y-1">
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Şifre {editingUser && '(Değiştirmeyecekseniz boş bırakın)'}</label>
-                                <input type="password" required={!editingUser} value={userForm.password} onChange={e => setUserForm({...userForm, password: e.target.value})} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none" />
+                                <input type="password" required={!editingUser} value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 bg-white outline-none" />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Rol</label>
-                                    <select value={userForm.role} onChange={e => setUserForm({...userForm, role: e.target.value})} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none">
+                                    <select value={userForm.role} onChange={e => setUserForm({ ...userForm, role: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 bg-white outline-none">
                                         <option value="Admin">Admin</option>
                                         <option value="User">User</option>
                                     </select>
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Departman</label>
-                                    <select value={userForm.departmentId} onChange={e => setUserForm({...userForm, departmentId: parseInt(e.target.value)})} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none">
+                                    <select value={userForm.departmentId} onChange={e => setUserForm({ ...userForm, departmentId: parseInt(e.target.value) })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 bg-white outline-none">
                                         {departments.map(d => (
                                             <option key={d.id} value={d.id}>{d.name}</option>
                                         ))}
