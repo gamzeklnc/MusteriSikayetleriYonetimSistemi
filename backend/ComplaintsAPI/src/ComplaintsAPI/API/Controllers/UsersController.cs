@@ -57,7 +57,7 @@ public class UsersController : ControllerBase
             Name = request.Name,
             Email = request.Email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-            Role = Enum.Parse<UserRole>(request.Role),
+            Role = Enum.TryParse<UserRole>(request.Role, true, out var role) ? role : UserRole.User,
             DepartmentId = request.DepartmentId
         };
 
@@ -78,7 +78,7 @@ public class UsersController : ControllerBase
 
         user.Name = request.Name;
         user.Email = request.Email;
-        user.Role = Enum.Parse<UserRole>(request.Role);
+        user.Role = Enum.TryParse<UserRole>(request.Role, true, out var role) ? role : user.Role;
         user.DepartmentId = request.DepartmentId;
 
         if (!string.IsNullOrWhiteSpace(request.Password))
