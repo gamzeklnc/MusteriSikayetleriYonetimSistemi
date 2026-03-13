@@ -83,6 +83,11 @@ public class Complaint
     public string? ManagementApprovalNote { get; set; }
     public int? ManagementApprovedById { get; set; }
 
+    // ── Müşteri Geri Dönüşü ─────────────────────────────────────────────────
+    public bool IsCustomerFeedbackDone { get; set; } = false;
+    public string? CustomerFeedbackNote { get; set; }
+    public int? CustomerFeedbackById { get; set; }
+
     // ── Sistem Alanları ──────────────────────────────────────────────────────
     public int CreatedById { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -93,6 +98,7 @@ public class Complaint
     public User CreatedBy { get; set; } = null!;
     public User? QualityReportedBy { get; set; }
     public User? ManagementApprovedBy { get; set; }
+    public User? CustomerFeedbackBy { get; set; }
     public ICollection<ComplaintHistory> History { get; set; } = new List<ComplaintHistory>();
 
     // ── Domain Metodu: tarih alanlarını otomatik doldur ─────────────────────

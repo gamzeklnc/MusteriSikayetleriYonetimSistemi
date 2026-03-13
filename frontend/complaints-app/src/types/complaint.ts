@@ -36,6 +36,9 @@ export interface ComplaintDto {
   isManagementApproved?: boolean | null;
   managementApprovalNote?: string;
   managementApprovedByName?: string;
+  isCustomerFeedbackDone: boolean;
+  customerFeedbackNote?: string;
+  customerFeedbackByName?: string;
 }
 
 export interface ComplaintHistoryDto {
@@ -114,5 +117,10 @@ export interface UpdateQualityReportRequest {
 
 export interface ManagementApprovalRequest {
   isApproved: boolean | null;
+  note?: string;
+}
+
+export interface CustomerFeedbackRequest {
+  isDone: boolean;
   note?: string;
 }

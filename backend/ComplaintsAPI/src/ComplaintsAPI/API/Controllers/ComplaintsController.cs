@@ -395,6 +395,27 @@ public class ComplaintsController : ControllerBase
         return Ok(MapToDto(complaint));
     }
 
+    /// <summary>Müşteri geri dönüşü güncelle</summary>
+    [HttpPatch("{id}/customer-feedback")]
+    public async Task<IActionResult> UpdateCustomerFeedback(int id, [FromBody] CustomerFeedbackRequest req)
+    {
+        var complaint = await _repo.GetByIdAsync(id);
+        if (complaint is null) return NotFound();
+
+        // Sadece yönetim onayladıysa güncellenebilir
+        if (complaint.IsManagementApproved != true)
+            return BadRequest(new { message = "Yönetim onayı alınmamış şikayetlerde müşteri geri dönüşü yapılamaz." });
+
+        complaint.IsCustomerFeedbackDone = req.IsDone;
+        complaint.CustomerFeedbackNote = req.Note;
+        if (req.IsDone)
+            complaint.CustomerFeedbackById = CurrentUserId;
+
+        await _repo.UpdateAsync(complaint);
+        await LogActivityAsync("Müşteri Geri Dönüşü Güncellendi", $"Şikayet No: {complaint.ComplaintNumber}, Durum: {(req.IsDone ? "Yapıldı" : "Bekliyor")}");
+        return Ok(MapToDto(complaint));
+    }
+
     /// <summary>Şikayeti sil (Sadece Admin)</summary>
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
@@ -445,6 +466,9 @@ public class ComplaintsController : ControllerBase
         c.QualityReportedBy?.Name,
         c.IsManagementApproved,
         c.ManagementApprovalNote,
-        c.ManagementApprovedBy?.Name
+        c.ManagementApprovedBy?.Name,
+        c.IsCustomerFeedbackDone,
+        c.CustomerFeedbackNote,
+        c.CustomerFeedbackBy?.Name
     );
 }

@@ -66,6 +66,9 @@ public record QualityReportUpdateRequest(bool IsQualityReported, string? Note);
 /// <summary>Yönetim onayı isteği</summary>
 public record ManagementApprovalRequest(bool? IsApproved, string? Note);
 
+/// <summary>Müşteri geri dönüşü güncelleme isteği</summary>
+public record CustomerFeedbackRequest(bool IsDone, string? Note);
+
 /// <summary>Liste görünümü için özet DTO</summary>
 public record ComplaintDto(
     int Id,
@@ -100,7 +103,10 @@ public record ComplaintDto(
     string? QualityReportedByName,
     bool? IsManagementApproved,
     string? ManagementApprovalNote,
-    string? ManagementApprovedByName
+    string? ManagementApprovedByName,
+    bool IsCustomerFeedbackDone,
+    string? CustomerFeedbackNote,
+    string? CustomerFeedbackByName
 );
 
 /// <summary>Geçmiş satırı</summary>
