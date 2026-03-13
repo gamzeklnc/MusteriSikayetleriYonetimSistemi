@@ -16,6 +16,12 @@ export default function QualityReportModal({ complaint, onClose, onSuccess }: Pr
     const [isUpdating, setIsUpdating] = useState(false);
     const [barcodeFilter, setBarcodeFilter] = useState<'ALL' | 'HSA1' | 'HSA2'>('ALL');
 
+    // Yönetim tarafından reddedildi mi?
+    const isRejected = complaint.isManagementApproved === false;
+    // Rapor kilitli mi? Onaylandıysa veya rapor tamamlandı ve onay bekleniyorsa kilitli
+    const isLocked = complaint.isManagementApproved === true ||
+        (complaint.isQualityReported && complaint.isManagementApproved === null);
+
     const formatDate = (dateString: string) => {
         if (!dateString) return '-';
         return new Date(dateString).toLocaleDateString('tr-TR', {
@@ -42,7 +48,7 @@ export default function QualityReportModal({ complaint, onClose, onSuccess }: Pr
         }
     };
 
-    const filteredBarcodes = complaint.barcodes?.filter(barcode => {
+    const filteredBarcodes = complaint.barcodes?.filter((barcode: string) => {
         if (barcodeFilter === 'ALL') return true;
         const parsed = parseSingleBarcode(barcode);
         return parsed.factory === barcodeFilter;
@@ -54,13 +60,18 @@ export default function QualityReportModal({ complaint, onClose, onSuccess }: Pr
 
             <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+                <div className={`flex items-center justify-between px-6 py-4 border-b ${isRejected ? 'bg-red-50 border-red-100' : 'bg-slate-50/50 border-slate-100'}`}>
                     <div>
                         <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                             Kalite Kontrol Raporu
-                            <span className="px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-700 text-sm font-bold tracking-wider">
+                            <span className={`px-2.5 py-1 rounded-md text-sm font-bold tracking-wider ${isRejected ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
                                 {complaint.complaintNumber}
                             </span>
+                            {isRejected && (
+                                <span className="px-2.5 py-1 rounded-md bg-red-500 text-white text-xs font-bold tracking-wider animate-pulse">
+                                    YÖNETİM REDDETTİ
+                                </span>
+                            )}
                         </h2>
                         <p className="text-sm text-slate-500 mt-0.5">
                             Kayıt Tarihi: {formatDate(complaint.registrationDate)}
@@ -75,6 +86,32 @@ export default function QualityReportModal({ complaint, onClose, onSuccess }: Pr
 
                 {/* Body */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
+
+                    {/* Yönetim Red Uyarısı */}
+                    {isRejected && (
+                        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                            <div className="flex items-start gap-3">
+                                <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <svg className="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                </div>
+                                <div className="flex-1">
+                                    <h4 className="text-sm font-bold text-red-700 mb-1">Yönetim Tarafından Reddedildi</h4>
+                                    <div className="text-xs text-red-600 mb-2">
+                                        <span className="font-bold">Reddeden:</span> {complaint.managementApprovedByName || '-'}
+                                    </div>
+                                    <div className="bg-white border border-red-200 rounded-lg p-3 text-sm text-red-800 italic">
+                                        {complaint.managementApprovalNote || 'Red nedeni belirtilmemiş.'}
+                                    </div>
+                                    <p className="text-xs text-red-500 mt-2 font-medium">
+                                        ⚠ Lütfen kalite raporunuzu güncelleyerek yeniden gönderin.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Sol Kolon - Detaylar */}
                         <div className="space-y-6">
@@ -138,7 +175,7 @@ export default function QualityReportModal({ complaint, onClose, onSuccess }: Pr
                             <div className="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden flex-1 min-h-[250px] max-h-[350px]">
                                 {filteredBarcodes.length > 0 ? (
                                     <ul className="divide-y divide-slate-100 overflow-y-auto h-full p-2">
-                                        {filteredBarcodes.map((barcode, idx) => (
+                                        {filteredBarcodes.map((barcode: string, idx: number) => (
                                             <li key={idx} className="flex items-center justify-between px-3 py-1.5 font-mono text-[11px] text-slate-600 bg-white mb-1 rounded border border-slate-100 shadow-sm">
                                                 <span className="text-slate-400">{idx + 1}.</span>
                                                 <span className="font-bold">{barcode}</span>
@@ -160,61 +197,60 @@ export default function QualityReportModal({ complaint, onClose, onSuccess }: Pr
                         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Kalite Değerlendirmesi</h3>
                         <div className="space-y-4">
                             <div>
-                                <label className="text-[10px] text-slate-400 uppercase font-bold mb-1.5 block ml-1">Kalite Kontrol Notu</label>
+                                <label className="text-[10px] text-slate-400 uppercase font-bold mb-1.5 block ml-1">
+                                    Kalite Kontrol Notu
+                                    {isRejected && <span className="text-red-500 ml-1 normal-case">(Lütfen güncelleyin)</span>}
+                                </label>
                                 <textarea
                                     value={note}
                                     onChange={(e) => setNote(e.target.value)}
+                                    disabled={isLocked}
                                     placeholder="Ürün incelemesi hakkında detaylı bilgi verin..."
-                                    className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-300 min-h-[120px] resize-none shadow-inner bg-slate-50/30"
+                                    className={`w-full px-4 py-3 border rounded-xl text-sm font-medium text-slate-800 outline-none transition-all placeholder:text-slate-300 min-h-[120px] resize-none shadow-inner ${isLocked
+                                        ? 'bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed'
+                                        : isRejected
+                                            ? 'border-red-300 bg-red-50/30 focus:ring-2 focus:ring-red-400 focus:border-red-400'
+                                            : 'bg-slate-50/30 border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500'
+                                        }`}
                                 />
                             </div>
-                            <div className="flex items-center gap-4">
+
+                            {isLocked ? (
+                                <div className="py-3 px-4 rounded-xl bg-slate-100 text-slate-500 text-sm text-center font-medium border border-slate-200">
+                                    {complaint.isManagementApproved === true
+                                        ? '✅ Yönetim onayladı — kalite raporu kilitlendi.'
+                                        : '🔒 Kalite raporu tamamlandı, yönetim onayı bekleniyor.'}
+                                </div>
+                            ) : (
                                 <button
                                     onClick={() => handleAction(true)}
                                     disabled={isUpdating}
-                                    className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all shadow-lg ${
-                                        complaint.isQualityReported === true
-                                        ? 'bg-emerald-600 text-white shadow-emerald-500/20'
-                                        : 'bg-white text-emerald-600 border-2 border-emerald-600 hover:bg-emerald-50'
-                                    } ${isUpdating ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.98]'}`}
+                                    className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all shadow-lg ${isRejected
+                                        ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-500/20'
+                                        : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20'
+                                        } ${isUpdating ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.98]'}`}
                                 >
-                                    {isUpdating ? <div className="w-5 h-5 border-2 border-emerald-600/30 border-t-emerald-600 rounded-full animate-spin"></div> : (
+                                    {isUpdating ? (
+                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    ) : (
                                         <>
                                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                             </svg>
-                                            RAPOR TAMAMLANDI OLARAK İŞARETLE
+                                            {isRejected ? 'YENİDEN RAPOR GÖNDER' : 'RAPOR TAMAMLANDI OLARAK İŞARETLE'}
                                         </>
                                     )}
                                 </button>
-                                <button
-                                    onClick={() => handleAction(false)}
-                                    disabled={isUpdating}
-                                    className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all shadow-lg ${
-                                        complaint.isQualityReported === false
-                                        ? 'bg-slate-700 text-white shadow-slate-500/20'
-                                        : 'bg-white text-slate-600 border-2 border-slate-600 hover:bg-slate-50'
-                                    } ${isUpdating ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.98]'}`}
-                                >
-                                    {isUpdating ? <div className="w-5 h-5 border-2 border-slate-600/30 border-t-slate-600 rounded-full animate-spin"></div> : (
-                                        <>
-                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                            RAPOR HENÜZ TAMAMLANMADI
-                                        </>
-                                    )}
-                                </button>
-                            </div>
+                            )}
+
+                            {complaint.isQualityReported && !isRejected && (
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50/50 rounded-lg border border-emerald-100/50">
+                                    <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-tight">Raporlayan:</span>
+                                    <span className="text-[10px] font-bold text-emerald-700">{complaint.qualityReportedByName}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
-                    {/* Üst Bilgi Satırı 3: Raporlayan */}
-                    {complaint.isQualityReported && (
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50/50 rounded-lg border border-emerald-100/50">
-                            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-tight">Raporlayan:</span>
-                            <span className="text-[10px] font-bold text-emerald-700">{complaint.qualityReportedByName}</span>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

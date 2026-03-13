@@ -334,13 +334,25 @@ public class ComplaintsController : ControllerBase
         var complaint = await _repo.GetByIdAsync(id);
         if (complaint is null) return NotFound();
 
+        // Onaylanmış ise değiştirilemez
+        if (complaint.IsManagementApproved == true)
+            return BadRequest(new { message = "Yönetim tarafından onaylanmış şikayetlerin kalite raporu değiştirilemez." });
+
+        // Kalite raporu yapıldı olarak işaretlenmiş VE red yoksa (yönetim onay beklemedeyse) değiştirilemez
+        if (complaint.IsQualityReported == true && complaint.IsManagementApproved == null)
+            return BadRequest(new { message = "Kalite raporu zaten tamamlanmış. Değiştirmek için yönetim onay sürecini bekleyin." });
+
         complaint.IsQualityReported = req.IsQualityReported;
         complaint.QualityReportNote = req.Note;
-        
+
         if (req.IsQualityReported)
-            complaint.QualityReportedById = CurrentUserId; 
+            complaint.QualityReportedById = CurrentUserId;
         else
             complaint.QualityReportedById = null;
+
+        // Yeniden rapor yapılırsa red durumunu sıfırla
+        if (req.IsQualityReported)
+            complaint.IsManagementApproved = null;
 
         await _repo.UpdateAsync(complaint);
         await LogActivityAsync("Kalite Raporu Güncellendi", $"Şikayet No: {complaint.ComplaintNumber}, Durum: {(req.IsQualityReported ? "Yapıldı" : "Bekliyor")}");
@@ -356,8 +368,14 @@ public class ComplaintsController : ControllerBase
 
         complaint.IsManagementApproved = req.IsApproved;
         complaint.ManagementApprovalNote = req.Note;
-        
-        complaint.ManagementApprovedById = CurrentUserId; 
+        complaint.ManagementApprovedById = CurrentUserId;
+
+        // Reddedildiyse kalite raporunu sıfırla → geri Kalite Raporlaması aşamasına dönsün
+        if (req.IsApproved == false)
+        {
+            complaint.IsQualityReported = false;
+            complaint.QualityReportedById = null;
+        }
 
         await _repo.UpdateAsync(complaint);
         
@@ -397,7 +415,8 @@ public class ComplaintsController : ControllerBase
         c.Id,
         c.ComplaintNumber,
         c.Status,
-        c.IsManagementApproved != null ? "Müşteri Geri Dönüşü" : (c.IsQualityReported ? "Yönetim Onayı" : "Kalite Raporlaması"),
+        c.IsManagementApproved == true ? "Müşteri Geri Dönüşü" :
+        (c.IsQualityReported ? "Yönetim Onayı" : "Kalite Raporlaması"),
         c.CustomerName,
         c.ProjectName,
         c.ProjectLocation,

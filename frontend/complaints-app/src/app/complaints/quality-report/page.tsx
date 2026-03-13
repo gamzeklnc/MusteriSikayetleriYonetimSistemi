@@ -127,8 +127,15 @@ export default function QualityReportPage() {
                                     </tr>
                                 ) : (
                                     filteredComplaints.map((c) => (
-                                        <tr key={c.id} className="hover:bg-blue-50/30 transition-colors group text-[11px]">
-                                            <td className="px-1.5 py-1.5 font-semibold text-slate-900 whitespace-nowrap">{c.complaintNumber}</td>
+                                        <tr key={c.id} className={`transition-colors group text-[11px] ${c.isManagementApproved === false ? 'bg-red-50 hover:bg-red-100/60' : 'hover:bg-blue-50/30'}`}>
+                                            <td className="px-1.5 py-1.5 font-semibold text-slate-900 whitespace-nowrap">
+                                                <div className="flex flex-col gap-0.5">
+                                                    {c.complaintNumber}
+                                                    {c.isManagementApproved === false && (
+                                                        <span className="text-[8px] font-bold text-red-600 bg-red-100 px-1 py-0.5 rounded w-fit">REDDEDİLDİ</span>
+                                                    )}
+                                                </div>
+                                            </td>
                                             <td className="px-1.5 py-1.5 font-medium text-slate-800">{c.customerName}</td>
                                             <td className="px-1.5 py-1.5 text-slate-600">{c.sellerName}</td>
                                             <td className="px-1.5 py-1.5 text-slate-500 text-[10px] font-medium">{c.projectName || '-'}</td>
