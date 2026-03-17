@@ -187,66 +187,66 @@ export default function ComplaintsPage() {
 
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-[11px]">
-                            <thead className="bg-slate-50 text-[10px]  font-black text-slate-900 border-b border-slate-200 tracking-wider">
+                            <thead className="bg-slate-50 text-[10px]  font-bold text-slate-500 border-b border-slate-200 tracking-wider">
                                 <tr>
                                     <th className="px-1.5 py-1.5 align-bottom">
-                                        <div className="mb-2 text-slate-900 font-black">Şikayet No</div>
+                                        <div className="mb-2 text-slate-500">Şikayet No</div>
                                         <input type="text"placeholder="Ara..."value={filters.complaintNumber} onChange={e => handleFilterChange('complaintNumber', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
-                                        <div className="mb-2 text-slate-900 font-black">Kayıt Tarihi</div>
+                                        <div className="mb-2 text-slate-500">Kayıt Tarihi</div>
                                         <input type="text"placeholder="Ara..."value={filters.registrationDate} onChange={e => handleFilterChange('registrationDate', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
-                                        <div className="mb-2 text-slate-900 font-black">Şikayet Tarihi</div>
+                                        <div className="mb-2 text-slate-500">Şikayet Tarihi</div>
                                         <input type="text"placeholder="Ara..."value={filters.complaintDate} onChange={e => handleFilterChange('complaintDate', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
-                                        <div className="mb-2 text-slate-900 font-black">Müşteri</div>
+                                        <div className="mb-2 text-slate-500">Müşteri</div>
                                         <input type="text"placeholder="Ara..."value={filters.customerName} onChange={e => handleFilterChange('customerName', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
-                                        <div className="mb-2 text-slate-900 font-black">Satış Sorumlusu</div>
+                                        <div className="mb-2 text-slate-500">Satış Sorumlusu</div>
                                         <input type="text"placeholder="Ara..."value={filters.sellerName} onChange={e => handleFilterChange('sellerName', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
-                                        <div className="mb-2 text-slate-900 font-black">Proje</div>
+                                        <div className="mb-2 text-slate-500">Proje</div>
                                         <input type="text"placeholder="Ara..."value={filters.projectName} onChange={e => handleFilterChange('projectName', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
-                                        <div className="mb-2 text-slate-900 font-black">Stok Kodu</div>
+                                        <div className="mb-2 text-slate-500">Stok Kodu</div>
                                         <input type="text"placeholder="Ara..."value={filters.stockCode} onChange={e => handleFilterChange('stockCode', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
-                                        <div className="mb-2 text-slate-900 font-black">Marka</div>
+                                        <div className="mb-2 text-slate-500">Marka</div>
                                         <input type="text"placeholder="Ara..."value={filters.brand} onChange={e => handleFilterChange('brand', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
-                                        <div className="mb-2 text-slate-900 font-black">Güç</div>
+                                        <div className="mb-2 text-slate-500">Güç</div>
                                         <input type="text"placeholder="Ara..."value={filters.modulePower} onChange={e => handleFilterChange('modulePower', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
-                                        <div className="mb-2 text-slate-900 font-black">Sayı</div>
+                                        <div className="mb-2 text-slate-500">Sayı</div>
                                         <input type="text"placeholder="Ara..."value={filters.defectiveQuantity} onChange={e => handleFilterChange('defectiveQuantity', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
-                                        <div className="mb-2 text-slate-900 font-black leading-tight">Hata Tanımı</div>
+                                        <div className="mb-2 text-slate-500 leading-tight">Hata Tanımı</div>
                                         <input type="text"placeholder="Ara..."value={filters.errorDefinition} onChange={e => handleFilterChange('errorDefinition', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
-                                        <div className="mb-2 text-slate-900 font-black">HSA1</div>
+                                        <div className="mb-2 text-slate-500">HSA1</div>
                                         <input type="text"placeholder="Ara..."value={filters.hsa1} onChange={e => handleFilterChange('hsa1', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
-                                        <div className="mb-2 text-slate-900 font-black">HSA2</div>
+                                        <div className="mb-2 text-slate-500">HSA2</div>
                                         <input type="text"placeholder="Ara..."value={filters.hsa2} onChange={e => handleFilterChange('hsa2', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
-                                        <div className="mb-2 text-slate-900 font-black">Durum</div>
+                                        <div className="mb-2 text-slate-500">Durum</div>
                                         <input type="text"placeholder="Ara..."value={filters.status} onChange={e => handleFilterChange('status', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
-                                        <div className="mb-2 text-slate-900 font-black">Aşama</div>
+                                        <div className="mb-2 text-slate-500">Aşama</div>
                                         <input type="text"placeholder="Ara..."value={filters.currentDepartmentName} onChange={e => handleFilterChange('currentDepartmentName', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 text-right align-bottom pb-6 whitespace-nowrap">İşlem</th>
