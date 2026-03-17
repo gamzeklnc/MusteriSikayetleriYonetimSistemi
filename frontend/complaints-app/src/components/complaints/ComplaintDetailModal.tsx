@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import * as XLSX from 'xlsx-js-style';
@@ -84,12 +84,12 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
 
         // Create Worksheet
         const ws = XLSX.utils.aoa_to_sheet(combinedData);
-        
+
         // Setup column widths
         ws['!cols'] = [
-            { wch: 15 }, { wch: 20 }, { wch: 20 }, { wch: 25 }, 
-            { wch: 25 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, 
-            { wch: 15 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, 
+            { wch: 15 }, { wch: 20 }, { wch: 20 }, { wch: 25 },
+            { wch: 25 }, { wch: 20 }, { wch: 15 }, { wch: 15 },
+            { wch: 15 }, { wch: 10 }, { wch: 10 }, { wch: 10 },
             { wch: 20 }, { wch: 15 }, { wch: 20 }, { wch: 30 }, { wch: 15 }
         ];
 
@@ -107,7 +107,7 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
 
         // Merge cells for common data if there are multiple barcodes
         const totalRows = combinedData.length;
-        if (totalRows > 2) { 
+        if (totalRows > 2) {
             const merges = [];
             // Columns 0 to 14 are common data. We merge from row 1 to totalRows - 1
             for (let c = 0; c <= 14; c++) {
@@ -118,12 +118,12 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
 
         // Apply basic vertical centering style for merged data cells
         for (let R = 1; R <= range.e.r; ++R) {
-             for (let C = 0; C <= 14; ++C) { // Only first 15 columns
+            for (let C = 0; C <= 14; ++C) { // Only first 15 columns
                 const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
                 if (!ws[cellAddress]) continue;
                 if (!ws[cellAddress].s) ws[cellAddress].s = {};
                 ws[cellAddress].s.alignment = { vertical: "center", horizontal: "center" };
-             }
+            }
         }
 
         // Create Workbook
@@ -137,14 +137,14 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Backdrop */}
-            <div 
-                className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
+            <div
+                className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
                 onClick={onClose}
             ></div>
 
             {/* Modal Content */}
             <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                
+
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
                     <div>
@@ -159,21 +159,21 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button 
+                        <button
                             onClick={handleExportExcel}
-                            className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 text-sm font-bold rounded-lg transition-colors border border-emerald-200"title="Excel'e Aktar"
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 text-sm font-bold rounded-lg transition-colors border border-emerald-200" title="Excel'e Aktar"
                         >
-                            <svg className="w-4 h-4"fill="none"viewBox="0 0 24 24"stroke="currentColor">
-                                <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             Excel'e Aktar
                         </button>
-                        <button 
+                        <button
                             onClick={onClose}
                             className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors"
                         >
-                            <svg className="w-5 h-5"fill="none"viewBox="0 0 24 24"stroke="currentColor">
-                                <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
                     </div>
@@ -181,7 +181,7 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
 
                 {/* Body (Scrollable) */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-8">
-                    
+
                     {/* Grid Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Sol Kolon - Müşteri & Proje */}
@@ -194,7 +194,7 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
                                         <div className="font-medium text-slate-800">{complaint.customerName}</div>
                                     </div>
                                     <div>
-                                        <div className="text-[10px] text-slate-900  font-black">Satış Sorumlusu Firma</div>
+                                        <div className="text-[10px] text-slate-900  font-black">Satış Sorumlusu</div>
                                         <div className="font-medium text-slate-800">{complaint.sellerName}</div>
                                     </div>
                                     <div>
@@ -247,14 +247,14 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
                                             <div className="text-[10px] text-slate-900  font-black">Güç</div>
                                             <div className="font-medium text-slate-800">{complaint.modulePower || '-'}</div>
                                         </div>
-                                        
+
                                         <div className="col-span-2">
                                             <div className="text-[10px] text-slate-900  font-black">Hata Tanımı</div>
                                             <div className="font-bold text-blue-700 bg-blue-50 px-2.5 py-1.5 rounded-lg border border-blue-100 inline-block mt-1">
                                                 {complaint.errorDefinition || 'Tanımlanmamış'}
                                             </div>
                                         </div>
-                                        
+
                                         <div className="col-span-2 pt-2 mt-2 border-t border-slate-200 grid grid-cols-2 gap-3">
                                             <div>
                                                 <div className="text-[10px] text-slate-900  font-black">HSA1 Miktarı</div>
@@ -283,41 +283,38 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
                     <div>
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 gap-3">
                             <h3 className="text-xs font-bold text-slate-900  tracking-wider">Okunan Barkodlar</h3>
-                            
+
                             <div className="flex bg-slate-100 p-1 rounded-lg">
                                 <button
                                     onClick={() => setBarcodeFilter('ALL')}
-                                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
-                                        barcodeFilter === 'ALL' 
-                                        ? 'bg-white text-slate-800 shadow-sm' 
+                                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${barcodeFilter === 'ALL'
+                                        ? 'bg-white text-slate-800 shadow-sm'
                                         : 'text-slate-500 hover:text-slate-700'
-                                    }`}
+                                        }`}
                                 >
                                     Tümü ({complaint.barcodes?.length || 0})
                                 </button>
                                 <button
                                     onClick={() => setBarcodeFilter('HSA1')}
-                                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
-                                        barcodeFilter === 'HSA1' 
-                                        ? 'bg-emerald-500 text-white shadow-sm' 
+                                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${barcodeFilter === 'HSA1'
+                                        ? 'bg-emerald-500 text-white shadow-sm'
                                         : 'text-slate-500 hover:text-emerald-600'
-                                    }`}
+                                        }`}
                                 >
                                     HSA1
                                 </button>
                                 <button
                                     onClick={() => setBarcodeFilter('HSA2')}
-                                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
-                                        barcodeFilter === 'HSA2' 
-                                        ? 'bg-indigo-500 text-white shadow-sm' 
+                                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${barcodeFilter === 'HSA2'
+                                        ? 'bg-indigo-500 text-white shadow-sm'
                                         : 'text-slate-500 hover:text-indigo-600'
-                                    }`}
+                                        }`}
                                 >
                                     HSA2
                                 </button>
                             </div>
                         </div>
-                        
+
                         <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-inner">
                             {filteredBarcodes.length > 0 ? (
                                 <ul className="max-h-60 overflow-y-auto divide-y divide-slate-100 p-2">

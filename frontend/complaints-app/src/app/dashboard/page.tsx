@@ -12,7 +12,7 @@ export default function DashboardPage() {
                         { label: 'Toplam Şikayet', value: '—', color: 'bg-blue-500' },
                         { label: 'Açık', value: '—', color: 'bg-yellow-500' },
                         { label: 'İşlemde', value: '—', color: 'bg-orange-500' },
-                        { label: 'Çözüldü', value: '—', color: 'bg-green-500' },
+                        { label: 'Kapalı', value: '—', color: 'bg-green-500' },
                     ].map((card) => (
                         <div key={card.label} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                             <div className={`w-3 h-3 rounded-full ${card.color} mb-3`} />

@@ -67,8 +67,8 @@ export default function ManagementApprovalModal({ complaint, onClose, onSuccess 
                         </p>
                     </div>
                     <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
-                        <svg className="w-5 h-5"fill="none"viewBox="0 0 24 24"stroke="currentColor">
-                            <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
@@ -177,43 +177,41 @@ export default function ManagementApprovalModal({ complaint, onClose, onSuccess 
                                 <textarea
                                     value={note}
                                     onChange={(e) => setNote(e.target.value)}
-                                    placeholder="Kararınız hakkında bir not bırakın..."className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-300 min-h-[120px] resize-none shadow-inner bg-slate-50/30"
+                                    placeholder="Kararınız hakkında bir not bırakın..." className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-300 min-h-[120px] resize-none shadow-inner bg-slate-50/30"
                                 />
                             </div>
                             <div className="flex items-center gap-4">
                                 <button
                                     onClick={() => handleAction(true)}
                                     disabled={isUpdating || !complaint.isQualityReported}
-                                    className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all shadow-lg ${
-                                        complaint.isManagementApproved === true
+                                    className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all shadow-lg ${complaint.isManagementApproved === true
                                         ? 'bg-emerald-600 text-white shadow-emerald-500/20'
                                         : 'bg-white text-emerald-600 border-2 border-emerald-600 hover:bg-emerald-50'
-                                    } ${isUpdating || !complaint.isQualityReported ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.98]'}`}
+                                        } ${isUpdating || !complaint.isQualityReported ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.98]'}`}
                                 >
                                     {isUpdating ? <div className="w-5 h-5 border-2 border-emerald-600/30 border-t-emerald-600 rounded-full animate-spin"></div> : (
                                         <>
-                                            <svg className="w-5 h-5"fill="none"viewBox="0 0 24 24"stroke="currentColor">
-                                                <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                             </svg>
-                                            YÖNETİM ONAYI VER
+                                            ONAY VER
                                         </>
                                     )}
                                 </button>
                                 <button
                                     onClick={() => handleAction(false)}
                                     disabled={isUpdating || !complaint.isQualityReported}
-                                    className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all shadow-lg ${
-                                        complaint.isManagementApproved === false
+                                    className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all shadow-lg ${complaint.isManagementApproved === false
                                         ? 'bg-red-600 text-white shadow-red-500/20'
                                         : 'bg-white text-red-600 border-2 border-red-600 hover:bg-red-50'
-                                    } ${isUpdating || !complaint.isQualityReported ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.98]'}`}
+                                        } ${isUpdating || !complaint.isQualityReported ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.98]'}`}
                                 >
                                     {isUpdating ? <div className="w-5 h-5 border-2 border-red-600/30 border-t-red-600 rounded-full animate-spin"></div> : (
                                         <>
-                                            <svg className="w-5 h-5"fill="none"viewBox="0 0 24 24"stroke="currentColor">
-                                                <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                             </svg>
-                                            TALEBİ REDDET
+                                            REDDET
                                         </>
                                     )}
                                 </button>
