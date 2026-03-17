@@ -89,7 +89,7 @@ export default function QualityReportPage() {
                                         <input type="text"placeholder="Ara..."value={filters.sellerName} onChange={e => handleFilterChange('sellerName', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5">
-                                        <div className="mb-2 text-slate-500">Proje</div>
+                                        <div className="mb-2 text-slate-500">Proje İsmi</div>
                                         <input type="text"placeholder="Ara..."value={filters.projectName} onChange={e => handleFilterChange('projectName', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5">

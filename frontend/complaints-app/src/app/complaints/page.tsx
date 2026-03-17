@@ -95,7 +95,7 @@ export default function ComplaintsPage() {
             'Şikayet Tarihi': formatDate(c.complaintDate),
             'Müşteri': c.customerName,
             'Satış Sorumlusu': c.sellerName,
-            'Proje': c.projectName || '',
+            'Proje İsmi': c.projectName || '',
             'Stok Kodu': c.stockCode,
             'Marka': c.brand || '',
             'Güç': c.modulePower || '',
@@ -127,7 +127,7 @@ export default function ComplaintsPage() {
             { wch: 15 }, // Şikayet Tarihi
             { wch: 25 }, // Müşteri
             { wch: 20 }, // Satış Sorumlusu
-            { wch: 20 }, // Proje
+            { wch: 20 }, // Proje İsmi
             { wch: 20 }, // Stok Kodu
             { wch: 15 }, // Marka
             { wch: 10 }, // Güç
@@ -210,7 +210,7 @@ export default function ComplaintsPage() {
                                         <input type="text"placeholder="Ara..."value={filters.sellerName} onChange={e => handleFilterChange('sellerName', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
-                                        <div className="mb-2 text-slate-500">Proje</div>
+                                        <div className="mb-2 text-slate-500">Proje İsmi</div>
                                         <input type="text"placeholder="Ara..."value={filters.projectName} onChange={e => handleFilterChange('projectName', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
