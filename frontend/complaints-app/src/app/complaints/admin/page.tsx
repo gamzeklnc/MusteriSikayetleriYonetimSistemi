@@ -176,7 +176,7 @@ export default function AdminPage() {
                             <ShieldAlert className="text-red-500" size={28} />
                             Admin Yönetim Paneli
                         </h1>
-                        <p className="text-slate-500 text-sm mt-1">Sistem ayarları, kullanıcılar ve tüm kayıtların yönetimi.</p>
+                        <p className="text-slate-900 text-sm mt-1 font-medium">Sistem ayarları, kullanıcılar ve tüm kayıtların yönetimi.</p>
                     </div>
                 </div>
 
@@ -202,7 +202,7 @@ export default function AdminPage() {
                     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-sm">
-                                <thead className="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200 tracking-wider">
+                                <thead className="bg-slate-50 text-[10px] uppercase font-black text-slate-900 border-b border-slate-200 tracking-wider">
                                     <tr>
                                         <th className="px-1.5 py-1.5">Şikayet No</th>
                                         <th className="px-1.5 py-1.5">Müşteri</th>
@@ -247,12 +247,12 @@ export default function AdminPage() {
                 ) : activeTab === 'history' ? (
                     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                         <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                            <h2 className="text-sm font-bold text-slate-700 tracking-tight">Sistem Etkinlik Kayıtları</h2>
-                            <span className="text-xs font-medium text-slate-500">{activityLogs.length} Kayıt</span>
+                            <h2 className="text-sm font-bold text-slate-900 tracking-tight">Sistem Etkinlik Kayıtları</h2>
+                            <span className="text-xs font-bold text-slate-900">{activityLogs.length} Kayıt</span>
                         </div>
                         <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
                             <table className="w-full text-left text-sm">
-                                <thead className="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200 tracking-wider sticky top-0 z-10 shadow-sm">
+                                <thead className="bg-slate-50 text-[10px] uppercase font-black text-slate-900 border-b border-slate-200 tracking-wider sticky top-0 z-10 shadow-sm">
                                     <tr>
                                         <th className="px-1.5 py-1.5">Tarih / Saat</th>
                                         <th className="px-1.5 py-1.5">Kullanıcı</th>
@@ -290,7 +290,7 @@ export default function AdminPage() {
                             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[550px]">
                                 <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between rounded-t-2xl">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Tüm Hata Tanımları</span>
+                                        <span className="text-xs font-black text-slate-900 uppercase tracking-widest">Tüm Hata Tanımları</span>
                                         <span className="px-2 py-0.5 rounded-full bg-slate-200 text-[10px] font-bold text-slate-600">{errorOptions.length}</span>
                                     </div>
                                     <button
@@ -317,7 +317,7 @@ export default function AdminPage() {
                             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[550px]">
                                 <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between rounded-t-2xl">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Departman Kullanıcıları</span>
+                                        <span className="text-xs font-black text-slate-900 uppercase tracking-widest">Departman Kullanıcıları</span>
                                         <span className="px-2 py-0.5 rounded-full bg-slate-200 text-[10px] font-bold text-slate-600">{users.length}</span>
                                     </div>
                                     <button
@@ -333,7 +333,7 @@ export default function AdminPage() {
                                         if (deptUsers.length === 0) return null;
                                         return (
                                             <div key={dept.id} className="space-y-2">
-                                                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">{dept.name} Departmanı</h3>
+                                                <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-widest pl-1">{dept.name} Departmanı</h3>
                                                 <div className="grid grid-cols-1 gap-1.5">
                                                     {deptUsers.map(u => (
                                                         <div key={u.id} className="group flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors border border-slate-100">
@@ -369,7 +369,7 @@ export default function AdminPage() {
                         <div className="p-6 space-y-4">
 
                             <div className="space-y-1">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Hata Tanımı</label>
+                                <label className="text-[10px] font-black text-slate-900 uppercase tracking-wider">Hata Tanımı</label>
                                 <input required value={errorForm.label} onChange={e => setErrorForm({ ...errorForm, label: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none" placeholder="Örn: Cam Çiziği" />
                             </div>
                         </div>
@@ -395,7 +395,7 @@ export default function AdminPage() {
                             {/* Accordion 1: Temel Bilgiler */}
                             <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
                                 <button type="button" onClick={() => toggleSection('basic')} className="w-full px-4 py-3 bg-slate-50 flex items-center justify-between hover:bg-slate-100 transition-colors">
-                                    <div className="flex items-center gap-2 font-bold text-slate-700 text-sm">
+                                    <div className="flex items-center gap-2 font-black text-slate-900 text-sm">
                                         <ClipboardList size={16} className="text-blue-500" />
                                         TEMEL BİLGİLER
                                     </div>
@@ -404,18 +404,18 @@ export default function AdminPage() {
                                 {expandedSections.basic && (
                                     <div className="p-4 grid grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-200">
                                         <div className="col-span-2 space-y-1">
-                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Müşteri İsmi</label>
+                                            <label className="text-[10px] font-black text-slate-900 uppercase tracking-wider">Müşteri İsmi</label>
                                             <input type="text" value={editingComplaint.customerName} onChange={e => setEditingComplaint({ ...editingComplaint, customerName: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white" />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Durum</label>
+                                            <label className="text-[10px] font-black text-slate-900 uppercase tracking-wider">Durum</label>
                                             <select value={editingComplaint.status} onChange={e => setEditingComplaint({ ...editingComplaint, status: e.target.value as any })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white">
                                                 <option value="Acik">Açık</option>
                                                 <option value="Kapali">Kapalı</option>
                                             </select>
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mevcut Aşama</label>
+                                            <label className="text-[10px] font-black text-slate-900 uppercase tracking-wider">Mevcut Aşama</label>
                                             <select value={editingComplaint.currentDepartmentName} onChange={e => setEditingComplaint({ ...editingComplaint, currentDepartmentName: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white">
                                                 {departments.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
                                             </select>
@@ -427,7 +427,7 @@ export default function AdminPage() {
                             {/* Accordion 2: Ürün Detayları */}
                             <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
                                 <button type="button" onClick={() => toggleSection('product')} className="w-full px-4 py-3 bg-slate-50 flex items-center justify-between hover:bg-slate-100 transition-colors">
-                                    <div className="flex items-center gap-2 font-bold text-slate-700 text-sm">
+                                    <div className="flex items-center gap-2 font-black text-slate-900 text-sm">
                                         <Settings size={16} className="text-emerald-500" />
                                         ÜRÜN VE HATA DETAYLARI
                                     </div>
@@ -437,11 +437,11 @@ export default function AdminPage() {
                                     <div className="p-4 space-y-4 animate-in slide-in-from-top-2 duration-200">
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-1">
-                                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Stok Kodu</label>
+                                                <label className="text-[10px] font-black text-slate-900 uppercase tracking-wider">Stok Kodu</label>
                                                 <input type="text" value={editingComplaint.stockCode} onChange={e => setEditingComplaint({ ...editingComplaint, stockCode: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white" />
                                             </div>
                                             <div className="space-y-1">
-                                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Hata Tanımı</label>
+                                                <label className="text-[10px] font-black text-slate-900 uppercase tracking-wider">Hata Tanımı</label>
                                                 <select value={editingComplaint.errorDefinition || ''} onChange={e => setEditingComplaint({ ...editingComplaint, errorDefinition: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white font-bold text-blue-700">
                                                     <option value="">Seçiniz...</option>
                                                     {errorOptions.map(o => <option key={o.id} value={o.label}>{o.label}</option>)}
@@ -449,7 +449,7 @@ export default function AdminPage() {
                                             </div>
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Hata Bölümü (Notlar)</label>
+                                            <label className="text-[10px] font-black text-slate-900 uppercase tracking-wider">Hata Bölümü (Notlar)</label>
                                             <textarea value={editingComplaint.errorDefinition || ''} onChange={e => setEditingComplaint({ ...editingComplaint, errorDefinition: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white h-20" />
                                         </div>
                                     </div>
@@ -459,7 +459,7 @@ export default function AdminPage() {
                             {/* Accordion 3: Rapor ve Onay */}
                             <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
                                 <button type="button" onClick={() => toggleSection('status')} className="w-full px-4 py-3 bg-slate-50 flex items-center justify-between hover:bg-slate-100 transition-colors">
-                                    <div className="flex items-center gap-2 font-bold text-slate-700 text-sm">
+                                    <div className="flex items-center gap-2 font-black text-slate-900 text-sm">
                                         <CheckCircle2 size={16} className="text-purple-500" />
                                         RAPOR VE ONAY DURUMU
                                     </div>
@@ -471,15 +471,15 @@ export default function AdminPage() {
                                             <label className="flex items-center gap-3 cursor-pointer group">
                                                 <input type="checkbox" checked={editingComplaint.isQualityReported} onChange={e => setEditingComplaint({ ...editingComplaint, isQualityReported: e.target.checked })} className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-bold text-slate-700 uppercase tracking-tight">Kalite Raporu</span>
-                                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{editingComplaint.isQualityReported ? 'YAPILDI' : 'BEKLİYOR'}</span>
+                                                    <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Kalite Raporu</span>
+                                                    <span className="text-[10px] text-slate-900 font-black uppercase tracking-widest">{editingComplaint.isQualityReported ? 'YAPILDI' : 'BEKLİYOR'}</span>
                                                 </div>
                                             </label>
                                             <label className="flex items-center gap-3 cursor-pointer group">
                                                 <input type="checkbox" checked={editingComplaint.isManagementApproved === true} onChange={e => setEditingComplaint({ ...editingComplaint, isManagementApproved: e.target.checked ? true : null })} className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-bold text-slate-700 uppercase tracking-tight">Yönetim Onayı</span>
-                                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{editingComplaint.isManagementApproved === true ? 'ONAYLANDI' : 'BEKLİYOR'}</span>
+                                                    <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Yönetim Onayı</span>
+                                                    <span className="text-[10px] text-slate-900 font-black uppercase tracking-widest">{editingComplaint.isManagementApproved === true ? 'ONAYLANDI' : 'BEKLİYOR'}</span>
                                                 </div>
                                             </label>
                                         </div>
@@ -506,27 +506,27 @@ export default function AdminPage() {
                         </div>
                         <div className="p-6 space-y-4">
                             <div className="space-y-1">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">İsim</label>
+                                <label className="text-[10px] font-black text-slate-900 uppercase tracking-wider">İsim</label>
                                 <input type="text" required value={userForm.name} onChange={e => setUserForm({ ...userForm, name: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 bg-white outline-none" />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">E-posta</label>
+                                <label className="text-[10px] font-black text-slate-900 uppercase tracking-wider">E-posta</label>
                                 <input type="email" required value={userForm.email} onChange={e => setUserForm({ ...userForm, email: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 bg-white outline-none" />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Şifre {editingUser && '(Değiştirmeyecekseniz boş bırakın)'}</label>
+                                <label className="text-[10px] font-black text-slate-900 uppercase tracking-wider">Şifre {editingUser && '(Değiştirmeyecekseniz boş bırakın)'}</label>
                                 <input type="password" required={!editingUser} value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 bg-white outline-none" />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Rol</label>
+                                    <label className="text-[10px] font-black text-slate-900 uppercase tracking-wider">Rol</label>
                                     <select value={userForm.role} onChange={e => setUserForm({ ...userForm, role: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 bg-white outline-none">
                                         <option value="Admin">Admin</option>
                                         <option value="User">User</option>
                                     </select>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Departman</label>
+                                    <label className="text-[10px] font-black text-slate-900 uppercase tracking-wider">Departman</label>
                                     <select value={userForm.departmentId} onChange={e => setUserForm({ ...userForm, departmentId: parseInt(e.target.value) })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 bg-white outline-none">
                                         {departments.map(d => (
                                             <option key={d.id} value={d.id}>{d.name}</option>

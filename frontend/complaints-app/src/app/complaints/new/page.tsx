@@ -147,7 +147,7 @@ export default function NewComplaintPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
                             {/* Müşteri Bilgileri */}
                             <div className="space-y-1">
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Müşteri İsmi</label>
+                                <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider">Müşteri İsmi</label>
                                 <input
                                     type="text" name="customerName" required value={formData.customerName} onChange={handleChange}
                                     className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 placeholder:text-slate-400"
@@ -156,7 +156,7 @@ export default function NewComplaintPage() {
                             </div>
 
                             <div className="space-y-1">
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Satıcı</label>
+                                <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider">Satıcı</label>
                                 <select
                                     name="sellerName" required value={formData.sellerName} onChange={handleChange}
                                     className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
@@ -169,7 +169,7 @@ export default function NewComplaintPage() {
                             </div>
 
                             <div className="space-y-1">
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Proje İsmi</label>
+                                <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider">Proje İsmi</label>
                                 <input
                                     type="text" name="projectName" required value={formData.projectName} onChange={handleChange}
                                     className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
@@ -178,7 +178,7 @@ export default function NewComplaintPage() {
                             </div>
 
                             <div className="space-y-1">
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Lokasyon</label>
+                                <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider">Lokasyon</label>
                                 <input
                                     type="text" name="projectLocation" required value={formData.projectLocation} onChange={handleChange}
                                     className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
@@ -188,7 +188,7 @@ export default function NewComplaintPage() {
 
                             {/* Ürün Detayları */}
                             <div className="space-y-1">
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Şikayet Tarihi</label>
+                                <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider">Şikayet Tarihi</label>
                                 <input
                                     type="date" name="complaintDate" required value={formData.complaintDate} onChange={handleChange}
                                     className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
@@ -196,7 +196,7 @@ export default function NewComplaintPage() {
                             </div>
 
                             <div className="space-y-1">
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Stok Kodu</label>
+                                <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider">Stok Kodu</label>
                                 <input
                                     type="text" name="stockCode" required value={formData.stockCode} onChange={handleChange}
                                     className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 font-medium"
@@ -204,7 +204,7 @@ export default function NewComplaintPage() {
                             </div>
 
                             <div className="space-y-1">
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Marka</label>
+                                <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider">Marka</label>
                                 <input
                                     type="text" name="brand" value={formData.brand} onChange={handleChange}
                                     className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
@@ -212,7 +212,7 @@ export default function NewComplaintPage() {
                             </div>
 
                             <div className="space-y-1">
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Modül Gücü</label>
+                                <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider">Modül Gücü</label>
                                 <input
                                     type="text" name="modulePower" value={formData.modulePower} onChange={handleChange}
                                     className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
@@ -220,7 +220,7 @@ export default function NewComplaintPage() {
                             </div>
 
                             <div className="space-y-1">
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Hata Tanımı</label>
+                                <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider">Hata Tanımı</label>
                                 <select
                                     name="errorDefinition" required value={formData.errorDefinition || ''} onChange={handleChange}
                                     className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 font-bold text-blue-700"
@@ -234,7 +234,7 @@ export default function NewComplaintPage() {
                         {/* Alt Bölüm: Barkod ve Notlar */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-2 border-t border-slate-100">
                             <div className="space-y-2">
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Barkodlar</label>
+                                <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider">Barkodlar</label>
                                 <textarea
                                     name="barcodesInput" value={barcodesInput} onChange={handleBarcodesChange} rows={3}
                                     className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-xl focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 font-mono resize-none"
@@ -250,21 +250,21 @@ export default function NewComplaintPage() {
                             <div className="grid grid-cols-1 gap-4">
                                 <div className="grid grid-cols-3 gap-3">
                                     <div className="space-y-1">
-                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Kusurlu</label>
+                                        <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider">Kusurlu</label>
                                         <input
                                             type="number" name="defectiveQuantity" required min="1" value={formData.defectiveQuantity || ''} onChange={handleChange}
                                             className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 font-bold"
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">HSA1</label>
+                                        <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider">HSA1</label>
                                         <input
                                             type="number" name="hsa1" min="0" value={formData.hsa1 || 0} onChange={handleChange}
                                             className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">HSA2</label>
+                                        <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider">HSA2</label>
                                         <input
                                             type="number" name="hsa2" min="0" value={formData.hsa2 || 0} onChange={handleChange}
                                             className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900"
@@ -272,7 +272,7 @@ export default function NewComplaintPage() {
                                     </div>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Şikayet Notu</label>
+                                    <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider">Şikayet Notu</label>
                                     <textarea
                                         name="note" value={formData.note || ''} onChange={(e) => setFormData(prev => ({ ...prev, note: e.target.value }))} rows={2}
                                         className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 resize-none font-sans"
