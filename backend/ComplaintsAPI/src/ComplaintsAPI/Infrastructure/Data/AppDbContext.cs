@@ -47,6 +47,7 @@ public class AppDbContext : DbContext
         {
             e.HasKey(x => x.Id);
             e.Property(x => x.ComplaintNumber).IsRequired().HasMaxLength(50);
+            e.HasIndex(x => x.ComplaintNumber).IsUnique();
 
             e.Property(x => x.Status).IsRequired().HasMaxLength(20).HasDefaultValue("Acik");
             e.Property(x => x.CustomerName).IsRequired().HasMaxLength(200);

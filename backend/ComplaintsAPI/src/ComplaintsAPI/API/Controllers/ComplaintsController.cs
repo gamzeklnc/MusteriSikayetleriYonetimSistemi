@@ -100,10 +100,23 @@ public class ComplaintsController : ControllerBase
         var today = DateTime.Now;
         var yearPart = today.ToString("yy"); // Son iki hane (Örn: 26)
         
-        var countThisYear = (await _repo.GetAllAsync(null, null))
-            .Count(x => x.RegistrationDate.Year == today.Year);
+        var complaintsThisYear = (await _repo.GetAllAsync(null, null))
+            .Where(x => x.RegistrationDate.Year == today.Year)
+            .ToList();
+            
+        int nextId = 1;
+        if (complaintsThisYear.Any())
+        {
+            var maxIdStr = complaintsThisYear
+                .Select(x => x.ComplaintNumber.Split('-').LastOrDefault())
+                .Where(x => int.TryParse(x, out _))
+                .Select(int.Parse)
+                .DefaultIfEmpty(0)
+                .Max();
+                
+            nextId = maxIdStr + 1;
+        }
         
-        var nextId = countThisYear + 1;
         complaint.ComplaintNumber = $"{yearPart}-{nextId:D2}";
 
         var created = await _repo.CreateAsync(complaint);
