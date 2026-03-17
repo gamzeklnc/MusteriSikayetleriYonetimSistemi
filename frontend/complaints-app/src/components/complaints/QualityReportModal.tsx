@@ -73,7 +73,7 @@ export default function QualityReportModal({ complaint, onClose, onSuccess }: Pr
                                 </span>
                             )}
                         </h2>
-                        <p className="text-sm text-slate-500 mt-0.5">
+                        <p className="text-sm text-slate-900 font-medium mt-0.5">
                             Kayıt Tarihi: {formatDate(complaint.registrationDate)}
                         </p>
                     </div>
@@ -116,26 +116,26 @@ export default function QualityReportModal({ complaint, onClose, onSuccess }: Pr
                         {/* Sol Kolon - Detaylar */}
                         <div className="space-y-6">
                             <div className="bg-slate-50 rounded-xl p-4 space-y-4 border border-slate-100">
-                                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200 pb-2">Şikayet Bilgileri</h3>
+                                <h3 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">Şikayet Bilgileri</h3>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <div className="text-[10px] text-slate-400 uppercase font-bold">Müşteri</div>
+                                        <div className="text-[10px] text-slate-900 uppercase font-bold">Müşteri</div>
                                         <div className="text-sm text-slate-800">{complaint.customerName}</div>
                                     </div>
                                     <div>
-                                        <div className="text-[10px] text-slate-400 uppercase font-bold">Satıcı</div>
+                                        <div className="text-[10px] text-slate-900 uppercase font-bold">Satıcı</div>
                                         <div className="text-sm text-slate-800">{complaint.sellerName}</div>
                                     </div>
                                     <div>
-                                        <div className="text-[10px] text-slate-400 uppercase font-bold">Stok Kodu</div>
+                                        <div className="text-[10px] text-slate-900 uppercase font-bold">Stok Kodu</div>
                                         <div className="text-sm font-bold text-slate-800">{complaint.stockCode}</div>
                                     </div>
                                     <div>
-                                        <div className="text-[10px] text-slate-400 uppercase font-bold">Sayı</div>
+                                        <div className="text-[10px] text-slate-900 uppercase font-bold">Sayı</div>
                                         <div className="text-sm text-slate-800">{complaint.defectiveQuantity}</div>
                                     </div>
                                     <div className="col-span-2">
-                                        <div className="text-[10px] text-slate-400 uppercase font-bold">Hata Tanımı</div>
+                                        <div className="text-[10px] text-slate-900 uppercase font-bold">Hata Tanımı</div>
                                         <div className="text-sm font-medium text-blue-700 bg-blue-50 px-2 py-1 rounded inline-block mt-1">
                                             {complaint.errorDefinition}
                                         </div>
@@ -165,7 +165,7 @@ export default function QualityReportModal({ complaint, onClose, onSuccess }: Pr
                         {/* Sağ Kolon - Barkodlar */}
                         <div className="flex flex-col h-full">
                             <div className="flex items-center justify-between mb-3">
-                                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Okunan Barkodlar</h3>
+                                <h3 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">Okunan Barkodlar</h3>
                                 <div className="flex bg-slate-100 p-0.5 rounded-lg">
                                     <button onClick={() => setBarcodeFilter('ALL')} className={`px-2 py-1 text-[9px] font-bold rounded-md transition-all ${barcodeFilter === 'ALL' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}>Tümü</button>
                                     <button onClick={() => setBarcodeFilter('HSA1')} className={`px-2 py-1 text-[9px] font-bold rounded-md transition-all ${barcodeFilter === 'HSA1' ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-500'}`}>HSA1</button>
@@ -177,7 +177,7 @@ export default function QualityReportModal({ complaint, onClose, onSuccess }: Pr
                                     <ul className="divide-y divide-slate-100 overflow-y-auto h-full p-2">
                                         {filteredBarcodes.map((barcode: string, idx: number) => (
                                             <li key={idx} className="flex items-center justify-between px-3 py-1.5 font-mono text-[11px] text-slate-600 bg-white mb-1 rounded border border-slate-100 shadow-sm">
-                                                <span className="text-slate-400">{idx + 1}.</span>
+                                                <span className="text-slate-900 font-bold">{idx + 1}.</span>
                                                 <span className="font-bold">{barcode}</span>
                                                 <span className={`text-[8px] font-bold px-1 py-0.5 rounded ${parseSingleBarcode(barcode).factory === 'HSA1' ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700'}`}>
                                                     {parseSingleBarcode(barcode).factory}
@@ -194,10 +194,10 @@ export default function QualityReportModal({ complaint, onClose, onSuccess }: Pr
 
                     {/* Alt Kısım - Raporlama */}
                     <div className="mt-8 pt-6 border-t border-slate-100">
-                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Kalite Değerlendirmesi</h3>
+                        <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-4">Kalite Değerlendirmesi</h3>
                         <div className="space-y-4">
                             <div>
-                                <label className="text-[10px] text-slate-400 uppercase font-bold mb-1.5 block ml-1">
+                                <label className="text-[10px] text-slate-900 uppercase font-bold mb-1.5 block ml-1">
                                     Kalite Kontrol Notu
                                     {isRejected && <span className="text-red-500 ml-1 normal-case">(Lütfen güncelleyin)</span>}
                                 </label>

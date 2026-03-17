@@ -405,18 +405,18 @@ export default function AdminPage() {
                                     <div className="p-4 grid grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-200">
                                         <div className="col-span-2 space-y-1">
                                             <label className="text-[10px] font-black text-slate-900 uppercase tracking-wider">Müşteri İsmi</label>
-                                            <input type="text" value={editingComplaint.customerName} onChange={e => setEditingComplaint({ ...editingComplaint, customerName: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white" />
+                                            <input type="text" value={editingComplaint.customerName} onChange={e => setEditingComplaint({ ...editingComplaint, customerName: e.target.value })} className="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-900 bg-white focus:border-blue-500 outline-none" />
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[10px] font-black text-slate-900 uppercase tracking-wider">Durum</label>
-                                            <select value={editingComplaint.status} onChange={e => setEditingComplaint({ ...editingComplaint, status: e.target.value as any })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white">
+                                            <select value={editingComplaint.status} onChange={e => setEditingComplaint({ ...editingComplaint, status: e.target.value as any })} className="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-900 bg-white focus:border-blue-500 outline-none">
                                                 <option value="Acik">Açık</option>
                                                 <option value="Kapali">Kapalı</option>
                                             </select>
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[10px] font-black text-slate-900 uppercase tracking-wider">Mevcut Aşama</label>
-                                            <select value={editingComplaint.currentDepartmentName} onChange={e => setEditingComplaint({ ...editingComplaint, currentDepartmentName: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white">
+                                            <select value={editingComplaint.currentDepartmentName} onChange={e => setEditingComplaint({ ...editingComplaint, currentDepartmentName: e.target.value })} className="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-900 bg-white focus:border-blue-500 outline-none">
                                                 {departments.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
                                             </select>
                                         </div>
@@ -438,11 +438,11 @@ export default function AdminPage() {
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-1">
                                                 <label className="text-[10px] font-black text-slate-900 uppercase tracking-wider">Stok Kodu</label>
-                                                <input type="text" value={editingComplaint.stockCode} onChange={e => setEditingComplaint({ ...editingComplaint, stockCode: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white" />
+                                                <input type="text" value={editingComplaint.stockCode} onChange={e => setEditingComplaint({ ...editingComplaint, stockCode: e.target.value })} className="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-900 bg-white focus:border-blue-500 outline-none" />
                                             </div>
                                             <div className="space-y-1">
                                                 <label className="text-[10px] font-black text-slate-900 uppercase tracking-wider">Hata Tanımı</label>
-                                                <select value={editingComplaint.errorDefinition || ''} onChange={e => setEditingComplaint({ ...editingComplaint, errorDefinition: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white font-bold text-blue-700">
+                                                <select value={editingComplaint.errorDefinition || ''} onChange={e => setEditingComplaint({ ...editingComplaint, errorDefinition: e.target.value })} className="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-bold text-blue-700 bg-white focus:border-blue-500 outline-none">
                                                     <option value="">Seçiniz...</option>
                                                     {errorOptions.map(o => <option key={o.id} value={o.label}>{o.label}</option>)}
                                                 </select>
@@ -450,7 +450,7 @@ export default function AdminPage() {
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[10px] font-black text-slate-900 uppercase tracking-wider">Hata Bölümü (Notlar)</label>
-                                            <textarea value={editingComplaint.errorDefinition || ''} onChange={e => setEditingComplaint({ ...editingComplaint, errorDefinition: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white h-20" />
+                                            <textarea value={editingComplaint.errorDefinition || ''} onChange={e => setEditingComplaint({ ...editingComplaint, errorDefinition: e.target.value })} className="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-900 bg-white h-20 focus:border-blue-500 outline-none" />
                                         </div>
                                     </div>
                                 )}

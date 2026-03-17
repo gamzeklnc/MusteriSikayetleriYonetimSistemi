@@ -171,7 +171,7 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
                         </button>
                         <button 
                             onClick={onClose}
-                            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+                            className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors"
                         >
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -283,7 +283,7 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
                     {/* Barkodlar Listesi (Alt Kısım Geniş) */}
                     <div>
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 gap-3">
-                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Okunan Barkodlar</h3>
+                            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Okunan Barkodlar</h3>
                             
                             <div className="flex bg-slate-100 p-1 rounded-lg">
                                 <button
@@ -327,7 +327,7 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
                                         return (
                                             <li key={idx} className="flex items-center justify-between px-4 py-2 font-mono text-sm text-slate-600 hover:bg-slate-50 rounded-md transition-colors">
                                                 <div className="flex items-center gap-3">
-                                                    <span className="text-slate-400 w-8 inline-block select-none">{idx + 1}.</span>
+                                                    <span className="text-slate-900 font-bold w-8 inline-block select-none">{idx + 1}.</span>
                                                     <span className="font-bold tracking-tight text-slate-700">{barcode}</span>
                                                 </div>
                                                 {factory === 'HSA1' && <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">HSA1</span>}
