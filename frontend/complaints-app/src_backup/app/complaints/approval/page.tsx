@@ -74,7 +74,7 @@ export default function ApprovalPage() {
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-[11px]">
-                            <thead className="bg-slate-50 text-[10px]  font-bold text-slate-500 border-b border-slate-200 tracking-wider">
+                            <thead className="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200 tracking-wider">
                                 <tr>
                                     <th className="px-1.5 py-1.5">Şikayet No</th>
                                     <th className="px-1.5 py-1.5">Müşteri</th>
@@ -96,13 +96,13 @@ export default function ApprovalPage() {
                                         <td colSpan={11} className="px-6 py-20 text-center">
                                             <div className="flex flex-col items-center justify-center text-slate-400">
                                                 <div className="w-8 h-8 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-                                                <span className="text-xs font-bold  tracking-widest">Yükleniyor...</span>
+                                                <span className="text-xs font-bold uppercase tracking-widest">Yükleniyor...</span>
                                             </div>
                                         </td>
                                     </tr>
                                 ) : filteredComplaints.length === 0 ? (
                                     <tr>
-                                        <td colSpan={11} className="px-6 py-20 text-center text-slate-400 text-xs  tracking-widest font-bold">
+                                        <td colSpan={11} className="px-6 py-20 text-center text-slate-400 text-xs uppercase tracking-widest font-bold">
                                             Kayıt bulunamadı.
                                         </td>
                                     </tr>
@@ -163,8 +163,8 @@ export default function ApprovalPage() {
                                                     onClick={() => setSelectedComplaint(c)}
                                                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"
                                                 >
-                                                    <svg className="w-4 h-4"fill="none"viewBox="0 0 24 24"stroke="currentColor">
-                                                        <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                     </svg>
                                                     İşlem
                                                 </button>

@@ -110,7 +110,7 @@ public class ComplaintsController : ControllerBase
             var maxIdStr = complaintsThisYear
                 .Select(x => x.ComplaintNumber.Split('-').LastOrDefault())
                 .Where(x => int.TryParse(x, out _))
-                .Select(int.Parse)
+                .Select(x => int.Parse(x!))
                 .DefaultIfEmpty(0)
                 .Max();
                 

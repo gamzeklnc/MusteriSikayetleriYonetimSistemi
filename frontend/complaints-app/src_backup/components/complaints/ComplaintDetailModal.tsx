@@ -161,10 +161,11 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
                     <div className="flex items-center gap-3">
                         <button 
                             onClick={handleExportExcel}
-                            className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 text-sm font-bold rounded-lg transition-colors border border-emerald-200"title="Excel'e Aktar"
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 text-sm font-bold rounded-lg transition-colors border border-emerald-200"
+                            title="Excel'e Aktar"
                         >
-                            <svg className="w-4 h-4"fill="none"viewBox="0 0 24 24"stroke="currentColor">
-                                <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             Excel'e Aktar
                         </button>
@@ -172,8 +173,8 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
                             onClick={onClose}
                             className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors"
                         >
-                            <svg className="w-5 h-5"fill="none"viewBox="0 0 24 24"stroke="currentColor">
-                                <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
                     </div>
@@ -187,38 +188,38 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
                         {/* Sol Kolon - Müşteri & Proje */}
                         <div className="space-y-6">
                             <div>
-                                <h3 className="text-xs font-black text-slate-900  tracking-wider mb-3">Müşteri ve Proje Bilgileri</h3>
+                                <h3 className="text-xs font-semibold text-slate-700 tracking-wide mb-3">Müşteri ve Proje Bilgileri</h3>
                                 <div className="bg-slate-50 rounded-xl p-4 space-y-3 border border-slate-100">
                                     <div>
-                                        <div className="text-[10px] text-slate-900  font-black">Müşteri İsmi</div>
+                                        <div className="text-[10px] text-slate-500 font-semibold mb-0.5">Müşteri İsmi</div>
                                         <div className="font-medium text-slate-800">{complaint.customerName}</div>
                                     </div>
                                     <div>
-                                        <div className="text-[10px] text-slate-900  font-black">Satış Sorumlusu Firma</div>
+                                        <div className="text-[10px] text-slate-500 font-semibold mb-0.5">Satış Sorumlusu</div>
                                         <div className="font-medium text-slate-800">{complaint.sellerName}</div>
                                     </div>
                                     <div>
-                                        <div className="text-[10px] text-slate-900  font-black">Proje İsmi & Lokasyonu</div>
+                                        <div className="text-[10px] text-slate-500 font-semibold mb-0.5">Proje İsmi & Lokasyonu</div>
                                         <div className="font-medium text-slate-800">{complaint.projectName || '-'} / {complaint.projectLocation || '-'}</div>
                                     </div>
                                     <div>
-                                        <div className="text-[10px] text-slate-900  font-black">Şikayet Tarihi (Saha)</div>
+                                        <div className="text-[10px] text-slate-500 font-semibold mb-0.5">Şikayet Tarihi (Saha)</div>
                                         <div className="font-medium text-slate-800">{formatDate(complaint.complaintDate)}</div>
                                     </div>
                                 </div>
                             </div>
 
                             <div>
-                                <h3 className="text-xs font-black text-slate-900  tracking-wider mb-3">Şikayet Durumu</h3>
+                                <h3 className="text-xs font-semibold text-slate-700 tracking-wide mb-3">Şikayet Durumu</h3>
                                 <div className="bg-slate-50 rounded-xl p-4 space-y-3 border border-slate-100">
                                     <div className="flex justify-between items-center">
-                                        <div className="text-[10px] text-slate-900  font-black">Durum</div>
+                                        <div className="text-[10px] text-slate-500 font-semibold mb-0.5">Durum</div>
                                         <div className={`px-2 py-1 rounded-md text-xs font-bold ${complaint.status === 'Acik' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
                                             {complaint.status === 'Acik' ? 'Açık' : 'Kapalı'}
                                         </div>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <div className="text-[10px] text-slate-900  font-black">Mevcut Aşama</div>
+                                        <div className="text-[10px] text-slate-500 font-semibold mb-0.5">Mevcut Aşama</div>
                                         <div className="font-medium text-blue-600">{complaint.currentDepartmentName}</div>
                                     </div>
                                 </div>
@@ -228,28 +229,28 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
                         {/* Sağ Kolon - Ürün & Barkod Özet */}
                         <div className="space-y-6">
                             <div>
-                                <h3 className="text-xs font-black text-slate-900  tracking-wider mb-3">Ürün ve Kusur Bilgileri</h3>
+                                <h3 className="text-xs font-semibold text-slate-700 tracking-wide mb-3">Ürün ve Kusur Bilgileri</h3>
                                 <div className="bg-slate-50 rounded-xl p-4 space-y-3 border border-slate-100">
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <div className="text-[10px] text-slate-900  font-black">Stok Kodu</div>
+                                            <div className="text-[10px] text-slate-500 font-semibold mb-0.5">Stok Kodu</div>
                                             <div className="font-bold text-slate-800">{complaint.stockCode}</div>
                                         </div>
                                         <div>
-                                            <div className="text-[10px] text-slate-900  font-black">Kusurlu Sayısı</div>
+                                            <div className="text-[10px] text-slate-500 font-semibold mb-0.5">Kusurlu Sayısı</div>
                                             <div className="font-bold text-red-600 text-lg">{complaint.defectiveQuantity}</div>
                                         </div>
                                         <div>
-                                            <div className="text-[10px] text-slate-900  font-black">Marka</div>
+                                            <div className="text-[10px] text-slate-500 font-semibold mb-0.5">Marka</div>
                                             <div className="font-medium text-slate-800">{complaint.brand || '-'}</div>
                                         </div>
                                         <div>
-                                            <div className="text-[10px] text-slate-900  font-black">Güç</div>
+                                            <div className="text-[10px] text-slate-500 font-semibold mb-0.5">Güç</div>
                                             <div className="font-medium text-slate-800">{complaint.modulePower || '-'}</div>
                                         </div>
                                         
                                         <div className="col-span-2">
-                                            <div className="text-[10px] text-slate-900  font-black">Hata Tanımı</div>
+                                            <div className="text-[10px] text-slate-500 font-semibold mb-0.5">Hata Tanımı</div>
                                             <div className="font-bold text-blue-700 bg-blue-50 px-2.5 py-1.5 rounded-lg border border-blue-100 inline-block mt-1">
                                                 {complaint.errorDefinition || 'Tanımlanmamış'}
                                             </div>
@@ -257,11 +258,11 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
                                         
                                         <div className="col-span-2 pt-2 mt-2 border-t border-slate-200 grid grid-cols-2 gap-3">
                                             <div>
-                                                <div className="text-[10px] text-slate-900  font-black">HSA1 Miktarı</div>
+                                                <div className="text-[10px] text-slate-500 font-semibold mb-0.5">HSA1 Miktarı</div>
                                                 <div className="font-bold text-emerald-600">{complaint.hsa1 || 0}</div>
                                             </div>
                                             <div>
-                                                <div className="text-[10px] text-slate-900  font-black">HSA2 Miktarı</div>
+                                                <div className="text-[10px] text-slate-500 font-semibold mb-0.5">HSA2 Miktarı</div>
                                                 <div className="font-bold text-indigo-600">{complaint.hsa2 || 0}</div>
                                             </div>
                                         </div>
@@ -271,7 +272,7 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
 
                             {/* Not Alanı */}
                             <div>
-                                <h3 className="text-xs font-black text-slate-900  tracking-wider mb-3">Şikayet Notu</h3>
+                                <h3 className="text-xs font-semibold text-slate-700 tracking-wide mb-3">Şikayet Notu</h3>
                                 <div className="bg-amber-50 rounded-xl p-4 border border-amber-100 text-amber-900 text-sm italic min-h-[80px]">
                                     {complaint.initialNote || 'Bu şikayet kaydına ait henüz bir not bulunmuyor.'}
                                 </div>
@@ -282,7 +283,7 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
                     {/* Barkodlar Listesi (Alt Kısım Geniş) */}
                     <div>
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 gap-3">
-                            <h3 className="text-xs font-bold text-slate-900  tracking-wider">Okunan Barkodlar</h3>
+                            <h3 className="text-xs font-semibold text-slate-700 tracking-wide">Okunan Barkodlar</h3>
                             
                             <div className="flex bg-slate-100 p-1 rounded-lg">
                                 <button

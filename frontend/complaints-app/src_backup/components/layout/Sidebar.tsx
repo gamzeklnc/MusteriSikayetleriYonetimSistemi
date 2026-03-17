@@ -44,13 +44,13 @@ export default function Sidebar() {
             <div className="px-6 py-6 mb-2">
                 <div className="flex items-center gap-3">
                     <div className="bg-white p-1.5 rounded-lg flex items-center justify-center">
-                        <img src="/hsa-logo.png"alt="HSA Enerji"className="h-6 w-auto object-contain" />
+                        <img src="/hsa-logo.png" alt="HSA Enerji" className="h-6 w-auto object-contain" />
                     </div>
                     <div>
                         <h1 className="text-white font-bold text-sm leading-tight">
                             Şikayet Yönetim
                         </h1>
-                        <span className="text-slate-400 text-[10px]  tracking-wider font-semibold">Kurumsal Sistem</span>
+                        <span className="text-slate-400 text-[10px] uppercase tracking-wider font-semibold">Kurumsal Sistem</span>
                     </div>
                 </div>
             </div>
@@ -58,7 +58,7 @@ export default function Sidebar() {
             {/* Nav */}
             <nav className="flex-1 overflow-y-auto px-3 space-y-1">
                 <div className="pb-2 px-3">
-                    <span className="text-[10px] font-bold text-slate-500  tracking-widest">Genel</span>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Genel</span>
                 </div>
 
                 {/* Dashboard */}
@@ -74,7 +74,7 @@ export default function Sidebar() {
                 </Link>
 
                 <div className="pt-6 pb-2 px-3">
-                    <span className="text-[10px] font-bold text-slate-500  tracking-widest">İş Akış Adımları</span>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">İş Akış Adımları</span>
                 </div>
 
                 {/* Workflow Steps - Herkese Görünür */}
@@ -99,7 +99,7 @@ export default function Sidebar() {
                 </Link>
 
                 <div className="pt-6 pb-2 px-3">
-                    <span className="text-[10px] font-bold text-slate-500  tracking-widest">Yönetim</span>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Yönetim</span>
                 </div>
 
                 <Link href="/complaints/admin" className={linkClass('/complaints/admin')}>
@@ -112,7 +112,7 @@ export default function Sidebar() {
             {mounted && user && (
                 <div className="px-4 py-3 mx-3 mb-2 bg-slate-800/50 rounded-xl border border-slate-800">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-xs ">
+                        <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-xs uppercase">
                             {user.name[0]}
                         </div>
                         <div className="flex-1 min-w-0">

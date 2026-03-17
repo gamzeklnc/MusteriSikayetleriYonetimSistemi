@@ -237,7 +237,7 @@ export default function QualityReportModal({ complaint, onClose, onSuccess }: Pr
                                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                             </svg>
-                                            {isRejected ? 'YENİDEN RAPOR GÖNDER' : 'RAPOR TAMAMLANDI OLARAK İŞARETLE'}
+                                            {isRejected ? 'YENİDEN ONAYA GÖNDER' : 'RAPOR TAMAMLANDI OLARAK İŞARETLE'}
                                         </>
                                     )}
                                 </button>

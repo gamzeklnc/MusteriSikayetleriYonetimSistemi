@@ -67,8 +67,8 @@ export default function ManagementApprovalModal({ complaint, onClose, onSuccess 
                         </p>
                     </div>
                     <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        <svg className="w-5 h-5"fill="none"viewBox="0 0 24 24"stroke="currentColor">
+                            <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
@@ -79,26 +79,26 @@ export default function ManagementApprovalModal({ complaint, onClose, onSuccess 
                         {/* Sol Kolon - Detaylar */}
                         <div className="space-y-6">
                             <div className="bg-slate-50 rounded-xl p-4 space-y-4 border border-slate-100">
-                                <h3 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">Şikayet Bilgileri</h3>
+                                <h3 className="text-[10px] font-bold text-slate-900  tracking-widest border-b border-slate-200 pb-2">Şikayet Bilgileri</h3>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <div className="text-[10px] text-slate-900 uppercase font-bold">Müşteri</div>
+                                        <div className="text-[10px] text-slate-900  font-bold">Müşteri</div>
                                         <div className="text-sm text-slate-800">{complaint.customerName}</div>
                                     </div>
                                     <div>
-                                        <div className="text-[10px] text-slate-900 uppercase font-bold">Satıcı</div>
+                                        <div className="text-[10px] text-slate-900  font-bold">Satış Sorumlusu</div>
                                         <div className="text-sm text-slate-800">{complaint.sellerName}</div>
                                     </div>
                                     <div>
-                                        <div className="text-[10px] text-slate-900 uppercase font-bold">Stok Kodu</div>
+                                        <div className="text-[10px] text-slate-900  font-bold">Stok Kodu</div>
                                         <div className="text-sm font-bold text-slate-800">{complaint.stockCode}</div>
                                     </div>
                                     <div>
-                                        <div className="text-[10px] text-slate-900 uppercase font-bold">Sayı</div>
+                                        <div className="text-[10px] text-slate-900  font-bold">Sayı</div>
                                         <div className="text-sm text-slate-800">{complaint.defectiveQuantity}</div>
                                     </div>
                                     <div className="col-span-2">
-                                        <div className="text-[10px] text-slate-900 uppercase font-bold">Hata Tanımı</div>
+                                        <div className="text-[10px] text-slate-900  font-bold">Hata Tanımı</div>
                                         <div className="text-sm font-medium text-blue-700 bg-blue-50 px-2 py-1 rounded inline-block mt-1">
                                             {complaint.errorDefinition}
                                         </div>
@@ -107,13 +107,13 @@ export default function ManagementApprovalModal({ complaint, onClose, onSuccess 
                             </div>
 
                             <div className="bg-emerald-50 rounded-xl p-4 space-y-3 border border-emerald-100">
-                                <h3 className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest border-b border-emerald-200 pb-2">Kalite Raporu</h3>
+                                <h3 className="text-[10px] font-bold text-emerald-600  tracking-widest border-b border-emerald-200 pb-2">Kalite Raporu</h3>
                                 <div>
-                                    <div className="text-[10px] text-emerald-600/60 uppercase font-bold">Raporu Yapan</div>
+                                    <div className="text-[10px] text-emerald-600/60  font-bold">Raporu Yapan</div>
                                     <div className="text-sm text-emerald-900">{complaint.qualityReportedByName || '-'}</div>
                                 </div>
                                 <div>
-                                    <div className="text-[10px] text-emerald-600/60 uppercase font-bold">Kalite Notu</div>
+                                    <div className="text-[10px] text-emerald-600/60  font-bold">Kalite Notu</div>
                                     <div className="text-sm text-emerald-800 italic bg-white/50 p-2 rounded-lg mt-1 border border-emerald-100 min-h-[60px]">
                                         {complaint.qualityReportNote || 'Not bırakılmamış.'}
                                     </div>
@@ -123,13 +123,13 @@ export default function ManagementApprovalModal({ complaint, onClose, onSuccess 
                             {/* Yönetim Onayı Bilgisi */}
                             {complaint.isManagementApproved !== null && (
                                 <div className={`bg-${complaint.isManagementApproved ? 'emerald' : 'red'}-50 rounded-xl p-4 space-y-3 border border-${complaint.isManagementApproved ? 'emerald' : 'red'}-100`}>
-                                    <h3 className={`text-[10px] font-bold text-${complaint.isManagementApproved ? 'emerald' : 'red'}-600 uppercase tracking-widest border-b border-${complaint.isManagementApproved ? 'emerald' : 'red'}-200 pb-2`}>Yönetim Kararı</h3>
+                                    <h3 className={`text-[10px] font-bold text-${complaint.isManagementApproved ? 'emerald' : 'red'}-600  tracking-widest border-b border-${complaint.isManagementApproved ? 'emerald' : 'red'}-200 pb-2`}>Yönetim Kararı</h3>
                                     <div>
-                                        <div className={`text-[10px] text-${complaint.isManagementApproved ? 'emerald' : 'red'}-600/60 uppercase font-bold`}>Onaylayan / Reddeden</div>
+                                        <div className={`text-[10px] text-${complaint.isManagementApproved ? 'emerald' : 'red'}-600/60  font-bold`}>Onaylayan / Reddeden</div>
                                         <div className={`text-sm text-${complaint.isManagementApproved ? 'emerald' : 'red'}-900`}>{complaint.managementApprovedByName || '-'}</div>
                                     </div>
                                     <div>
-                                        <div className={`text-[10px] text-${complaint.isManagementApproved ? 'emerald' : 'red'}-600/60 uppercase font-bold`}>Onay Notu</div>
+                                        <div className={`text-[10px] text-${complaint.isManagementApproved ? 'emerald' : 'red'}-600/60  font-bold`}>Onay Notu</div>
                                         <div className={`text-sm text-${complaint.isManagementApproved ? 'emerald' : 'red'}-800 italic bg-white/50 p-2 rounded-lg mt-1 border border-${complaint.isManagementApproved ? 'emerald' : 'red'}-100 min-h-[60px]`}>
                                             {complaint.managementApprovalNote || 'Not bırakılmamış.'}
                                         </div>
@@ -141,7 +141,7 @@ export default function ManagementApprovalModal({ complaint, onClose, onSuccess 
                         {/* Sağ Kolon - Barkodlar */}
                         <div className="flex flex-col h-full">
                             <div className="flex items-center justify-between mb-3">
-                                <h3 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">Okunan Barkodlar</h3>
+                                <h3 className="text-[10px] font-bold text-slate-900  tracking-widest">Okunan Barkodlar</h3>
                                 <div className="flex bg-slate-100 p-0.5 rounded-lg">
                                     <button onClick={() => setBarcodeFilter('ALL')} className={`px-2 py-1 text-[9px] font-bold rounded-md transition-all ${barcodeFilter === 'ALL' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}>Tümü</button>
                                     <button onClick={() => setBarcodeFilter('HSA1')} className={`px-2 py-1 text-[9px] font-bold rounded-md transition-all ${barcodeFilter === 'HSA1' ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-500'}`}>HSA1</button>
@@ -170,15 +170,14 @@ export default function ManagementApprovalModal({ complaint, onClose, onSuccess 
 
                     {/* Alt Kısım - Onay ve Not */}
                     <div className="mt-8 pt-6 border-t border-slate-100">
-                        <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-4">Yönetim Değerlendirmesi</h3>
+                        <h3 className="text-xs font-bold text-slate-900  tracking-wider mb-4">Yönetim Değerlendirmesi</h3>
                         <div className="space-y-4">
                             <div>
-                                <label className="text-[10px] text-slate-900 uppercase font-bold mb-1.5 block ml-1">Onay Notu</label>
+                                <label className="text-[10px] text-slate-900  font-bold mb-1.5 block ml-1">Onay Notu</label>
                                 <textarea
                                     value={note}
                                     onChange={(e) => setNote(e.target.value)}
-                                    placeholder="Kararınız hakkında bir not bırakın..."
-                                    className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-300 min-h-[120px] resize-none shadow-inner bg-slate-50/30"
+                                    placeholder="Kararınız hakkında bir not bırakın..."className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-300 min-h-[120px] resize-none shadow-inner bg-slate-50/30"
                                 />
                             </div>
                             <div className="flex items-center gap-4">
@@ -193,8 +192,8 @@ export default function ManagementApprovalModal({ complaint, onClose, onSuccess 
                                 >
                                     {isUpdating ? <div className="w-5 h-5 border-2 border-emerald-600/30 border-t-emerald-600 rounded-full animate-spin"></div> : (
                                         <>
-                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            <svg className="w-5 h-5"fill="none"viewBox="0 0 24 24"stroke="currentColor">
+                                                <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M5 13l4 4L19 7" />
                                             </svg>
                                             YÖNETİM ONAYI VER
                                         </>
@@ -211,8 +210,8 @@ export default function ManagementApprovalModal({ complaint, onClose, onSuccess 
                                 >
                                     {isUpdating ? <div className="w-5 h-5 border-2 border-red-600/30 border-t-red-600 rounded-full animate-spin"></div> : (
                                         <>
-                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            <svg className="w-5 h-5"fill="none"viewBox="0 0 24 24"stroke="currentColor">
+                                                <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                             </svg>
                                             TALEBİ REDDET
                                         </>
