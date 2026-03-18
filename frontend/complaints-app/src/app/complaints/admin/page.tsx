@@ -222,8 +222,11 @@ export default function AdminPage() {
                                             <td className="px-1.5 py-1.5 font-medium text-slate-700">{c.customerName}</td>
                                             <td className="px-1.5 py-1.5 text-[11px] font-bold text-blue-600  tracking-widest">{c.currentDepartmentName}</td>
                                             <td className="px-1.5 py-1.5">
-                                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold  tracking-wider ${c.status === 'Acik' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`}>
-                                                    {c.status === 'Acik' ? 'Açık' : 'Kapalı'}
+                                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold  tracking-wider ${c.status.includes('Gecikti') ? 'bg-red-50 text-red-700 border border-red-200' :
+                                                        c.status.includes('Kapalı') || c.status.includes('Kapali') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                                                            'bg-amber-50 text-amber-700 border border-amber-200'
+                                                    }`}>
+                                                    {c.status}
                                                 </span>
                                             </td>
                                             <td className="px-1.5 py-1.5 text-center">

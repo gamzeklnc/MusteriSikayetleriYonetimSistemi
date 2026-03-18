@@ -87,6 +87,7 @@ public class Complaint
     public bool IsCustomerFeedbackDone { get; set; } = false;
     public string? CustomerFeedbackNote { get; set; }
     public int? CustomerFeedbackById { get; set; }
+    public DateTime? CustomerFeedbackAt { get; set; }
 
     // ── Operasyonel Aksiyonlar ───────────────────────────────────────────────
     public string? OperationalStage { get; set; }

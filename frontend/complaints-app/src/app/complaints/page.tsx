@@ -67,8 +67,6 @@ export default function ComplaintsPage() {
 
         const regDate = formatDate(c.registrationDate);
         const compDate = formatDate(c.complaintDate);
-        const statusText = c.status === 'Acik' ? 'Açık' : 'Kapalı';
-
         return (
             safeMatch(c.complaintNumber, filters.complaintNumber) &&
             safeMatch(regDate, filters.registrationDate) &&
@@ -83,7 +81,7 @@ export default function ComplaintsPage() {
             safeMatch(c.errorDefinition, filters.errorDefinition) &&
             safeMatch((c.hsa1 || 0).toString(), filters.hsa1) &&
             safeMatch((c.hsa2 || 0).toString(), filters.hsa2) &&
-            safeMatch(statusText, filters.status) &&
+            safeMatch(c.status, filters.status) &&
             safeMatch(c.currentDepartmentName, filters.currentDepartmentName)
         );
     });
@@ -103,7 +101,7 @@ export default function ComplaintsPage() {
             'Hata Tanımı': c.errorDefinition || '',
             'HSA1': c.hsa1 || 0,
             'HSA2': c.hsa2 || 0,
-            'Durum': c.status === 'Acik' ? 'Açık' : 'Kapalı',
+            'Durum': c.status,
             'Aşama': c.currentDepartmentName
         }));
 
@@ -311,10 +309,15 @@ export default function ComplaintsPage() {
                                                 {complaint.hsa2 || 0}
                                             </td>
                                             <td className="px-1.5 py-1.5">
-                                                <div className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-medium border ${complaint.status === 'Acik' ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                                                <div className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-medium border ${complaint.status.includes('Gecikti') ? 'bg-red-50 text-red-600 border-red-200' :
+                                                        complaint.status.includes('Kapalı') || complaint.status.includes('Kapali') ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
+                                                            'bg-amber-50 text-amber-600 border-amber-200'
                                                     }`}>
-                                                    <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${complaint.status === 'Acik' ? 'bg-amber-500' : 'bg-emerald-500'}`}></span>
-                                                    {complaint.status === 'Acik' ? 'Açık' : 'Kapalı'}
+                                                    <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${complaint.status.includes('Gecikti') ? 'bg-red-500' :
+                                                            complaint.status.includes('Kapalı') || complaint.status.includes('Kapali') ? 'bg-emerald-500' :
+                                                                'bg-amber-500'
+                                                        }`}></span>
+                                                    {complaint.status}
                                                 </div>
                                             </td>
                                             <td className="px-1.5 py-1.5 whitespace-nowrap">

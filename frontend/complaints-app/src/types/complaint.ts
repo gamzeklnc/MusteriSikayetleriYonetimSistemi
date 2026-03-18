@@ -1,6 +1,6 @@
 // Şikayet tipleri
 
-export type ComplaintStatus = 'Acik' | 'Kapali';
+export type ComplaintStatus = 'Acik' | 'Kapali' | 'Açık: Devam ediyor' | 'Açık: Gecikerek devam ediyor' | 'Açık: Gecikti' | 'Kapalı';
 
 export interface ComplaintDto {
   id: number;

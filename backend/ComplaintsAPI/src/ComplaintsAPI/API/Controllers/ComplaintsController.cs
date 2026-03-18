@@ -424,7 +424,14 @@ public class ComplaintsController : ControllerBase
         complaint.IsCustomerFeedbackDone = req.IsDone;
         complaint.CustomerFeedbackNote = req.Note;
         if (req.IsDone)
+        {
             complaint.CustomerFeedbackById = CurrentUserId;
+            complaint.CustomerFeedbackAt = DateTime.UtcNow;
+        }
+        else
+        {
+            complaint.CustomerFeedbackAt = null;
+        }
 
         await _repo.UpdateAsync(complaint);
         await LogActivityAsync("Müşteri Geri Dönüşü Güncellendi", $"Şikayet No: {complaint.ComplaintNumber}, Durum: {(req.IsDone ? "Yapıldı" : "Bekliyor")}");
@@ -479,10 +486,37 @@ public class ComplaintsController : ControllerBase
     }
 
     // ── Yardımcı Mapper ───────────────────────────────────────────────────────
+    private static string GetDescriptiveStatus(Domain.Entities.Complaint c)
+    {
+        if (c.Status == "Kapali") return "Kapalı";
+        
+        // RegistrationDate'den itibaren 48 saat (Kayıt tarihi baz alınır)
+        var deadline = c.RegistrationDate.AddHours(48);
+        var now = DateTime.UtcNow;
+
+        if (!c.IsCustomerFeedbackDone)
+        {
+            return now <= deadline ? "Açık: Devam ediyor" : "Açık: Gecikti";
+        }
+        else
+        {
+            // Müşteri dönüşü yapılmış. CustomerFeedbackAt değeri yoksa (eski kayıtlar) 
+            // ama IsCustomerFeedbackDone true ise "Devam ediyor" kabul edebiliriz veya 
+            // RegistrationDate+48h ile karşılaştırabiliriz.
+            if (c.CustomerFeedbackAt.HasValue)
+            {
+                return c.CustomerFeedbackAt.Value <= deadline ? "Açık: Devam ediyor" : "Açık: Gecikerek devam ediyor";
+            }
+            
+            // Eğer tarih yoksa ama tamamlanmışsa varsayılan olarak zamanında yapıldı sayalım (veya tam tersi)
+            return "Açık: Devam ediyor";
+        }
+    }
+
     private static ComplaintDto MapToDto(Domain.Entities.Complaint c) => new(
         c.Id,
         c.ComplaintNumber,
-        c.Status,
+        GetDescriptiveStatus(c),
         c.IsCustomerFeedbackDone ? "Aksiyon Planı" :
         (c.IsManagementApproved == true ? "Müşteri Geri Dönüşü" :
         (c.IsQualityReported ? "Yönetim Onayı" : "Kalite Raporlaması")),

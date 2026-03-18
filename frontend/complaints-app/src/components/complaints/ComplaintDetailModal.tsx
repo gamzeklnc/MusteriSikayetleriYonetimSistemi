@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import * as XLSX from 'xlsx-js-style';
@@ -64,7 +64,7 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
             (complaint.hsa1 || 0).toString(),
             (complaint.hsa2 || 0).toString(),
             complaint.errorDefinition || '-',
-            complaint.status === 'Acik' ? 'Açık' : 'Kapalı',
+            complaint.status,
             complaint.currentDepartmentName,
         ];
 
@@ -213,8 +213,11 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
                                 <div className="bg-slate-50 rounded-xl p-4 space-y-3 border border-slate-100">
                                     <div className="flex justify-between items-center">
                                         <div className="text-[10px] text-slate-900  font-black">Durum</div>
-                                        <div className={`px-2 py-1 rounded-md text-xs font-bold ${complaint.status === 'Acik' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                                            {complaint.status === 'Acik' ? 'Açık' : 'Kapalı'}
+                                        <div className={`px-2 py-1 rounded-md text-xs font-bold ${complaint.status.includes('Gecikti') ? 'bg-red-100 text-red-700' :
+                                                complaint.status.includes('Kapalı') || complaint.status.includes('Kapali') ? 'bg-emerald-100 text-emerald-700' :
+                                                    'bg-amber-100 text-amber-700'
+                                            }`}>
+                                            {complaint.status}
                                         </div>
                                     </div>
                                     <div className="flex justify-between items-center">

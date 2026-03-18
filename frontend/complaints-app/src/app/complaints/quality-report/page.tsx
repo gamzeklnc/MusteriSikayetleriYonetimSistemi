@@ -48,8 +48,6 @@ export default function QualityReportPage() {
         const safeMatch = (val: string | undefined | null, search: string) =>
             !search || (val && val.toLowerCase().includes(search.toLowerCase()));
 
-        const statusText = c.status === 'Acik' ? 'Açık' : 'Kapalı';
-
         return (
             safeMatch(c.complaintNumber, filters.complaintNumber) &&
             safeMatch(c.customerName, filters.customerName) &&
@@ -58,7 +56,7 @@ export default function QualityReportPage() {
             safeMatch(c.stockCode, filters.stockCode) &&
             safeMatch(c.brand, filters.brand) &&
             safeMatch(c.modulePower, filters.modulePower) &&
-            safeMatch(statusText, filters.status) &&
+            safeMatch(c.status, filters.status) &&
             safeMatch(c.currentDepartmentName, filters.currentDepartmentName)
         );
     });
@@ -147,9 +145,15 @@ export default function QualityReportPage() {
                                             <td className="px-1.5 py-1.5 text-center font-bold text-emerald-600">{c.hsa1 || 0}</td>
                                             <td className="px-1.5 py-1.5 text-center font-bold text-indigo-600">{c.hsa2 || 0}</td>
                                             <td className="px-1.5 py-1.5 text-center">
-                                                <div className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-medium border ${c.status === 'Acik' ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
-                                                    <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${c.status === 'Acik' ? 'bg-amber-500' : 'bg-emerald-500'}`}></span>
-                                                    {c.status === 'Acik' ? 'Açık' : 'Kapalı'}
+                                                <div className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold border ${c.status.includes('Gecikti') ? 'bg-red-50 text-red-600 border-red-200' :
+                                                        c.status.includes('Kapalı') || c.status.includes('Kapali') ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
+                                                            'bg-amber-50 text-amber-600 border-amber-200'
+                                                    }`}>
+                                                    <span className={`w-1 h-1 rounded-full mr-1 ${c.status.includes('Gecikti') ? 'bg-red-500' :
+                                                            c.status.includes('Kapalı') || c.status.includes('Kapali') ? 'bg-emerald-500' :
+                                                                'bg-amber-500'
+                                                        }`}></span>
+                                                    {c.status}
                                                 </div>
                                             </td>
                                             <td className="px-1.5 py-1.5 text-center">
