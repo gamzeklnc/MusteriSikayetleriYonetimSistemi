@@ -3,24 +3,15 @@
 import { useState, useEffect } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
-import { ComplaintDto } from '@/types/complaint';
+import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
 import ComplaintDetailModal from '@/components/complaints/ComplaintDetailModal';
-
-const STAGES = [
-    'Fabrikada İnceleme Bekliyor',
-    'Saha Organizasyonu Bekleniyor',
-    'Servis Raporu Bekleniyor',
-    'İade & Değişim Bekliyor'
-];
+import DocumentSection from '@/components/complaints/DocumentSection';
 
 export default function ActionsPage() {
     const [complaints, setComplaints] = useState<ComplaintDto[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedComplaint, setSelectedComplaint] = useState<ComplaintDto | null>(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
-    const [showStageModal, setShowStageModal] = useState(false);
-    const [updating, setUpdating] = useState(false);
-    const [note, setNote] = useState('');
 
     const fetchComplaints = async () => {
         try {
@@ -39,26 +30,6 @@ export default function ActionsPage() {
     useEffect(() => {
         fetchComplaints();
     }, []);
-
-    const handleUpdateStage = async (stage: string) => {
-        if (!selectedComplaint) return;
-
-        try {
-            setUpdating(true);
-            await complaintService.updateOperationalStage(selectedComplaint.id, {
-                stage,
-                note: note || undefined
-            });
-            setShowStageModal(false);
-            setNote('');
-            fetchComplaints();
-        } catch (error) {
-            console.error('Aşama güncellenemedi:', error);
-            alert('Aşama güncellenirken bir hata oluştu.');
-        } finally {
-            setUpdating(false);
-        }
-    };
 
     return (
         <AppLayout>
@@ -113,22 +84,13 @@ export default function ActionsPage() {
                                                             setSelectedComplaint(c);
                                                             setShowDetailModal(true);
                                                         }}
-                                                        className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                                                        title="Detay"
+                                                        className="px-4 py-2 bg-blue-600 text-white text-[11px] font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-all active:scale-95 flex items-center gap-2"
                                                     >
                                                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                         </svg>
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedComplaint(c);
-                                                            setShowStageModal(true);
-                                                        }}
-                                                        className="px-3 py-1.5 bg-blue-600 text-white text-[11px] font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-all active:scale-95"
-                                                    >
-                                                        Aşama Güncelle
+                                                        DEĞERLENDİR / DETAY
                                                     </button>
                                                 </div>
                                             </td>
@@ -141,71 +103,30 @@ export default function ActionsPage() {
                 </div>
             </div>
 
-            {/* Aşama Seçim Modal */}
-            {showStageModal && selectedComplaint && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => !updating && setShowStageModal(false)}></div>
-                    <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                            <h3 className="font-bold text-slate-800">Operasyonel Aşama Güncelle</h3>
-                            <button onClick={() => setShowStageModal(false)} className="text-slate-400 hover:text-slate-600">
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div className="p-6 space-y-4">
-                            <div className="bg-blue-50 border border-blue-100 p-3 rounded-xl">
-                                <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wider mb-1">Şikayet</p>
-                                <p className="text-sm font-bold text-blue-900">{selectedComplaint.complaintNumber} - {selectedComplaint.customerName}</p>
-                            </div>
-
-                            <div className="space-y-3">
-                                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Aşama Seçiniz</div>
-                                <div className="grid grid-cols-1 gap-2">
-                                    {STAGES.map((stage) => (
-                                        <button
-                                            key={stage}
-                                            onClick={() => handleUpdateStage(stage)}
-                                            disabled={updating}
-                                            className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all border-2 flex items-center justify-between group
-                                                ${selectedComplaint.operationalStage === stage 
-                                                    ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20' 
-                                                    : 'bg-white border-slate-100 text-slate-600 hover:border-blue-200 hover:bg-blue-50'
-                                                }`}
-                                        >
-                                            {stage}
-                                            {selectedComplaint.operationalStage === stage && (
-                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                </svg>
-                                            )}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Açıklama / Not</div>
-                                <textarea
-                                    value={note}
-                                    onChange={(e) => setNote(e.target.value)}
-                                    placeholder="Opsiyonel not ekleyin..."
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none min-h-[80px]"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Detay Modal */}
+            {/* Detay ve Aşama Güncelleme Modal */}
             {showDetailModal && selectedComplaint && (
                 <ComplaintDetailModal
                     complaint={selectedComplaint}
                     onClose={() => {
                         setShowDetailModal(false);
                         setSelectedComplaint(null);
+                    }}
+                    showOperationalStageUpdate={true}
+                    onOperationalStageUpdate={(updatedComplaint) => {
+                        setSelectedComplaint(updatedComplaint);
+                        setComplaints(prev => prev.map(c => 
+                            c.id === updatedComplaint.id ? updatedComplaint : c
+                        ));
+                    }}
+                    onUpload={(newDoc: ComplaintDocument) => {
+                        const updated = {
+                            ...selectedComplaint,
+                            documents: [...(selectedComplaint.documents || []), newDoc]
+                        };
+                        setSelectedComplaint(updated);
+                        setComplaints(prev => prev.map(c => 
+                            c.id === updated.id ? updated : c
+                        ));
                     }}
                 />
             )}

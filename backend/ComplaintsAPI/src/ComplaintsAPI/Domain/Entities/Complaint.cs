@@ -103,6 +103,7 @@ public class Complaint
     public User? QualityReportedBy { get; set; }
     public User? ManagementApprovedBy { get; set; }
     public User? CustomerFeedbackBy { get; set; }
+    public virtual ICollection<ComplaintDocument> Documents { get; set; } = new List<ComplaintDocument>();
     public ICollection<ComplaintHistory> History { get; set; } = new List<ComplaintHistory>();
 
     // ── Domain Metodu: tarih alanlarını otomatik doldur ─────────────────────

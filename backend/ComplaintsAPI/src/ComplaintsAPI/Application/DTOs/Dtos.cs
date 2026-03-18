@@ -72,6 +72,15 @@ public record CustomerFeedbackRequest(bool IsDone, string? Note);
 
 public record OperationalStageRequest(string Stage, string? Note);
 
+public record ComplaintDocumentDto(
+    int Id,
+    string FileName,
+    long FileSize,
+    string FileType,
+    string UploadedByName,
+    DateTime UploadedAt
+);
+
 /// <summary>Liste görünümü için özet DTO</summary>
 public record ComplaintDto(
     int Id,
@@ -110,7 +119,8 @@ public record ComplaintDto(
     bool IsCustomerFeedbackDone,
     string? CustomerFeedbackNote,
     string? CustomerFeedbackByName,
-    string? OperationalStage
+    string? OperationalStage,
+    IEnumerable<ComplaintDocumentDto> Documents
 );
 
 /// <summary>Geçmiş satırı</summary>

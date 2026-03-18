@@ -2,6 +2,15 @@
 
 export type ComplaintStatus = 'Acik' | 'Kapali' | 'Açık: Devam ediyor' | 'Açık: Gecikerek devam ediyor' | 'Açık: Gecikti' | 'Kapalı';
 
+export interface ComplaintDocument {
+    id: number;
+    fileName: string;
+    fileSize: number;
+    fileType: string;
+    uploadedByName: string;
+    uploadedAt: string;
+}
+
 export interface ComplaintDto {
   id: number;
   complaintNumber: string; // Şikayet No
@@ -14,7 +23,7 @@ export interface ComplaintDto {
   complaintDate: string;
   registrationDate: string;
   stockCode: string;
-  barcodes?: string[];
+  barcodes: string[];
   brand?: string;
   hsa1?: number;
   hsa2?: number;
@@ -33,13 +42,14 @@ export interface ComplaintDto {
   isQualityReported: boolean;
   qualityReportNote?: string;
   qualityReportedByName?: string;
-  isManagementApproved?: boolean | null;
+  isManagementApproved?: boolean;
   managementApprovalNote?: string;
   managementApprovedByName?: string;
   isCustomerFeedbackDone: boolean;
   customerFeedbackNote?: string;
   customerFeedbackByName?: string;
   operationalStage?: string;
+  documents: ComplaintDocument[];
 }
 
 export interface ComplaintHistoryDto {

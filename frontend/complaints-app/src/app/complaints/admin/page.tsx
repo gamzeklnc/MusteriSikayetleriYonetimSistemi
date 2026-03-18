@@ -13,6 +13,8 @@ import { User, CreateUserRequest, UpdateUserRequest } from '@/types/user';
 import { ErrorDefinitionOption } from '@/types/errorOption';
 import { UserActivityLogDto } from '@/types/userActivityLog';
 import { ClipboardList, Users, Settings, Plus, Edit2, Trash2, ShieldAlert, CheckCircle2, XCircle, RotateCcw, ChevronDown, ChevronUp, UserPlus, History } from 'lucide-react';
+import DocumentSection from '@/components/complaints/DocumentSection';
+import { ComplaintDocument } from '@/types/complaint';
 
 
 export default function AdminPage() {
@@ -488,6 +490,25 @@ export default function AdminPage() {
                                         </div>
                                     </div>
                                 )}
+                            </div>
+
+                            {/* Dokümanlar */}
+                            <div className="border border-slate-200 rounded-xl p-4 shadow-sm bg-slate-50/30">
+                                <DocumentSection 
+                                    complaintId={editingComplaint.id} 
+                                    initialDocuments={editingComplaint.documents} 
+                                    onUpload={(newDoc: ComplaintDocument) => {
+                                        setEditingComplaint({
+                                            ...editingComplaint,
+                                            documents: [...(editingComplaint.documents || []), newDoc]
+                                        });
+                                        setComplaints(prev => prev.map(c => 
+                                            c.id === editingComplaint.id 
+                                            ? { ...c, documents: [...(c.documents || []), newDoc] } 
+                                            : c
+                                        ));
+                                    }}
+                                />
                             </div>
                         </div>
 

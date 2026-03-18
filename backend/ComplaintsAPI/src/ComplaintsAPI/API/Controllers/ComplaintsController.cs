@@ -6,6 +6,9 @@ using ComplaintsAPI.Application.DTOs;
 using ComplaintsAPI.Application.Interfaces;
 using ComplaintsAPI.Domain.Entities;
 using ComplaintsAPI.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+using System.IO;
+using Microsoft.AspNetCore.Http;
 
 namespace ComplaintsAPI.API.Controllers;
 
@@ -485,6 +488,70 @@ public class ComplaintsController : ControllerBase
         return NoContent();
     }
 
+    // ── Dosya Yükleme / İndirme ───────────────────
+
+    [HttpPost("{id}/documents")]
+    public async Task<IActionResult> UploadDocument(int id, IFormFile file)
+    {
+        var complaint = await _repo.GetByIdAsync(id);
+        if (complaint == null) return NotFound("Şikayet bulunamadı.");
+
+        if (file == null || file.Length == 0) return BadRequest("Dosya seçilmedi.");
+
+        // Uzantı Kontrolü
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        var allowedExtensions = new[] { ".pdf", ".doc", ".docx", ".xls", ".xlsx" };
+        if (!allowedExtensions.Contains(extension))
+        {
+            return BadRequest("Sadece PDF, Word ve Excel dosyalarına izin verilir.");
+        }
+
+        // Klasör Oluşturma
+        var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "complaint-documents");
+        if (!Directory.Exists(uploadPath)) Directory.CreateDirectory(uploadPath);
+
+        // Benzersiz Dosya Adı
+        var fileName = $"{Guid.NewGuid()}{extension}";
+        var filePath = Path.Combine(uploadPath, fileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        var doc = new Domain.Entities.ComplaintDocument
+        {
+            ComplaintId = id,
+            FileName = file.FileName,
+            FilePath = $"/uploads/complaint-documents/{fileName}",
+            FileSize = file.Length,
+            FileType = file.ContentType,
+            UploadedById = CurrentUserId,
+            UploadedAt = DateTime.UtcNow
+        };
+
+        complaint.Documents.Add(doc);
+        await _repo.UpdateAsync(complaint);
+
+        await LogActivityAsync("Dosya Yüklendi", $"Şikayet No: {complaint.ComplaintNumber}, Dosya: {file.FileName}");
+
+        return Ok(new ComplaintDocumentDto(
+            doc.Id, doc.FileName, doc.FileSize, doc.FileType, CurrentUserName, doc.UploadedAt));
+    }
+
+    [HttpGet("documents/{documentId}/download")]
+    public async Task<IActionResult> DownloadDocument(int documentId)
+    {
+        var doc = await _context.ComplaintDocuments.FirstOrDefaultAsync(x => x.Id == documentId);
+        if (doc == null) return NotFound("Dosya bulunamadı.");
+
+        var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", doc.FilePath.TrimStart('/'));
+        if (!System.IO.File.Exists(fullPath)) return NotFound("Dosya sunucuda bulunamadı.");
+
+        var content = await System.IO.File.ReadAllBytesAsync(fullPath);
+        return File(content, doc.FileType, doc.FileName);
+    }
+
     // ── Yardımcı Mapper ───────────────────────────────────────────────────────
     private static string GetDescriptiveStatus(Domain.Entities.Complaint c)
     {
@@ -552,6 +619,14 @@ public class ComplaintsController : ControllerBase
         c.IsCustomerFeedbackDone,
         c.CustomerFeedbackNote,
         c.CustomerFeedbackBy?.Name,
-        c.OperationalStage
+        c.OperationalStage,
+        c.Documents.Select(d => new ComplaintDocumentDto(
+            d.Id,
+            d.FileName,
+            d.FileSize,
+            d.FileType,
+            d.UploadedBy?.Name ?? "Bilinmiyor",
+            d.UploadedAt
+        ))
     );
 }

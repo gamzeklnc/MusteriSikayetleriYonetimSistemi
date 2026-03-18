@@ -9,7 +9,8 @@ import type {
     UpdateQualityReportRequest,
     ManagementApprovalRequest,
     CustomerFeedbackRequest,
-    OperationalStageRequest
+    OperationalStageRequest,
+    ComplaintDocument
 } from '@/types/complaint';
 
 export const complaintService = {
@@ -54,8 +55,9 @@ export const complaintService = {
         await apiClient.patch(`/api/complaints/${id}/customer-feedback`, data);
     },
 
-    updateOperationalStage: async (id: number, data: OperationalStageRequest): Promise<void> => {
-        await apiClient.patch(`/api/complaints/${id}/operational-stage`, data);
+    updateOperationalStage: async (id: number, data: OperationalStageRequest): Promise<ComplaintDto> => {
+        const res = await apiClient.patch<ComplaintDto>(`/api/complaints/${id}/operational-stage`, data);
+        return res.data;
     },
 
     update: async (id: number, data: any): Promise<void> => {
@@ -64,5 +66,27 @@ export const complaintService = {
 
     delete: async (id: number): Promise<void> => {
         await apiClient.delete(`/api/complaints/${id}`);
+    },
+
+    uploadDocument: async (complaintId: number, file: File): Promise<ComplaintDocument> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await apiClient.post<ComplaintDocument>(`/api/complaints/${complaintId}/documents`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return res.data;
+    },
+
+    downloadDocument: async (documentId: number, fileName: string): Promise<void> => {
+        const response = await apiClient.get(`/api/complaints/documents/${documentId}/download`, {
+            responseType: 'blob'
+        });
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
     }
 };

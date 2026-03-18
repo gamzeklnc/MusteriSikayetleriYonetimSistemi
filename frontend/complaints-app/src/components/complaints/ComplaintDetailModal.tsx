@@ -2,16 +2,36 @@
 
 import { useState } from 'react';
 import * as XLSX from 'xlsx-js-style';
-import { ComplaintDto } from '@/types/complaint';
+import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
 import { parseSingleBarcode } from '@/utils/barcodeParser';
+import DocumentSection from './DocumentSection';
+import { complaintService } from '@/services/complaintService';
+
+const STAGES = [
+    'Fabrikada İnceleme Bekliyor',
+    'Saha Organizasyonu Bekleniyor',
+    'Servis Raporu Bekleniyor',
+    'İade & Değişim Bekliyor'
+];
 
 interface Props {
     complaint: ComplaintDto;
     onClose: () => void;
+    onUpload?: (newDoc: ComplaintDocument) => void;
+    showOperationalStageUpdate?: boolean;
+    onOperationalStageUpdate?: (newComplaint: ComplaintDto) => void;
 }
 
-export default function ComplaintDetailModal({ complaint, onClose }: Props) {
+export default function ComplaintDetailModal({ 
+    complaint, 
+    onClose, 
+    onUpload,
+    showOperationalStageUpdate = false,
+    onOperationalStageUpdate 
+}: Props) {
     const [barcodeFilter, setBarcodeFilter] = useState<'ALL' | 'HSA1' | 'HSA2'>('ALL');
+    const [updating, setUpdating] = useState(false);
+    const [note, setNote] = useState('');
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('tr-TR', {
@@ -132,6 +152,25 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
 
         // Download file
         XLSX.writeFile(wb, `Sikayet_${complaint.complaintNumber}.xlsx`);
+    };
+
+    const handleUpdateStage = async (stage: string) => {
+        try {
+            setUpdating(true);
+            const updatedComplaint = await complaintService.updateOperationalStage(complaint.id, {
+                stage,
+                note: note || undefined
+            });
+            setNote('');
+            if (onOperationalStageUpdate) {
+                onOperationalStageUpdate(updatedComplaint);
+            }
+        } catch (error) {
+            console.error('Aşama güncellenemedi:', error);
+            alert('Aşama güncellenirken bir hata oluştu.');
+        } finally {
+            setUpdating(false);
+        }
     };
 
     return (
@@ -342,6 +381,65 @@ export default function ComplaintDetailModal({ complaint, onClose }: Props) {
                                 </div>
                             )}
                         </div>
+                    </div>
+
+                    {/* Operasyonel Aşama Güncelleme (Sadece Aksiyonlar Sayfası İçin) */}
+                    {showOperationalStageUpdate && (
+                        <div className="pt-6 border-t border-slate-100 space-y-4">
+                            <h3 className="text-xs font-black text-slate-900 tracking-wider">Operasyonel Aşama Güncelle</h3>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-3">
+                                    <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Aşama Seçiniz</div>
+                                    <div className="grid grid-cols-1 gap-2">
+                                        {STAGES.map((stage) => (
+                                            <button
+                                                key={stage}
+                                                onClick={() => handleUpdateStage(stage)}
+                                                disabled={updating}
+                                                className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all border-2 flex items-center justify-between group
+                                                    ${complaint.operationalStage === stage 
+                                                        ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20' 
+                                                        : 'bg-white border-slate-100 text-slate-600 hover:border-blue-200 hover:bg-blue-50'
+                                                    }`}
+                                            >
+                                                {stage}
+                                                {complaint.operationalStage === stage && (
+                                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3 flex flex-col">
+                                    <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Açıklama / Not</div>
+                                    <textarea
+                                        value={note}
+                                        onChange={(e) => setNote(e.target.value)}
+                                        placeholder="Operasyonel aşama değişikliği için not ekleyin..."
+                                        className="flex-1 w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none min-h-[120px]"
+                                    />
+                                    {updating && (
+                                        <div className="flex items-center gap-2 text-blue-600 text-xs font-bold animate-pulse">
+                                            <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                            Güncelleniyor...
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Dokümanlar Bölümü */}
+                    <div className="pt-6 border-t border-slate-100">
+                        <DocumentSection 
+                            complaintId={complaint.id} 
+                            initialDocuments={complaint.documents} 
+                            onUpload={onUpload}
+                        />
                     </div>
 
                 </div>

@@ -14,6 +14,7 @@ public class AppDbContext : DbContext
     public DbSet<ComplaintHistory> ComplaintHistories => Set<ComplaintHistory>();
     public DbSet<ErrorDefinitionOption> ErrorDefinitionOptions => Set<ErrorDefinitionOption>();
     public DbSet<UserActivityLog> UserActivityLogs => Set<UserActivityLog>();
+    public DbSet<ComplaintDocument> ComplaintDocuments => Set<ComplaintDocument>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -79,6 +80,24 @@ public class AppDbContext : DbContext
             e.HasOne(x => x.ManagementApprovedBy)
              .WithMany()
              .HasForeignKey(x => x.ManagementApprovedById)
+             .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ComplaintDocument
+        modelBuilder.Entity<ComplaintDocument>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.FileName).IsRequired().HasMaxLength(255);
+            e.Property(x => x.FilePath).IsRequired().HasMaxLength(500);
+
+            e.HasOne(x => x.Complaint)
+             .WithMany(c => c.Documents)
+             .HasForeignKey(x => x.ComplaintId)
+             .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(x => x.UploadedBy)
+             .WithMany()
+             .HasForeignKey(x => x.UploadedById)
              .OnDelete(DeleteBehavior.Restrict);
         });
 

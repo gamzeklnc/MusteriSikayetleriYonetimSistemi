@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
-import { ComplaintDto } from '@/types/complaint';
+import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
 import ComplaintDetailModal from '@/components/complaints/ComplaintDetailModal';
 import * as XLSX from 'xlsx-js-style';
 
@@ -36,19 +36,19 @@ export default function ComplaintsPage() {
         setFilters(prev => ({ ...prev, [key]: value }));
     };
 
-    useEffect(() => {
-        const fetchComplaints = async () => {
-            try {
-                const data = await complaintService.getAll();
-                setComplaints(data);
-            } catch (err: unknown) {
-                console.error('Şikayetler yüklenemedi:', err);
-                setError('Şikayetler listelenirken bir hata oluştu.');
-            } finally {
-                setLoading(false);
-            }
-        };
+    const fetchComplaints = async () => {
+        try {
+            const data = await complaintService.getAll();
+            setComplaints(data);
+        } catch (err: unknown) {
+            console.error('Şikayetler yüklenemedi:', err);
+            setError('Şikayetler listelenirken bir hata oluştu.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchComplaints();
     }, []);
 
@@ -363,6 +363,17 @@ export default function ComplaintsPage() {
                 <ComplaintDetailModal
                     complaint={selectedComplaint}
                     onClose={() => setSelectedComplaint(null)}
+                    onUpload={(newDoc) => {
+                        setSelectedComplaint({
+                            ...selectedComplaint,
+                            documents: [...(selectedComplaint.documents || []), newDoc]
+                        });
+                        setComplaints(prev => prev.map(c => 
+                            c.id === selectedComplaint.id 
+                            ? { ...c, documents: [...(c.documents || []), newDoc] } 
+                            : c
+                        ));
+                    }}
                 />
             )}
         </AppLayout>

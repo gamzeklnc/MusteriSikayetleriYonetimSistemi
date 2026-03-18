@@ -3,16 +3,19 @@
 import { useEffect, useState } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
-import { ComplaintDto } from '@/types/complaint';
+import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
+import DocumentSection from '@/components/complaints/DocumentSection';
 
 function CustomerFeedbackModal({
     complaint,
     onClose,
     onSuccess,
+    onUpload,
 }: {
     complaint: ComplaintDto;
     onClose: () => void;
     onSuccess: () => void;
+    onUpload?: (newDoc: ComplaintDocument) => void;
 }) {
     const [note, setNote] = useState(complaint.customerFeedbackNote || '');
     const [isSaving, setIsSaving] = useState(false);
@@ -122,6 +125,15 @@ function CustomerFeedbackModal({
                                 </div>
                             )}
                         </div>
+                    </div>
+
+                    {/* Dokümanlar Bölümü */}
+                    <div className="pt-4 border-t border-slate-100">
+                        <DocumentSection 
+                            complaintId={complaint.id} 
+                            initialDocuments={complaint.documents} 
+                            onUpload={onUpload}
+                        />
                     </div>
 
                     {/* Müşteri Geri Dönüşü */}
@@ -330,6 +342,17 @@ export default function CustomerResponsePage() {
                     complaint={selectedComplaint}
                     onClose={() => setSelectedComplaint(null)}
                     onSuccess={() => { fetchComplaints(); setSelectedComplaint(null); }}
+                    onUpload={(newDoc) => {
+                        setSelectedComplaint({
+                            ...selectedComplaint,
+                            documents: [...(selectedComplaint.documents || []), newDoc]
+                        });
+                        setComplaints(prev => prev.map(c => 
+                            c.id === selectedComplaint.id 
+                            ? { ...c, documents: [...(c.documents || []), newDoc] } 
+                            : c
+                        ));
+                    }}
                 />
             )}
         </AppLayout>

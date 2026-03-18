@@ -209,6 +209,18 @@ export default function QualityReportPage() {
                     complaint={selectedComplaint}
                     onClose={() => setSelectedComplaint(null)}
                     onSuccess={fetchComplaints}
+                    onUpload={(newDoc) => {
+                        setSelectedComplaint({
+                            ...selectedComplaint,
+                            documents: [...(selectedComplaint.documents || []), newDoc]
+                        });
+                        // Opsiyonel: Listeyi de güncelle ki arkadaki tablo da güncel kalsın
+                        setComplaints(prev => prev.map(c => 
+                            c.id === selectedComplaint.id 
+                            ? { ...c, documents: [...(c.documents || []), newDoc] } 
+                            : c
+                        ));
+                    }}
                 />
             )}
         </AppLayout>

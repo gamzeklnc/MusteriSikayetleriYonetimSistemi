@@ -1,17 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { ComplaintDto } from '@/types/complaint';
+import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
 import { complaintService } from '@/services/complaintService';
 import { parseSingleBarcode } from '@/utils/barcodeParser';
+import DocumentSection from './DocumentSection';
 
 interface Props {
     complaint: ComplaintDto;
     onClose: () => void;
     onSuccess: () => void;
+    onUpload?: (newDoc: ComplaintDocument) => void;
 }
 
-export default function ManagementApprovalModal({ complaint, onClose, onSuccess }: Props) {
+export default function ManagementApprovalModal({ complaint, onClose, onSuccess, onUpload }: Props) {
     const [note, setNote] = useState(complaint.managementApprovalNote || '');
     const [isUpdating, setIsUpdating] = useState(false);
     const [barcodeFilter, setBarcodeFilter] = useState<'ALL' | 'HSA1' | 'HSA2'>('ALL');
@@ -166,6 +168,15 @@ export default function ManagementApprovalModal({ complaint, onClose, onSuccess 
                                 )}
                             </div>
                         </div>
+                    </div>
+
+                    {/* Dokümanlar Bölümü */}
+                    <div className="pt-6 border-t border-slate-100">
+                        <DocumentSection 
+                            complaintId={complaint.id} 
+                            initialDocuments={complaint.documents} 
+                            onUpload={onUpload}
+                        />
                     </div>
 
                     {/* Alt Kısım - Onay ve Not */}

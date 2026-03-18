@@ -1,17 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { ComplaintDto } from '@/types/complaint';
+import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
 import { complaintService } from '@/services/complaintService';
 import { parseSingleBarcode } from '@/utils/barcodeParser';
+import DocumentSection from './DocumentSection';
 
 interface Props {
     complaint: ComplaintDto;
     onClose: () => void;
     onSuccess: () => void;
+    onUpload?: (newDoc: ComplaintDocument) => void;
 }
 
-export default function QualityReportModal({ complaint, onClose, onSuccess }: Props) {
+export default function QualityReportModal({ complaint, onClose, onSuccess, onUpload }: Props) {
     const [note, setNote] = useState(complaint.qualityReportNote || '');
     const [isUpdating, setIsUpdating] = useState(false);
     const [barcodeFilter, setBarcodeFilter] = useState<'ALL' | 'HSA1' | 'HSA2'>('ALL');
@@ -190,6 +192,15 @@ export default function QualityReportModal({ complaint, onClose, onSuccess }: Pr
                                 )}
                             </div>
                         </div>
+                    </div>
+
+                    {/* Dokümanlar Bölümü */}
+                    <div className="pt-6 border-t border-slate-100">
+                        <DocumentSection 
+                            complaintId={complaint.id} 
+                            initialDocuments={complaint.documents} 
+                            onUpload={onUpload}
+                        />
                     </div>
 
                     {/* Alt Kısım - Raporlama */}

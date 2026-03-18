@@ -187,6 +187,17 @@ export default function ApprovalPage() {
                     complaint={selectedComplaint}
                     onClose={() => setSelectedComplaint(null)}
                     onSuccess={fetchComplaints}
+                    onUpload={(newDoc) => {
+                        setSelectedComplaint({
+                            ...selectedComplaint,
+                            documents: [...(selectedComplaint.documents || []), newDoc]
+                        });
+                        setComplaints(prev => prev.map(c => 
+                            c.id === selectedComplaint.id 
+                            ? { ...c, documents: [...(c.documents || []), newDoc] } 
+                            : c
+                        ));
+                    }}
                 />
             )}
         </AppLayout>
