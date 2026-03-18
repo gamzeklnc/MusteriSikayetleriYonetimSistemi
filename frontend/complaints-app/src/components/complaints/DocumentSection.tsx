@@ -15,12 +15,14 @@ interface Props {
 export default function DocumentSection({ complaintId, initialDocuments, title = 'İlgili Dokümanlar (PDF, Word, Excel)', onUpload }: Props) {
     const [documents, setDocuments] = useState<ComplaintDocument[]>(initialDocuments || []);
     const [isUploading, setIsUploading] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [previewDoc, setPreviewDoc] = useState<ComplaintDocument | null>(null);
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        // ... (existing code)
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Restriction Check (PDF, Word, Excel)
         const allowedExtensions = ['.pdf', '.doc', '.docx', '.xls', '.xlsx'];
         const extension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
         
@@ -40,7 +42,7 @@ export default function DocumentSection({ complaintId, initialDocuments, title =
             toast.error('Dosya yüklenirken bir hata oluştu.');
         } finally {
             setIsUploading(false);
-            e.target.value = '';
+            if (e.target) e.target.value = '';
         }
     };
 
@@ -51,6 +53,33 @@ export default function DocumentSection({ complaintId, initialDocuments, title =
             console.error('Download error:', error);
             toast.error('Dosya indirilirken bir hata oluştu.');
         }
+    };
+
+    const handlePreview = async (doc: ComplaintDocument) => {
+        const isPdf = doc.fileName.toLowerCase().endsWith('.pdf');
+        
+        if (!isPdf) {
+            toast('Bu dosya türü doğrudan görüntülenemez, indiriliyor...', { icon: 'ℹ️' });
+            handleDownload(doc);
+            return;
+        }
+
+        try {
+            const { url } = await complaintService.getFileBlob(doc.id);
+            setPreviewUrl(url);
+            setPreviewDoc(doc);
+        } catch (error) {
+            console.error('Preview error:', error);
+            toast.error('Dosya görüntülenirken bir hata oluştu.');
+        }
+    };
+
+    const closePreview = () => {
+        if (previewUrl) {
+            window.URL.revokeObjectURL(previewUrl);
+        }
+        setPreviewUrl(null);
+        setPreviewDoc(null);
     };
 
     const formatFileSize = (bytes: number) => {
@@ -90,11 +119,11 @@ export default function DocumentSection({ complaintId, initialDocuments, title =
                             <div className="flex items-center gap-3 overflow-hidden">
                                 <div className="p-2 bg-white rounded-lg border border-slate-100 shadow-sm">
                                     {doc.fileName.toLowerCase().endsWith('.pdf') ? (
-                                        <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm4 0h-2v-6h2v6z"/></svg>
+                                        <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
                                     ) : doc.fileName.toLowerCase().match(/\.(doc|docx)$/i) ? (
-                                        <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                                        <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                                     ) : (
-                                        <svg className="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                                        <svg className="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                                     )}
                                 </div>
                                 <div className="overflow-hidden">
@@ -102,15 +131,27 @@ export default function DocumentSection({ complaintId, initialDocuments, title =
                                     <div className="text-[10px] text-slate-500">{formatFileSize(doc.fileSize)} • {doc.uploadedByName}</div>
                                 </div>
                             </div>
-                            <button 
-                                onClick={() => handleDownload(doc)}
-                                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-white rounded-lg transition-all"
-                                title="İndir"
-                            >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                            </button>
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button 
+                                    onClick={() => handlePreview(doc)}
+                                    className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-white rounded-lg transition-all"
+                                    title="Görüntüle"
+                                >
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </button>
+                                <button 
+                                    onClick={() => handleDownload(doc)}
+                                    className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-white rounded-lg transition-all"
+                                    title="İndir"
+                                >
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -118,6 +159,48 @@ export default function DocumentSection({ complaintId, initialDocuments, title =
                 <div className="bg-slate-50 rounded-xl p-6 border border-dashed border-slate-200 text-center">
                     <div className="text-slate-400 text-xs font-bold">Henüz doküman eklenmemiş.</div>
                     <div className="text-[10px] text-slate-400 mt-1 italic font-medium">PDF, Word veya Excel dosyaları yükleyebilirsiniz.</div>
+                </div>
+            )}
+
+            {/* Preview Modal */}
+            {previewUrl && previewDoc && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={closePreview}></div>
+                    <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-red-50 text-red-600 rounded-lg">
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <h4 className="font-bold text-slate-800 truncate max-w-md">{previewDoc.fileName}</h4>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button 
+                                    onClick={() => handleDownload(previewDoc)}
+                                    className="px-4 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 text-sm font-bold rounded-xl transition-all flex items-center gap-2"
+                                >
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                    İndir
+                                </button>
+                                <button onClick={closePreview} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all">
+                                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div className="flex-1 bg-slate-100 relative">
+                            <iframe 
+                                src={previewUrl} 
+                                className="w-full h-full border-none"
+                                title="Document Preview"
+                            />
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

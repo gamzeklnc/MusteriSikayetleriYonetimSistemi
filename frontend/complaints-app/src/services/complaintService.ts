@@ -88,5 +88,14 @@ export const complaintService = {
         document.body.appendChild(link);
         link.click();
         link.remove();
+    },
+
+    getFileBlob: async (documentId: number): Promise<{ blob: Blob; url: string }> => {
+        const response = await apiClient.get(`/api/complaints/documents/${documentId}/download`, {
+            responseType: 'blob'
+        });
+        const blob = new Blob([response.data], { type: response.headers['content-type'] });
+        const url = window.URL.createObjectURL(blob);
+        return { blob, url };
     }
 };
