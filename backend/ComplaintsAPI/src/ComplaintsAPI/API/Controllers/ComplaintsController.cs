@@ -260,6 +260,8 @@ public class ComplaintsController : ControllerBase
             complaint.IsQualityReported = req.IsQualityReported.Value;
         if (req.IsManagementApproved.HasValue)
             complaint.IsManagementApproved = req.IsManagementApproved.Value;
+        if (req.OperationalStage != null)
+            complaint.OperationalStage = req.OperationalStage;
 
         complaint.SetDerivedDateFields();
 
@@ -429,6 +431,38 @@ public class ComplaintsController : ControllerBase
         return Ok(MapToDto(complaint));
     }
 
+    /// <summary>Operasyonel aksiyon aşamasını güncelle</summary>
+    [HttpPatch("{id}/operational-stage")]
+    public async Task<IActionResult> UpdateOperationalStage(int id, [FromBody] OperationalStageRequest req)
+    {
+        var complaint = await _repo.GetByIdAsync(id);
+        if (complaint is null) return NotFound();
+
+        // Müşteri geri dönüşü yapılmamışsa aksiyon aşamasına geçilemez (Opsiyonel kısıt)
+        if (!complaint.IsCustomerFeedbackDone)
+            return BadRequest(new { message = "Müşteri geri dönüşü yapılmamış şikayetlerde operasyonel aksiyon aşaması seçilemez." });
+
+        var oldStage = complaint.OperationalStage;
+        complaint.OperationalStage = req.Stage;
+
+        await _repo.UpdateAsync(complaint);
+
+        // Geçmişe ekle
+        await _repo.AddHistoryAsync(new ComplaintHistory
+        {
+            ComplaintId = complaint.Id,
+            FromStatus = oldStage != null ? $"Aksiyon:{oldStage}" : null,
+            ToStatus = $"Aksiyon:{req.Stage}",
+            Note = $"Aksiyon Aşaması Değiştirildi: {req.Stage}. Not: {req.Note}",
+            ChangedById = CurrentUserId,
+            DepartmentId = complaint.CurrentDepartmentId
+        });
+
+        await LogActivityAsync("Operasyonel Aşama Güncellendi", $"Şikayet No: {complaint.ComplaintNumber}, Yeni Aşama: {req.Stage}");
+
+        return Ok(MapToDto(complaint));
+    }
+
     /// <summary>Şikayeti sil (Sadece Admin)</summary>
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
@@ -449,8 +483,9 @@ public class ComplaintsController : ControllerBase
         c.Id,
         c.ComplaintNumber,
         c.Status,
-        c.IsManagementApproved == true ? "Müşteri Geri Dönüşü" :
-        (c.IsQualityReported ? "Yönetim Onayı" : "Kalite Raporlaması"),
+        c.IsCustomerFeedbackDone ? "Aksiyon Planı" :
+        (c.IsManagementApproved == true ? "Müşteri Geri Dönüşü" :
+        (c.IsQualityReported ? "Yönetim Onayı" : "Kalite Raporlaması")),
         c.CustomerName,
         c.ProjectName,
         c.ProjectLocation,
@@ -482,6 +517,7 @@ public class ComplaintsController : ControllerBase
         c.ManagementApprovedBy?.Name,
         c.IsCustomerFeedbackDone,
         c.CustomerFeedbackNote,
-        c.CustomerFeedbackBy?.Name
+        c.CustomerFeedbackBy?.Name,
+        c.OperationalStage
     );
 }

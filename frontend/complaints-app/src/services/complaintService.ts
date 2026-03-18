@@ -8,7 +8,8 @@ import type {
     AddNoteRequest,
     UpdateQualityReportRequest,
     ManagementApprovalRequest,
-    CustomerFeedbackRequest
+    CustomerFeedbackRequest,
+    OperationalStageRequest
 } from '@/types/complaint';
 
 export const complaintService = {
@@ -51,6 +52,10 @@ export const complaintService = {
 
     updateCustomerFeedback: async (id: number, data: CustomerFeedbackRequest): Promise<void> => {
         await apiClient.patch(`/api/complaints/${id}/customer-feedback`, data);
+    },
+
+    updateOperationalStage: async (id: number, data: OperationalStageRequest): Promise<void> => {
+        await apiClient.patch(`/api/complaints/${id}/operational-stage`, data);
     },
 
     update: async (id: number, data: any): Promise<void> => {

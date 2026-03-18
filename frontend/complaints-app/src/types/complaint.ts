@@ -39,6 +39,7 @@ export interface ComplaintDto {
   isCustomerFeedbackDone: boolean;
   customerFeedbackNote?: string;
   customerFeedbackByName?: string;
+  operationalStage?: string;
 }
 
 export interface ComplaintHistoryDto {
@@ -92,6 +93,7 @@ export interface UpdateComplaintRequest {
   currentDepartmentId?: number;
   isQualityReported?: boolean;
   isManagementApproved?: boolean | null;
+  operationalStage?: string;
 }
 
 export interface ChangeStatusRequest {
@@ -122,5 +124,10 @@ export interface ManagementApprovalRequest {
 
 export interface CustomerFeedbackRequest {
   isDone: boolean;
+  note?: string;
+}
+
+export interface OperationalStageRequest {
+  stage: string;
   note?: string;
 }

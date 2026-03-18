@@ -88,6 +88,9 @@ public class Complaint
     public string? CustomerFeedbackNote { get; set; }
     public int? CustomerFeedbackById { get; set; }
 
+    // ── Operasyonel Aksiyonlar ───────────────────────────────────────────────
+    public string? OperationalStage { get; set; }
+
     // ── Sistem Alanları ──────────────────────────────────────────────────────
     public int CreatedById { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

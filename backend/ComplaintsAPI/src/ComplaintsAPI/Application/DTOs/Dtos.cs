@@ -48,7 +48,8 @@ public record UpdateComplaintRequest(
     string? Status,
     int? CurrentDepartmentId,
     bool? IsQualityReported,
-    bool? IsManagementApproved
+    bool? IsManagementApproved,
+    string? OperationalStage
 );
 
 /// <summary>Durum değişikliği (Açık → Kapalı)</summary>
@@ -68,6 +69,8 @@ public record ManagementApprovalRequest(bool? IsApproved, string? Note);
 
 /// <summary>Müşteri geri dönüşü güncelleme isteği</summary>
 public record CustomerFeedbackRequest(bool IsDone, string? Note);
+
+public record OperationalStageRequest(string Stage, string? Note);
 
 /// <summary>Liste görünümü için özet DTO</summary>
 public record ComplaintDto(
@@ -106,7 +109,8 @@ public record ComplaintDto(
     string? ManagementApprovedByName,
     bool IsCustomerFeedbackDone,
     string? CustomerFeedbackNote,
-    string? CustomerFeedbackByName
+    string? CustomerFeedbackByName,
+    string? OperationalStage
 );
 
 /// <summary>Geçmiş satırı</summary>
