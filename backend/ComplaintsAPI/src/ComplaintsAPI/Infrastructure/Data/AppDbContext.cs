@@ -15,10 +15,21 @@ public class AppDbContext : DbContext
     public DbSet<ErrorDefinitionOption> ErrorDefinitionOptions => Set<ErrorDefinitionOption>();
     public DbSet<UserActivityLog> UserActivityLogs => Set<UserActivityLog>();
     public DbSet<ComplaintDocument> ComplaintDocuments => Set<ComplaintDocument>();
+    public DbSet<ComplaintBarcodeResult> ComplaintBarcodeResults => Set<ComplaintBarcodeResult>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // ComplaintBarcodeResult
+        modelBuilder.Entity<ComplaintBarcodeResult>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.Complaint)
+                  .WithMany(c => c.BarcodeResults)
+                  .HasForeignKey(e => e.ComplaintId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
 
         // User
         modelBuilder.Entity<User>(e =>

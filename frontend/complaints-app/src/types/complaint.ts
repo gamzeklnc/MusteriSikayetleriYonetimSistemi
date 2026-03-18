@@ -11,6 +11,12 @@ export interface ComplaintDocument {
     uploadedAt: string;
 }
 
+export interface ComplaintBarcodeResultDto {
+  id: number;
+  barcode: string;
+  isJustified: boolean;
+}
+
 export interface ComplaintDto {
   id: number;
   complaintNumber: string; // Şikayet No
@@ -49,6 +55,13 @@ export interface ComplaintDto {
   customerFeedbackNote?: string;
   customerFeedbackByName?: string;
   operationalStage?: string;
+  justifiedHsa1Count: number;
+  justifiedHsa2Count: number;
+  justifiedOtherCount: number;
+  unjustifiedHsa1Count: number;
+  unjustifiedHsa2Count: number;
+  unjustifiedOtherCount: number;
+  barcodeResults: ComplaintBarcodeResultDto[];
   documents: ComplaintDocument[];
 }
 
@@ -104,6 +117,13 @@ export interface UpdateComplaintRequest {
   isQualityReported?: boolean;
   isManagementApproved?: boolean | null;
   operationalStage?: string;
+  justifiedHsa1Count?: number;
+  justifiedHsa2Count?: number;
+  justifiedOtherCount?: number;
+  unjustifiedHsa1Count?: number;
+  unjustifiedHsa2Count?: number;
+  unjustifiedOtherCount?: number;
+  barcodeResults?: ComplaintBarcodeResultDto[];
 }
 
 export interface ChangeStatusRequest {
@@ -140,4 +160,11 @@ export interface CustomerFeedbackRequest {
 export interface OperationalStageRequest {
   stage: string;
   note?: string;
+  justifiedHsa1Count?: number;
+  justifiedHsa2Count?: number;
+  justifiedOtherCount?: number;
+  unjustifiedHsa1Count?: number;
+  unjustifiedHsa2Count?: number;
+  unjustifiedOtherCount?: number;
+  barcodeResults?: ComplaintBarcodeResultDto[];
 }

@@ -49,7 +49,14 @@ public record UpdateComplaintRequest(
     int? CurrentDepartmentId,
     bool? IsQualityReported,
     bool? IsManagementApproved,
-    string? OperationalStage
+    string? OperationalStage,
+    int? JustifiedHsa1Count,
+    int? JustifiedHsa2Count,
+    int? JustifiedOtherCount,
+    int? UnjustifiedHsa1Count,
+    int? UnjustifiedHsa2Count,
+    int? UnjustifiedOtherCount,
+    List<ComplaintBarcodeResultDto>? BarcodeResults
 );
 
 /// <summary>Durum değişikliği (Açık → Kapalı)</summary>
@@ -70,7 +77,23 @@ public record ManagementApprovalRequest(bool? IsApproved, string? Note);
 /// <summary>Müşteri geri dönüşü güncelleme isteği</summary>
 public record CustomerFeedbackRequest(bool IsDone, string? Note);
 
-public record OperationalStageRequest(string Stage, string? Note);
+public record OperationalStageRequest(
+    string Stage, 
+    string? Note,
+    int? JustifiedHsa1Count,
+    int? JustifiedHsa2Count,
+    int? JustifiedOtherCount,
+    int? UnjustifiedHsa1Count,
+    int? UnjustifiedHsa2Count,
+    int? UnjustifiedOtherCount,
+    List<ComplaintBarcodeResultDto>? BarcodeResults
+);
+
+public record ComplaintBarcodeResultDto(
+    int Id,
+    string Barcode,
+    bool IsJustified
+);
 
 public record ComplaintDocumentDto(
     int Id,
@@ -120,6 +143,13 @@ public record ComplaintDto(
     string? CustomerFeedbackNote,
     string? CustomerFeedbackByName,
     string? OperationalStage,
+    int JustifiedHsa1Count,
+    int JustifiedHsa2Count,
+    int JustifiedOtherCount,
+    int UnjustifiedHsa1Count,
+    int UnjustifiedHsa2Count,
+    int UnjustifiedOtherCount,
+    IEnumerable<ComplaintBarcodeResultDto> BarcodeResults,
     IEnumerable<ComplaintDocumentDto> Documents
 );
 

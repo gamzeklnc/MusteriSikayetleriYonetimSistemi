@@ -32,6 +32,22 @@ export default function ComplaintDetailModal({
     const [barcodeFilter, setBarcodeFilter] = useState<'ALL' | 'HSA1' | 'HSA2'>('ALL');
     const [updating, setUpdating] = useState(false);
     const [note, setNote] = useState('');
+    
+    const [justificationCounts, setJustificationCounts] = useState({
+        jhsa1: complaint.justifiedHsa1Count || 0,
+        jhsa2: complaint.justifiedHsa2Count || 0,
+        jother: complaint.justifiedOtherCount || 0,
+        uhsa1: complaint.unjustifiedHsa1Count || 0,
+        uhsa2: complaint.unjustifiedHsa2Count || 0,
+        uother: complaint.unjustifiedOtherCount || 0
+    });
+
+    const [barcodeJusts, setBarcodeJusts] = useState<Record<string, boolean | null>>(
+        complaint.barcodeResults?.reduce((acc: any, br) => {
+            acc[br.barcode] = br.isJustified;
+            return acc;
+        }, {}) || {}
+    );
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('tr-TR', {
@@ -154,12 +170,49 @@ export default function ComplaintDetailModal({
         XLSX.writeFile(wb, `Sikayet_${complaint.complaintNumber}.xlsx`);
     };
 
+    const handleSave = async () => {
+        try {
+            setUpdating(true);
+            const updatedComplaint = await complaintService.updateOperationalStage(complaint.id, {
+                stage: complaint.operationalStage || STAGES[0],
+                note: note || undefined,
+                justifiedHsa1Count: justificationCounts.jhsa1,
+                justifiedHsa2Count: justificationCounts.jhsa2,
+                justifiedOtherCount: justificationCounts.jother,
+                unjustifiedHsa1Count: justificationCounts.uhsa1,
+                unjustifiedHsa2Count: justificationCounts.uhsa2,
+                unjustifiedOtherCount: justificationCounts.uother,
+                barcodeResults: Object.entries(barcodeJusts)
+                    .filter(([_, val]) => val !== null)
+                    .map(([bc, val]) => ({ id: 0, barcode: bc, isJustified: !!val }))
+            });
+            if (onOperationalStageUpdate) {
+                onOperationalStageUpdate(updatedComplaint);
+            }
+            alert('Tüm değişiklikler başarıyla kaydedildi.');
+        } catch (error) {
+            console.error('Kaydedilemedi:', error);
+            alert('Kaydedilirken bir hata oluştu.');
+        } finally {
+            setUpdating(false);
+        }
+    };
+
     const handleUpdateStage = async (stage: string) => {
         try {
             setUpdating(true);
             const updatedComplaint = await complaintService.updateOperationalStage(complaint.id, {
                 stage,
-                note: note || undefined
+                note: note || undefined,
+                justifiedHsa1Count: justificationCounts.jhsa1,
+                justifiedHsa2Count: justificationCounts.jhsa2,
+                justifiedOtherCount: justificationCounts.jother,
+                unjustifiedHsa1Count: justificationCounts.uhsa1,
+                unjustifiedHsa2Count: justificationCounts.uhsa2,
+                unjustifiedOtherCount: justificationCounts.uother,
+                barcodeResults: Object.entries(barcodeJusts)
+                    .filter(([_, val]) => val !== null)
+                    .map(([bc, val]) => ({ id: 0, barcode: bc, isJustified: !!val }))
             });
             setNote('');
             if (onOperationalStageUpdate) {
@@ -362,15 +415,53 @@ export default function ComplaintDetailModal({
                                 <ul className="max-h-60 overflow-y-auto divide-y divide-slate-100 p-2">
                                     {filteredBarcodes.map((barcode, idx) => {
                                         const factory = parseSingleBarcode(barcode).factory;
+                                        const currentJust = barcodeJusts[barcode];
                                         return (
-                                            <li key={idx} className="flex items-center justify-between px-4 py-2 font-mono text-sm text-slate-600 hover:bg-slate-50 rounded-md transition-colors">
+                                            <li key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 font-mono text-sm text-slate-600 hover:bg-slate-50 rounded-md transition-colors gap-3">
                                                 <div className="flex items-center gap-3">
                                                     <span className="text-slate-900 font-bold w-8 inline-block select-none">{idx + 1}.</span>
                                                     <span className="font-bold tracking-tight text-slate-700">{barcode}</span>
+                                                    {factory === 'HSA1' && <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">HSA1</span>}
+                                                    {factory === 'HSA2' && <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-100 text-indigo-700">HSA2</span>}
                                                 </div>
-                                                {factory === 'HSA1' && <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">HSA1</span>}
-                                                {factory === 'HSA2' && <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-100 text-indigo-700">HSA2</span>}
-                                                {factory === 'UNKNOWN' && <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500">BİLİNMİYOR</span>}
+                                                
+                                                {showOperationalStageUpdate && (
+                                                    <div className="flex items-center gap-4 bg-slate-100/50 p-1.5 rounded-lg border border-slate-200/50">
+                                                        <label className="flex items-center gap-2 cursor-pointer group">
+                                                            <input
+                                                                type="radio"
+                                                                name={`just-${barcode}`}
+                                                                checked={currentJust === true}
+                                                                onChange={() => setBarcodeJusts(prev => ({ ...prev, [barcode]: true }))}
+                                                                className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-slate-300"
+                                                            />
+                                                            <span className={`text-xs font-bold ${currentJust === true ? 'text-emerald-700' : 'text-slate-500 group-hover:text-slate-700'}`}>Haklı</span>
+                                                        </label>
+                                                        <label className="flex items-center gap-2 cursor-pointer group">
+                                                            <input
+                                                                type="radio"
+                                                                name={`just-${barcode}`}
+                                                                checked={currentJust === false}
+                                                                onChange={() => setBarcodeJusts(prev => ({ ...prev, [barcode]: false }))}
+                                                                className="w-4 h-4 text-red-600 focus:ring-red-500 border-slate-300"
+                                                            />
+                                                            <span className={`text-xs font-bold ${currentJust === false ? 'text-red-700' : 'text-slate-500 group-hover:text-slate-700'}`}>Haksız</span>
+                                                        </label>
+                                                        <button 
+                                                            onClick={() => setBarcodeJusts(prev => {
+                                                                const next = { ...prev };
+                                                                delete next[barcode];
+                                                                return next;
+                                                            })}
+                                                            className="p-1 text-slate-400 hover:text-slate-600 rounded transition-colors"
+                                                            title="Seçimi Temizle"
+                                                        >
+                                                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </li>
                                         );
                                     })}
@@ -382,6 +473,87 @@ export default function ComplaintDetailModal({
                             )}
                         </div>
                     </div>
+
+                    {/* Manuel Haklı/Haksız Sayı Girişi Tablosu (Sadece Aksiyonlar Sayfası) */}
+                    {showOperationalStageUpdate && (
+                        <div className="pt-6 border-t border-slate-100 space-y-4">
+                            <h3 className="text-xs font-black text-slate-900 tracking-wider">Haklı / Haksız Karar Özeti</h3>
+                            <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white shadow-sm transition-all hover:shadow-md">
+                                <table className="w-full text-sm border-collapse">
+                                    <thead>
+                                        <tr className="bg-slate-50/80 border-b border-slate-200">
+                                            <th className="px-4 py-3 text-left font-black text-slate-900 uppercase tracking-tighter w-1/4 italic">Karar / Fabrika</th>
+                                            <th className="px-4 py-3 text-center font-black text-emerald-700 uppercase tracking-wider">HSA1</th>
+                                            <th className="px-4 py-3 text-center font-black text-indigo-700 uppercase tracking-wider">HSA2</th>
+                                            <th className="px-4 py-3 text-center font-black text-slate-600 uppercase tracking-wider">Diğer</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        <tr>
+                                            <td className="px-4 py-3 font-bold text-emerald-700 bg-emerald-50/30">HAKLI</td>
+                                            <td className="px-4 py-3">
+                                                <input 
+                                                    type="number" 
+                                                    value={justificationCounts.jhsa1}
+                                                    onChange={(e) => setJustificationCounts(prev => ({ ...prev, jhsa1: parseInt(e.target.value) || 0 }))}
+                                                    onFocus={(e) => e.target.select()}
+                                                    className="w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none font-bold text-slate-900"
+                                                />
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <input 
+                                                    type="number" 
+                                                    value={justificationCounts.jhsa2}
+                                                    onChange={(e) => setJustificationCounts(prev => ({ ...prev, jhsa2: parseInt(e.target.value) || 0 }))}
+                                                    onFocus={(e) => e.target.select()}
+                                                    className="w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none font-bold text-slate-900"
+                                                />
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <input 
+                                                    type="number" 
+                                                    value={justificationCounts.jother}
+                                                    onChange={(e) => setJustificationCounts(prev => ({ ...prev, jother: parseInt(e.target.value) || 0 }))}
+                                                    onFocus={(e) => e.target.select()}
+                                                    className="w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none font-bold text-slate-900"
+                                                />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="px-4 py-3 font-bold text-red-700 bg-red-50/30">HAKSIZ</td>
+                                            <td className="px-4 py-3">
+                                                <input 
+                                                    type="number" 
+                                                    value={justificationCounts.uhsa1}
+                                                    onChange={(e) => setJustificationCounts(prev => ({ ...prev, uhsa1: parseInt(e.target.value) || 0 }))}
+                                                    onFocus={(e) => e.target.select()}
+                                                    className="w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none font-bold text-slate-900"
+                                                />
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <input 
+                                                    type="number" 
+                                                    value={justificationCounts.uhsa2}
+                                                    onChange={(e) => setJustificationCounts(prev => ({ ...prev, uhsa2: parseInt(e.target.value) || 0 }))}
+                                                    onFocus={(e) => e.target.select()}
+                                                    className="w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none font-bold text-slate-900"
+                                                />
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <input 
+                                                    type="number" 
+                                                    value={justificationCounts.uother}
+                                                    onChange={(e) => setJustificationCounts(prev => ({ ...prev, uother: parseInt(e.target.value) || 0 }))}
+                                                    onFocus={(e) => e.target.select()}
+                                                    className="w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none font-bold text-slate-900"
+                                                />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Operasyonel Aşama Güncelleme (Sadece Aksiyonlar Sayfası İçin) */}
                     {showOperationalStageUpdate && (
@@ -422,6 +594,18 @@ export default function ComplaintDetailModal({
                                         placeholder="Operasyonel aşama değişikliği için not ekleyin..."
                                         className="flex-1 w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none min-h-[120px]"
                                     />
+                                    
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={updating}
+                                        className="mt-4 w-full py-3 bg-emerald-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 hover:bg-emerald-700 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                        </svg>
+                                        TÜM DEĞİŞİKLİKLERİ KAYDET
+                                    </button>
+
                                     {updating && (
                                         <div className="flex items-center gap-2 text-blue-600 text-xs font-bold animate-pulse">
                                             <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>

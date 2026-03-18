@@ -92,6 +92,16 @@ public class Complaint
     // ── Operasyonel Aksiyonlar ───────────────────────────────────────────────
     public string? OperationalStage { get; set; }
 
+    // ── Haklı / Haksız Takibi ────────────────────────────────────────────────
+    public int JustifiedHsa1Count { get; set; } = 0;
+    public int JustifiedHsa2Count { get; set; } = 0;
+    public int JustifiedOtherCount { get; set; } = 0;
+    public int UnjustifiedHsa1Count { get; set; } = 0;
+    public int UnjustifiedHsa2Count { get; set; } = 0;
+    public int UnjustifiedOtherCount { get; set; } = 0;
+
+    public virtual ICollection<ComplaintBarcodeResult> BarcodeResults { get; set; } = new List<ComplaintBarcodeResult>();
+
     // ── Sistem Alanları ──────────────────────────────────────────────────────
     public int CreatedById { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

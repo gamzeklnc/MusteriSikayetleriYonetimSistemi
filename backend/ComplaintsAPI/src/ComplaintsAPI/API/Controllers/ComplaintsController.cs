@@ -266,6 +266,28 @@ public class ComplaintsController : ControllerBase
         if (req.OperationalStage != null)
             complaint.OperationalStage = req.OperationalStage;
 
+        if (req.JustifiedHsa1Count.HasValue) complaint.JustifiedHsa1Count = req.JustifiedHsa1Count.Value;
+        if (req.JustifiedHsa2Count.HasValue) complaint.JustifiedHsa2Count = req.JustifiedHsa2Count.Value;
+        if (req.JustifiedOtherCount.HasValue) complaint.JustifiedOtherCount = req.JustifiedOtherCount.Value;
+        if (req.UnjustifiedHsa1Count.HasValue) complaint.UnjustifiedHsa1Count = req.UnjustifiedHsa1Count.Value;
+        if (req.UnjustifiedHsa2Count.HasValue) complaint.UnjustifiedHsa2Count = req.UnjustifiedHsa2Count.Value;
+        if (req.UnjustifiedOtherCount.HasValue) complaint.UnjustifiedOtherCount = req.UnjustifiedOtherCount.Value;
+
+        if (req.BarcodeResults != null)
+        {
+            // Basit senaryo: Mevcutları silip yenileri ekle
+            _context.ComplaintBarcodeResults.RemoveRange(complaint.BarcodeResults);
+            foreach (var br in req.BarcodeResults)
+            {
+                complaint.BarcodeResults.Add(new ComplaintBarcodeResult
+                {
+                    Barcode = br.Barcode,
+                    IsJustified = br.IsJustified,
+                    ComplaintId = complaint.Id
+                });
+            }
+        }
+
         complaint.SetDerivedDateFields();
 
         await _repo.UpdateAsync(complaint);
@@ -455,6 +477,27 @@ public class ComplaintsController : ControllerBase
         var oldStage = complaint.OperationalStage;
         complaint.OperationalStage = req.Stage;
 
+        if (req.JustifiedHsa1Count.HasValue) complaint.JustifiedHsa1Count = req.JustifiedHsa1Count.Value;
+        if (req.JustifiedHsa2Count.HasValue) complaint.JustifiedHsa2Count = req.JustifiedHsa2Count.Value;
+        if (req.JustifiedOtherCount.HasValue) complaint.JustifiedOtherCount = req.JustifiedOtherCount.Value;
+        if (req.UnjustifiedHsa1Count.HasValue) complaint.UnjustifiedHsa1Count = req.UnjustifiedHsa1Count.Value;
+        if (req.UnjustifiedHsa2Count.HasValue) complaint.UnjustifiedHsa2Count = req.UnjustifiedHsa2Count.Value;
+        if (req.UnjustifiedOtherCount.HasValue) complaint.UnjustifiedOtherCount = req.UnjustifiedOtherCount.Value;
+
+        if (req.BarcodeResults != null)
+        {
+            _context.ComplaintBarcodeResults.RemoveRange(complaint.BarcodeResults);
+            foreach (var br in req.BarcodeResults)
+            {
+                complaint.BarcodeResults.Add(new ComplaintBarcodeResult
+                {
+                    Barcode = br.Barcode,
+                    IsJustified = br.IsJustified,
+                    ComplaintId = complaint.Id
+                });
+            }
+        }
+
         await _repo.UpdateAsync(complaint);
 
         // Geçmişe ekle
@@ -620,6 +663,13 @@ public class ComplaintsController : ControllerBase
         c.CustomerFeedbackNote,
         c.CustomerFeedbackBy?.Name,
         c.OperationalStage,
+        c.JustifiedHsa1Count,
+        c.JustifiedHsa2Count,
+        c.JustifiedOtherCount,
+        c.UnjustifiedHsa1Count,
+        c.UnjustifiedHsa2Count,
+        c.UnjustifiedOtherCount,
+        c.BarcodeResults.Select(br => new ComplaintBarcodeResultDto(br.Id, br.Barcode, br.IsJustified)),
         c.Documents.Select(d => new ComplaintDocumentDto(
             d.Id,
             d.FileName,
