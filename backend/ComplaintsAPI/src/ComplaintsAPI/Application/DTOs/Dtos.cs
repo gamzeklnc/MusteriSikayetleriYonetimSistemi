@@ -92,7 +92,7 @@ public record OperationalStageRequest(
 public record ComplaintBarcodeResultDto(
     int Id,
     string Barcode,
-    bool IsJustified
+    bool? IsJustified
 );
 
 public record ComplaintDocumentDto(
@@ -185,6 +185,22 @@ public record UserDto(
 );
 
 // ── Reports ───────────────────────────────────────────────────────────────────
+public record DashboardStatsDto(
+    int TotalComplaints,
+    int OpenComplaints,
+    int ClosedComplaints,
+    int TotalJustifiedProducts,
+    int TotalUnjustifiedProducts,
+    double JustifiedRatio,
+    IEnumerable<MonthlyStatDto> MonthlyStats
+);
+
+public record MonthlyStatDto(
+    string Month, // e.g., "03/26"
+    int Count,
+    int CumulativeCount
+);
+
 public record ComplaintStatisticsDto(
     int TotalComplaints,
     int OpenComplaints,

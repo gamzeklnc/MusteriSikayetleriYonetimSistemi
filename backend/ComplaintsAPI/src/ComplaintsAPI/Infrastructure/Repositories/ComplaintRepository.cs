@@ -23,6 +23,7 @@ public class ComplaintRepository : IComplaintRepository
             .Include(c => c.ManagementApprovedBy)
             .Include(c => c.Documents)
                 .ThenInclude(d => d.UploadedBy)
+            .Include(c => c.BarcodeResults)
             .AsQueryable();
 
         if (departmentId.HasValue)
@@ -45,6 +46,7 @@ public class ComplaintRepository : IComplaintRepository
                 .ThenInclude(d => d.UploadedBy)
             .Include(c => c.History)
                 .ThenInclude(h => h.ChangedBy)
+            .Include(c => c.BarcodeResults)
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 

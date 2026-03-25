@@ -1,0 +1,12 @@
+﻿  Geri y├╝klenecek projeler belirleniyor...
+  Geri y├╝kleme i├ğin t├╝m projeler g├╝ncel.
+C:\Program Files\dotnet\sdk\10.0.100-rc.2.25502.107\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.RuntimeIdentifierInference.targets(351,5): message NETSDK1057: Bir .NET ├Ânizleme s├╝r├╝m├╝ kullan─▒yorsunuz. Bkz. https://aka.ms/dotnet-support-policy [C:\Users\gamze.k─▒l─▒nc\Desktop\M├╝┼şteri ┼Şikayetleri Y├Ânetim Sistemi\backend\ComplaintsAPI\src\ComplaintsAPI\ComplaintsAPI.csproj]
+C:\Users\gamze.k─▒l─▒nc\Desktop\M├╝┼şteri ┼Şikayetleri Y├Ânetim Sistemi\backend\ComplaintsAPI\src\ComplaintsAPI\API\Controllers\DashboardController.cs(74,23): error CS7036: 'DashboardStatsDto.DashboardStatsDto(int, int, int, int, int, double, IEnumerable<MonthlyStatDto>)'nin gerekli 'MonthlyStats' parametresine kar┼ş─▒l─▒k gelen herhangi bir arg├╝man yok [C:\Users\gamze.k─▒l─▒nc\Desktop\M├╝┼şteri ┼Şikayetleri Y├Ânetim Sistemi\backend\ComplaintsAPI\src\ComplaintsAPI\ComplaintsAPI.csproj]
+
+Olu┼şturma BA┼ŞARISIZ OLDU.
+
+C:\Users\gamze.k─▒l─▒nc\Desktop\M├╝┼şteri ┼Şikayetleri Y├Ânetim Sistemi\backend\ComplaintsAPI\src\ComplaintsAPI\API\Controllers\DashboardController.cs(74,23): error CS7036: 'DashboardStatsDto.DashboardStatsDto(int, int, int, int, int, double, IEnumerable<MonthlyStatDto>)'nin gerekli 'MonthlyStats' parametresine kar┼ş─▒l─▒k gelen herhangi bir arg├╝man yok [C:\Users\gamze.k─▒l─▒nc\Desktop\M├╝┼şteri ┼Şikayetleri Y├Ânetim Sistemi\backend\ComplaintsAPI\src\ComplaintsAPI\ComplaintsAPI.csproj]
+    0 Uyar─▒
+    1 Hata
+
+Ge├ğen S├╝re 00:00:08.39

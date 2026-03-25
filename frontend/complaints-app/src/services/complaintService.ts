@@ -10,10 +10,16 @@ import type {
     ManagementApprovalRequest,
     CustomerFeedbackRequest,
     OperationalStageRequest,
-    ComplaintDocument
+    ComplaintDocument,
+    DashboardStats
 } from '@/types/complaint';
 
 export const complaintService = {
+    getDashboardStats: async (): Promise<DashboardStats> => {
+        const response = await apiClient.get('/api/dashboard/stats');
+        return response.data;
+    },
+
     getAll: async (departmentId?: number, status?: string): Promise<ComplaintDto[]> => {
         const params: Record<string, string | number> = {};
         if (departmentId) params.departmentId = departmentId;

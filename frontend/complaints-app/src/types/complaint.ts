@@ -14,7 +14,7 @@ export interface ComplaintDocument {
 export interface ComplaintBarcodeResultDto {
   id: number;
   barcode: string;
-  isJustified: boolean;
+  isJustified: boolean | null;
 }
 
 export interface ComplaintDto {
@@ -158,13 +158,29 @@ export interface CustomerFeedbackRequest {
 }
 
 export interface OperationalStageRequest {
-  stage: string;
-  note?: string;
-  justifiedHsa1Count?: number;
-  justifiedHsa2Count?: number;
-  justifiedOtherCount?: number;
-  unjustifiedHsa1Count?: number;
-  unjustifiedHsa2Count?: number;
-  unjustifiedOtherCount?: number;
-  barcodeResults?: ComplaintBarcodeResultDto[];
+    stage: string;
+    note?: string;
+    justifiedHsa1Count?: number;
+    justifiedHsa2Count?: number;
+    justifiedOtherCount?: number;
+    unjustifiedHsa1Count?: number;
+    unjustifiedHsa2Count?: number;
+    unjustifiedOtherCount?: number;
+    barcodeResults?: ComplaintBarcodeResultDto[];
+}
+
+export interface MonthlyStat {
+    month: string;
+    count: number;
+    cumulativeCount: number;
+}
+
+export interface DashboardStats {
+    totalComplaints: number;
+    openComplaints: number;
+    closedComplaints: number;
+    totalJustifiedProducts: number;
+    totalUnjustifiedProducts: number;
+    justifiedRatio: number;
+    monthlyStats: MonthlyStat[];
 }
