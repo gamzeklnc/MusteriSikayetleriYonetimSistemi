@@ -21,7 +21,6 @@ export default function ComplaintsPage() {
         customerName: '',
         sellerName: '',
         projectName: '',
-        stockCode: '',
         brand: '',
         modulePower: '',
         defectiveQuantity: '',
@@ -74,7 +73,6 @@ export default function ComplaintsPage() {
             safeMatch(c.customerName, filters.customerName) &&
             safeMatch(c.sellerName, filters.sellerName) &&
             safeMatch(c.projectName, filters.projectName) &&
-            safeMatch(c.stockCode, filters.stockCode) &&
             safeMatch(c.brand, filters.brand) &&
             safeMatch(c.modulePower, filters.modulePower) &&
             safeMatch(c.defectiveQuantity?.toString(), filters.defectiveQuantity) &&
@@ -94,7 +92,6 @@ export default function ComplaintsPage() {
             'Müşteri': c.customerName,
             'Satış Sorumlusu': c.sellerName,
             'Proje İsmi': c.projectName || '',
-            'Stok Kodu': c.stockCode,
             'Marka': c.brand || '',
             'Güç': c.modulePower || '',
             'Sayı': c.defectiveQuantity,
@@ -126,8 +123,7 @@ export default function ComplaintsPage() {
             { wch: 25 }, // Müşteri
             { wch: 20 }, // Satış Sorumlusu
             { wch: 20 }, // Proje İsmi
-            { wch: 20 }, // Stok Kodu
-            { wch: 15 }, // Marka
+                { wch: 15 }, // Marka
             { wch: 10 }, // Güç
             { wch: 10 }, // Sayı
             { wch: 30 }, // Hata Tanımı
@@ -211,10 +207,7 @@ export default function ComplaintsPage() {
                                         <div className="mb-2 text-slate-500">Proje İsmi</div>
                                         <input type="text"placeholder="Ara..."value={filters.projectName} onChange={e => handleFilterChange('projectName', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
-                                    <th className="px-1.5 py-1.5 align-bottom">
-                                        <div className="mb-2 text-slate-500">Stok Kodu</div>
-                                        <input type="text"placeholder="Ara..."value={filters.stockCode} onChange={e => handleFilterChange('stockCode', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
-                                    </th>
+
                                     <th className="px-1.5 py-1.5 align-bottom">
                                         <div className="mb-2 text-slate-500">Marka</div>
                                         <input type="text"placeholder="Ara..."value={filters.brand} onChange={e => handleFilterChange('brand', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
@@ -253,7 +246,7 @@ export default function ComplaintsPage() {
                             <tbody className="divide-y divide-slate-100">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={16} className="px-6 py-20 text-center">
+                                        <td colSpan={15} className="px-6 py-20 text-center">
                                             <div className="flex flex-col items-center justify-center text-slate-400">
                                                 <div className="w-10 h-10 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mb-4"></div>
                                                 <span className="text-xs font-bold  tracking-widest">Veriler yükleniyor...</span>
@@ -262,7 +255,7 @@ export default function ComplaintsPage() {
                                     </tr>
                                 ) : filteredComplaints.length === 0 ? (
                                     <tr>
-                                        <td colSpan={16} className="px-6 py-20 text-center text-slate-400 text-xs  tracking-widest font-bold">
+                                        <td colSpan={15} className="px-6 py-20 text-center text-slate-400 text-xs  tracking-widest font-bold">
                                             Arama kriterlerine uygun şikayet bulunamadı.
                                         </td>
                                     </tr>
@@ -287,9 +280,7 @@ export default function ComplaintsPage() {
                                             <td className="px-1.5 py-1.5 text-slate-500 text-[10px]">
                                                 {complaint.projectName || '-'}
                                             </td>
-                                            <td className="px-1.5 py-1.5 font-medium text-slate-800">
-                                                {complaint.stockCode}
-                                            </td>
+
                                             <td className="px-1.5 py-1.5 text-slate-600 whitespace-nowrap">
                                                 {complaint.brand || '-'}
                                             </td>

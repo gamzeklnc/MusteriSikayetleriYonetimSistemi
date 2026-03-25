@@ -35,12 +35,12 @@ export default function Sidebar() {
     const isActive = (href: string) => pathname === href;
     const linkClass = (href: string) =>
         `flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${isActive(href)
-            ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
-            : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+            ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/10'
+            : 'text-slate-300 hover:bg-white/10 hover:text-white'
         }`;
 
     return (
-        <aside className="flex flex-col w-64 min-h-screen bg-[#0D2E3F] border-r border-slate-700/50">
+        <aside className="flex flex-col w-64 min-h-screen bg-[#002A3A] border-r border-slate-700/50">
             {/* Logo */}
             <div className="px-6 py-6 mb-2">
                 <div className="flex items-center gap-3">
@@ -121,7 +121,7 @@ export default function Sidebar() {
 
             {/* User Profile / Status */}
             {mounted && user && (
-                <div className="px-4 py-3 mx-3 mb-2 bg-slate-800/50 rounded-xl border border-slate-800">
+                <div className="px-4 py-3 mx-3 mb-2 bg-white/5 rounded-xl border border-white/5">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-xs ">
                             {user.name[0]}
@@ -135,7 +135,7 @@ export default function Sidebar() {
             )}
 
             {/* Logout */}
-            <div className="px-3 py-4 border-t border-slate-800">
+            <div className="px-3 py-4 border-t border-white/5">
                 <button
                     onClick={handleLogout}
                     className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-red-600/10 hover:text-red-400 transition-colors"

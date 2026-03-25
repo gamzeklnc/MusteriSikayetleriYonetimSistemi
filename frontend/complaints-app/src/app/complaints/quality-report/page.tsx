@@ -17,7 +17,6 @@ export default function QualityReportPage() {
         customerName: '',
         sellerName: '',
         projectName: '',
-        stockCode: '',
         brand: '',
         modulePower: '',
         status: '',
@@ -53,7 +52,6 @@ export default function QualityReportPage() {
             safeMatch(c.customerName, filters.customerName) &&
             safeMatch(c.sellerName, filters.sellerName) &&
             safeMatch(c.projectName, filters.projectName) &&
-            safeMatch(c.stockCode, filters.stockCode) &&
             safeMatch(c.brand, filters.brand) &&
             safeMatch(c.modulePower, filters.modulePower) &&
             safeMatch(c.status, filters.status) &&
@@ -90,10 +88,7 @@ export default function QualityReportPage() {
                                         <div className="mb-2 text-slate-500">Proje İsmi</div>
                                         <input type="text"placeholder="Ara..."value={filters.projectName} onChange={e => handleFilterChange('projectName', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
-                                    <th className="px-1.5 py-1.5">
-                                        <div className="mb-2 text-slate-500 leading-tight">Stok Kodu</div>
-                                        <input type="text"placeholder="Ara..."value={filters.stockCode} onChange={e => handleFilterChange('stockCode', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
-                                    </th>
+
                                     <th className="px-1.5 py-1.5 text-center">Marka</th>
                                     <th className="px-1.5 py-1.5 text-center">Güç</th>
                                     <th className="px-1.5 py-1.5 text-center">Sayı</th>
@@ -110,7 +105,7 @@ export default function QualityReportPage() {
                             <tbody className="divide-y divide-slate-100">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={15} className="px-6 py-20 text-center">
+                                        <td colSpan={14} className="px-6 py-20 text-center">
                                             <div className="flex flex-col items-center justify-center text-slate-400">
                                                 <div className="w-8 h-8 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mb-4"></div>
                                                 <span className="text-xs font-bold  tracking-widest">Yükleniyor...</span>
@@ -119,7 +114,7 @@ export default function QualityReportPage() {
                                     </tr>
                                 ) : filteredComplaints.length === 0 ? (
                                     <tr>
-                                        <td colSpan={15} className="px-6 py-20 text-center text-slate-400 text-xs  tracking-widest font-bold">
+                                        <td colSpan={14} className="px-6 py-20 text-center text-slate-400 text-xs  tracking-widest font-bold">
                                             Kayıt bulunamadı.
                                         </td>
                                     </tr>
@@ -137,7 +132,7 @@ export default function QualityReportPage() {
                                             <td className="px-1.5 py-1.5 font-medium text-slate-800">{c.customerName}</td>
                                             <td className="px-1.5 py-1.5 text-slate-600">{c.sellerName}</td>
                                             <td className="px-1.5 py-1.5 text-slate-500 text-[10px] font-medium">{c.projectName || '-'}</td>
-                                            <td className="px-1.5 py-1.5 font-medium text-slate-800">{c.stockCode}</td>
+
                                             <td className="px-1.5 py-1.5 text-center text-slate-600 font-medium">{c.brand || '-'}</td>
                                             <td className="px-1.5 py-1.5 text-center text-slate-600 font-medium whitespace-nowrap">{c.modulePower || '-'}</td>
                                             <td className="px-1.5 py-1.5 text-center text-slate-800 text-[13px]">{c.defectiveQuantity}</td>

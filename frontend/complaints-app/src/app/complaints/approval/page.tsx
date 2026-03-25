@@ -17,7 +17,6 @@ export default function ApprovalPage() {
         customerName: '',
         sellerName: '',
         projectName: '',
-        stockCode: '',
         brand: '',
         modulePower: '',
         status: '',
@@ -53,7 +52,6 @@ export default function ApprovalPage() {
             safeMatch(c.customerName, filters.customerName) &&
             safeMatch(c.sellerName, filters.sellerName) &&
             safeMatch(c.projectName, filters.projectName) &&
-            safeMatch(c.stockCode, filters.stockCode) &&
             safeMatch(c.brand, filters.brand) &&
             safeMatch(c.modulePower, filters.modulePower) &&
             safeMatch(c.status, filters.status) &&
@@ -77,7 +75,7 @@ export default function ApprovalPage() {
                                     <th className="px-1.5 py-1.5">Şikayet No</th>
                                     <th className="px-1.5 py-1.5">Müşteri</th>
                                     <th className="px-1.5 py-1.5">Satış Sorumlusu</th>
-                                    <th className="px-1.5 py-1.5">Stok Kodu</th>
+
                                     <th className="px-1.5 py-1.5 text-center">Sayı</th>
                                     <th className="px-1.5 py-1.5">Hata Tanımı</th>
                                     <th className="px-1.5 py-1.5 text-center">Durum</th>
@@ -91,7 +89,7 @@ export default function ApprovalPage() {
                             <tbody className="divide-y divide-slate-100">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={11} className="px-6 py-20 text-center">
+                                        <td colSpan={10} className="px-6 py-20 text-center">
                                             <div className="flex flex-col items-center justify-center text-slate-400">
                                                 <div className="w-8 h-8 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mb-4"></div>
                                                 <span className="text-xs font-bold  tracking-widest">Yükleniyor...</span>
@@ -100,7 +98,7 @@ export default function ApprovalPage() {
                                     </tr>
                                 ) : filteredComplaints.length === 0 ? (
                                     <tr>
-                                        <td colSpan={11} className="px-6 py-20 text-center text-slate-400 text-xs  tracking-widest font-bold">
+                                        <td colSpan={10} className="px-6 py-20 text-center text-slate-400 text-xs  tracking-widest font-bold">
                                             Kayıt bulunamadı.
                                         </td>
                                     </tr>
@@ -110,7 +108,7 @@ export default function ApprovalPage() {
                                             <td className="px-1.5 py-1.5 font-semibold text-slate-900">{c.complaintNumber}</td>
                                             <td className="px-1.5 py-1.5 font-medium text-slate-800">{c.customerName}</td>
                                             <td className="px-1.5 py-1.5 text-slate-600">{c.sellerName}</td>
-                                            <td className="px-1.5 py-1.5 font-medium text-slate-800">{c.stockCode}</td>
+
                                             <td className="px-1.5 py-1.5 text-center text-slate-800">{c.defectiveQuantity}</td>
                                             <td className="px-1.5 py-1.5 text-slate-600 text-[10px] leading-snug truncate max-w-[150px]">{c.errorDefinition || '-'}</td>
                                             <td className="px-1.5 py-1.5 text-center">

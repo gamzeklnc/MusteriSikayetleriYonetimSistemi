@@ -72,7 +72,7 @@ function CustomerFeedbackModal({
                             {[
                                 { label: 'Müşteri', value: complaint.customerName },
                                 { label: 'Satış Sorumlusu', value: complaint.sellerName },
-                                { label: 'Stok Kodu', value: complaint.stockCode },
+
                                 { label: 'Hata Tanımı', value: complaint.errorDefinition || '-' },
                                 { label: 'Sayı', value: String(complaint.defectiveQuantity) },
                                 { label: 'Proje', value: complaint.projectName || '-' },
@@ -233,7 +233,7 @@ export default function CustomerResponsePage() {
                                     <th className="px-2 py-2.5">Şikayet No</th>
                                     <th className="px-2 py-2.5">Müşteri</th>
                                     <th className="px-2 py-2.5">Satış Sorumlusu</th>
-                                    <th className="px-2 py-2.5">Stok Kodu</th>
+
                                     <th className="px-2 py-2.5 text-center">Sayı</th>
                                     <th className="px-2 py-2.5">Hata Tanımı</th>
                                     <th className="px-2 py-2.5 text-center">Durum</th>
@@ -247,7 +247,7 @@ export default function CustomerResponsePage() {
                             <tbody className="divide-y divide-slate-100">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={12} className="px-6 py-20 text-center">
+                                        <td colSpan={11} className="px-6 py-20 text-center">
                                             <div className="flex flex-col items-center text-slate-400">
                                                 <div className="w-10 h-10 border-4 border-purple-600/20 border-t-purple-600 rounded-full animate-spin mb-4" />
                                                 <span className="text-xs font-bold  tracking-widest">Veriler yükleniyor...</span>
@@ -256,7 +256,7 @@ export default function CustomerResponsePage() {
                                     </tr>
                                 ) : complaints.length === 0 ? (
                                     <tr>
-                                        <td colSpan={12} className="px-6 py-20 text-center text-slate-400 text-xs  tracking-widest font-bold">
+                                        <td colSpan={11} className="px-6 py-20 text-center text-slate-400 text-xs  tracking-widest font-bold">
                                             Henüz yönetim onaylı şikayet bulunmuyor.
                                         </td>
                                     </tr>
@@ -268,7 +268,7 @@ export default function CustomerResponsePage() {
                                             </td>
                                             <td className="px-2 py-2 font-medium text-slate-800">{c.customerName}</td>
                                             <td className="px-2 py-2 text-slate-600">{c.sellerName}</td>
-                                            <td className="px-2 py-2 font-medium text-slate-800">{c.stockCode}</td>
+
                                             <td className="px-2 py-2 text-center text-slate-800">{c.defectiveQuantity}</td>
                                             <td className="px-2 py-2 text-slate-600 text-[10px] truncate max-w-[120px]">{c.errorDefinition || '-'}</td>
                                             <td className="px-2 py-2 text-center">

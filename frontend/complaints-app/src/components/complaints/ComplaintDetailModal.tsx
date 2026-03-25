@@ -72,7 +72,6 @@ export default function ComplaintDetailModal({
             'Müşteri',
             'Satış Sorumlusu',
             'Proje',
-            'Stok Kodu',
             'Marka',
             'Güç',
             'Sayı',
@@ -93,7 +92,6 @@ export default function ComplaintDetailModal({
             complaint.customerName,
             complaint.sellerName,
             complaint.projectName || '-',
-            complaint.stockCode,
             complaint.brand || '-',
             complaint.modulePower || '-',
             complaint.defectiveQuantity.toString(),
@@ -124,7 +122,7 @@ export default function ComplaintDetailModal({
         // Setup column widths
         ws['!cols'] = [
             { wch: 15 }, { wch: 20 }, { wch: 20 }, { wch: 25 },
-            { wch: 25 }, { wch: 20 }, { wch: 15 }, { wch: 15 },
+            { wch: 25 }, { wch: 20 }, { wch: 15 },
             { wch: 15 }, { wch: 10 }, { wch: 10 }, { wch: 10 },
             { wch: 20 }, { wch: 15 }, { wch: 20 }, { wch: 30 }, { wch: 15 }
         ];
@@ -145,8 +143,8 @@ export default function ComplaintDetailModal({
         const totalRows = combinedData.length;
         if (totalRows > 2) {
             const merges = [];
-            // Columns 0 to 14 are common data. We merge from row 1 to totalRows - 1
-            for (let c = 0; c <= 14; c++) {
+            // Columns 0 to 13 are common data. We merge from row 1 to totalRows - 1
+            for (let c = 0; c <= 13; c++) {
                 merges.push({ s: { r: 1, c: c }, e: { r: totalRows - 1, c: c } });
             }
             ws['!merges'] = merges;
@@ -154,7 +152,7 @@ export default function ComplaintDetailModal({
 
         // Apply basic vertical centering style for merged data cells
         for (let R = 1; R <= range.e.r; ++R) {
-            for (let C = 0; C <= 14; ++C) { // Only first 15 columns
+            for (let C = 0; C <= 13; ++C) { // Only first 14 columns
                 const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
                 if (!ws[cellAddress]) continue;
                 if (!ws[cellAddress].s) ws[cellAddress].s = {};
@@ -326,10 +324,7 @@ export default function ComplaintDetailModal({
                                 <h3 className="text-xs font-black text-slate-900  tracking-wider mb-3">Ürün ve Kusur Bilgileri</h3>
                                 <div className="bg-slate-50 rounded-xl p-4 space-y-3 border border-slate-100">
                                     <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <div className="text-[10px] text-slate-900  font-black">Stok Kodu</div>
-                                            <div className="font-bold text-slate-800">{complaint.stockCode}</div>
-                                        </div>
+
                                         <div>
                                             <div className="text-[10px] text-slate-900  font-black">Kusurlu Sayısı</div>
                                             <div className="font-bold text-red-600 text-lg">{complaint.defectiveQuantity}</div>
