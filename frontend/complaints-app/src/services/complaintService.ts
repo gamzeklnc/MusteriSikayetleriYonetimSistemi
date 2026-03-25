@@ -15,8 +15,11 @@ import type {
 } from '@/types/complaint';
 
 export const complaintService = {
-    getDashboardStats: async (): Promise<DashboardStats> => {
-        const response = await apiClient.get('/api/dashboard/stats');
+    getDashboardStats: async (startDate?: string, endDate?: string): Promise<DashboardStats> => {
+        const params: Record<string, string> = {};
+        if (startDate) params.startDate = startDate;
+        if (endDate) params.endDate = endDate;
+        const response = await apiClient.get('/api/dashboard/stats', { params });
         return response.data;
     },
 

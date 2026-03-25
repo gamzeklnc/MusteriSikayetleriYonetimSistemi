@@ -23,27 +23,36 @@ public class DashboardController : ControllerBase
     }
 
     [HttpGet("stats")]
-    public async Task<IActionResult> GetStats()
+    public async Task<IActionResult> GetStats([FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
     {
-        var total = await _context.Complaints.CountAsync();
-        var open = await _context.Complaints.CountAsync(c => c.Status != "Kapali");
-        var closed = await _context.Complaints.CountAsync(c => c.Status == "Kapali");
+        var query = _context.Complaints.AsQueryable();
+
+        if (startDate.HasValue)
+            query = query.Where(c => c.RegistrationDate >= startDate.Value);
+        
+        if (endDate.HasValue)
+            query = query.Where(c => c.RegistrationDate <= endDate.Value);
+
+        var total = await query.CountAsync();
+        var open = await query.CountAsync(c => c.Status != "Kapali");
+        var closed = await query.CountAsync(c => c.Status == "Kapali");
         
         // Ürün bazlı haklılık hesaplaması
-        var justifiedProducts = await _context.Complaints.SumAsync(c => c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount);
-        var unjustifiedProducts = await _context.Complaints.SumAsync(c => c.UnjustifiedHsa1Count + c.UnjustifiedHsa2Count + c.UnjustifiedOtherCount);
+        var justifiedProducts = await query.SumAsync(c => c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount);
+        var unjustifiedProducts = await query.SumAsync(c => c.UnjustifiedHsa1Count + c.UnjustifiedHsa2Count + c.UnjustifiedOtherCount);
         
         var totalEvaluated = justifiedProducts + unjustifiedProducts;
         double ratio = totalEvaluated > 0 ? (double)justifiedProducts / totalEvaluated : 0;
 
-        System.Console.WriteLine($"[DashboardStats] Total: {total}, Open: {open}, Closed: {closed}, JustifiedProducts: {justifiedProducts}, Ratio: {ratio}");
+        System.Console.WriteLine($"[DashboardStats] Filtered Total: {total}, JustifiedProducts: {justifiedProducts}, Ratio: {ratio}");
 
-        // Aylık İstatistikler (Son 12 Ay)
-        var startDate = DateTime.UtcNow.AddMonths(-11).Date;
-        startDate = new DateTime(startDate.Year, startDate.Month, 1);
+        // Aylık İstatistikler
+        DateTime effectiveStartDate = startDate ?? DateTime.UtcNow.AddMonths(-11).Date;
+        if (!startDate.HasValue) effectiveStartDate = new DateTime(effectiveStartDate.Year, effectiveStartDate.Month, 1);
+        
+        DateTime effectiveEndDate = endDate ?? DateTime.UtcNow;
 
-        var monthlyData = await _context.Complaints
-            .Where(c => c.RegistrationDate >= startDate)
+        var monthlyData = await query
             .GroupBy(c => new { c.RegistrationDate.Year, c.RegistrationDate.Month })
             .Select(g => new
             {
@@ -56,13 +65,19 @@ public class DashboardController : ControllerBase
 
         var stats = new List<MonthlyStatDto>();
         int runningTotal = await _context.Complaints
-            .Where(c => c.RegistrationDate < startDate)
+            .Where(c => c.RegistrationDate < effectiveStartDate)
             .CountAsync();
 
-        // 12 ayı garantiye alalım
-        for (int i = 0; i < 12; i++)
+        // Kaç ay olduğunu hesapla
+        int monthCount = ((effectiveEndDate.Year - effectiveStartDate.Year) * 12) + effectiveEndDate.Month - effectiveStartDate.Month + 1;
+        if (monthCount < 1) monthCount = 1;
+        if (monthCount > 48) monthCount = 48; // Limit to 4 years max for safety
+
+        for (int i = 0; i < monthCount; i++)
         {
-            var targetMonth = startDate.AddMonths(i);
+            var targetMonth = effectiveStartDate.AddMonths(i);
+            if (targetMonth > effectiveEndDate) break;
+
             var match = monthlyData.FirstOrDefault(m => m.Year == targetMonth.Year && m.Month == targetMonth.Month);
             
             int currentCount = match?.Count ?? 0;

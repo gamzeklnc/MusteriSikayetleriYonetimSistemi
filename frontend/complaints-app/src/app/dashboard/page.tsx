@@ -16,11 +16,13 @@ import {
 export default function DashboardPage() {
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [loading, setLoading] = useState(true);
+    const [startDate, setStartDate] = useState<string>('');
+    const [endDate, setEndDate] = useState<string>('');
 
-    const fetchStats = async () => {
+    const fetchStats = async (start?: string, end?: string) => {
         try {
             setLoading(true);
-            const data = await complaintService.getDashboardStats();
+            const data = await complaintService.getDashboardStats(start || undefined, end || undefined);
             console.log('Dashboard Data Received:', data);
             setStats(data);
         } catch (error) {
@@ -31,8 +33,8 @@ export default function DashboardPage() {
     };
 
     useEffect(() => {
-        fetchStats();
-    }, []);
+        fetchStats(startDate, endDate);
+    }, [startDate, endDate]);
 
     if (loading && !stats) {
         return (
@@ -91,13 +93,42 @@ export default function DashboardPage() {
                         <h1 className="text-2xl font-black text-slate-900 tracking-tight">Performans Özeti</h1>
                         <p className="text-slate-500 text-sm mt-1">Sistem genelindeki şikayet istatistikleri ve KPI takibi.</p>
                     </div>
-                    <button 
-                        onClick={fetchStats}
-                        disabled={loading}
-                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all disabled:opacity-50"
-                    >
-                        <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-                    </button>
+                    
+                    <div className="flex items-center gap-3">
+                        <div className="hidden md:flex items-center gap-4">
+                            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Başlangıç</span>
+                                <input 
+                                    type="date" 
+                                    value={startDate}
+                                    onChange={(e) => setStartDate(e.target.value)}
+                                    className="text-xs font-bold text-slate-700 outline-none bg-transparent"
+                                />
+                            </div>
+                            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Bitiş</span>
+                                <input 
+                                    type="date" 
+                                    value={endDate}
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                    className="text-xs font-bold text-slate-700 outline-none bg-transparent"
+                                />
+                            </div>
+                        </div>
+
+                        <button 
+                            onClick={() => {
+                                setStartDate('');
+                                setEndDate('');
+                                fetchStats();
+                            }}
+                            disabled={loading}
+                            className="p-2 text-slate-500 hover:text-blue-600 hover:bg-white bg-slate-50 border border-slate-100 rounded-xl transition-all disabled:opacity-50 shadow-sm"
+                            title="Filtreleri Temizle & Yenile"
+                        >
+                            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* KPI Cards */}
