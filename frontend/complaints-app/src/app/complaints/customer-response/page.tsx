@@ -198,6 +198,23 @@ export default function CustomerResponsePage() {
     const [loading, setLoading] = useState(true);
     const [selectedComplaint, setSelectedComplaint] = useState<ComplaintDto | null>(null);
 
+    const [filters, setFilters] = useState({
+        complaintNumber: '',
+        customerName: '',
+        sellerName: '',
+        defectiveQuantity: '',
+        errorDefinition: '',
+        status: '',
+        qualityReport: '',
+        managementApproval: '',
+        customerFeedback: '',
+        customerFeedbackBy: '',
+    });
+
+    const handleFilterChange = (key: keyof typeof filters, value: string) => {
+        setFilters(prev => ({ ...prev, [key]: value }));
+    };
+
     const fetchComplaints = async () => {
         try {
             const data = await complaintService.getAll();
@@ -217,6 +234,28 @@ export default function CustomerResponsePage() {
     const formatDate = (d: string) =>
         d ? new Date(d).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-';
 
+    const filteredComplaints = complaints.filter(c => {
+        const safeMatch = (val: string | undefined | null, search: string) =>
+            !search || (val && val.toLowerCase().includes(search.toLowerCase()));
+        return (
+            safeMatch(c.complaintNumber, filters.complaintNumber) &&
+            safeMatch(c.customerName, filters.customerName) &&
+            safeMatch(c.sellerName, filters.sellerName) &&
+            safeMatch(c.defectiveQuantity?.toString(), filters.defectiveQuantity) &&
+            safeMatch(c.errorDefinition, filters.errorDefinition) &&
+            safeMatch(c.status, filters.status) &&
+            safeMatch(c.isQualityReported ? 'YAPILDI' : 'YOK', filters.qualityReport) &&
+            safeMatch(c.isManagementApproved === true ? 'ONAYLANDI' : c.isManagementApproved === false ? 'REDDEDİLDİ' : 'BEKLİYOR', filters.managementApproval) &&
+            safeMatch(c.isCustomerFeedbackDone ? 'YAPILDI' : 'BEKLİYOR', filters.customerFeedback) &&
+            safeMatch(c.customerFeedbackByName, filters.customerFeedbackBy)
+        );
+    });
+
+    const getStageLabel = (c: ComplaintDto) => {
+        if (c.isCustomerFeedbackDone) return { label: 'Aksiyon', color: 'bg-orange-50 text-orange-700 border-orange-200', dot: 'bg-orange-500' };
+        return { label: 'Müşteri Geri Dönüşü', color: 'bg-purple-50 text-purple-700 border-purple-200', dot: 'bg-purple-500' };
+    };
+
     return (
         <AppLayout>
             <div className="space-y-6">
@@ -228,20 +267,49 @@ export default function CustomerResponsePage() {
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-[11px]">
-                            <thead className="bg-slate-50 text-[10px]  font-bold text-slate-500 border-b border-slate-200 tracking-wider">
+                            <thead className="bg-slate-50 text-[10px] font-bold text-slate-500 border-b border-slate-200 tracking-wider">
                                 <tr>
-                                    <th className="px-2 py-2.5">Şikayet No</th>
-                                    <th className="px-2 py-2.5">Müşteri</th>
-                                    <th className="px-2 py-2.5">Satış Sorumlusu</th>
-
-                                    <th className="px-2 py-2.5 text-center">Sayı</th>
-                                    <th className="px-2 py-2.5">Hata Tanımı</th>
-                                    <th className="px-2 py-2.5 text-center">Durum</th>
-                                    <th className="px-2 py-2.5">Kalite Raporu</th>
-                                    <th className="px-2 py-2.5">Yönetim Onayı</th>
-                                    <th className="px-2 py-2.5 text-center">Müşteri Geri Dönüşü</th>
-                                    <th className="px-2 py-2.5">Yapan</th>
-                                    <th className="px-2 py-2.5 text-right">İşlem</th>
+                                    <th className="px-2 py-1.5 align-bottom">
+                                        <div className="mb-1.5 text-slate-500">Şikayet No</div>
+                                        <input type="text" placeholder="Ara..." value={filters.complaintNumber} onChange={e => handleFilterChange('complaintNumber', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-2 py-1.5 align-bottom">
+                                        <div className="mb-1.5 text-slate-500">Müşteri</div>
+                                        <input type="text" placeholder="Ara..." value={filters.customerName} onChange={e => handleFilterChange('customerName', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-purple-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-2 py-1.5 align-bottom">
+                                        <div className="mb-1.5 text-slate-500">Satış Sorumlusu</div>
+                                        <input type="text" placeholder="Ara..." value={filters.sellerName} onChange={e => handleFilterChange('sellerName', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-purple-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-2 py-1.5 align-bottom text-center">
+                                        <div className="mb-1.5 text-slate-500">Sayı</div>
+                                        <input type="text" placeholder="Ara..." value={filters.defectiveQuantity} onChange={e => handleFilterChange('defectiveQuantity', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-purple-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-2 py-1.5 align-bottom">
+                                        <div className="mb-1.5 text-slate-500">Hata Tanımı</div>
+                                        <input type="text" placeholder="Ara..." value={filters.errorDefinition} onChange={e => handleFilterChange('errorDefinition', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-purple-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-2 py-1.5 align-bottom text-center">
+                                        <div className="mb-1.5 text-slate-500">Durum</div>
+                                        <input type="text" placeholder="Ara..." value={filters.status} onChange={e => handleFilterChange('status', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-purple-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-2 py-1.5 align-bottom">
+                                        <div className="mb-1.5 text-slate-500">Kalite Raporu</div>
+                                        <input type="text" placeholder="Ara..." value={filters.qualityReport} onChange={e => handleFilterChange('qualityReport', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-purple-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-2 py-1.5 align-bottom">
+                                        <div className="mb-1.5 text-slate-500">Yönetim Onayı</div>
+                                        <input type="text" placeholder="Ara..." value={filters.managementApproval} onChange={e => handleFilterChange('managementApproval', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-purple-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-2 py-1.5 align-bottom text-center">
+                                        <div className="mb-1.5 text-slate-500">Müşteri Geri Dönüşü</div>
+                                        <input type="text" placeholder="Ara..." value={filters.customerFeedback} onChange={e => handleFilterChange('customerFeedback', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-purple-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-2 py-1.5 align-bottom">
+                                        <div className="mb-1.5 text-slate-500">Yapan</div>
+                                        <input type="text" placeholder="Ara..." value={filters.customerFeedbackBy} onChange={e => handleFilterChange('customerFeedbackBy', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-purple-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-2 py-1.5 text-right align-bottom pb-6 whitespace-nowrap">İşlem</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -254,82 +322,84 @@ export default function CustomerResponsePage() {
                                             </div>
                                         </td>
                                     </tr>
-                                ) : complaints.length === 0 ? (
+                                ) : filteredComplaints.length === 0 ? (
                                     <tr>
                                         <td colSpan={11} className="px-6 py-20 text-center text-slate-400 text-xs  tracking-widest font-bold">
-                                            Henüz yönetim onaylı şikayet bulunmuyor.
+                                            {complaints.length === 0 ? 'Henüz yönetim onaylı şikayet bulunmuyor.' : 'Arama kriterlerine uygun kayıt bulunamadı.'}
                                         </td>
                                     </tr>
                                 ) : (
-                                    complaints.map((c) => (
-                                        <tr key={c.id} className={`transition-colors text-[11px] ${c.isCustomerFeedbackDone ? 'bg-emerald-50/30 hover:bg-emerald-50/50' : 'hover:bg-purple-50/30'}`}>
-                                            <td className="px-2 py-2 font-semibold text-slate-900 whitespace-nowrap">
-                                                {c.complaintNumber}
-                                            </td>
-                                            <td className="px-2 py-2 font-medium text-slate-800">{c.customerName}</td>
-                                            <td className="px-2 py-2 text-slate-600">{c.sellerName}</td>
-
-                                            <td className="px-2 py-2 text-center text-slate-800">{c.defectiveQuantity}</td>
-                                            <td className="px-2 py-2 text-slate-600 text-[10px] truncate max-w-[120px]">{c.errorDefinition || '-'}</td>
-                                            <td className="px-2 py-2 text-center">
-                                                <div className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold border ${c.status.includes('Gecikti') ? 'bg-red-50 text-red-600 border-red-200' :
-                                                        c.status.includes('Kapalı') || c.status.includes('Kapali') ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
-                                                            'bg-amber-50 text-amber-600 border-amber-200'
-                                                    }`}>
-                                                    <span className={`w-1 h-1 rounded-full mr-1 ${c.status.includes('Gecikti') ? 'bg-red-500' :
-                                                            c.status.includes('Kapalı') || c.status.includes('Kapali') ? 'bg-emerald-500' :
-                                                                'bg-amber-500'
-                                                        }`} />
-                                                    {c.status}
-                                                </div>
-                                            </td>
-                                            <td className="px-2 py-2">
-                                                <div className="flex flex-col gap-0.5">
-                                                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-700">
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />YAPILDI
-                                                    </span>
-                                                    {c.qualityReportedByName && (
-                                                        <span className="text-[9px] text-slate-400">{c.qualityReportedByName}</span>
+                                    filteredComplaints.map((c) => {
+                                        const stage = getStageLabel(c);
+                                        return (
+                                            <tr key={c.id} className={`transition-colors text-[11px] ${c.isCustomerFeedbackDone ? 'bg-orange-50/20 hover:bg-orange-50/40' : 'hover:bg-purple-50/30'}`}>
+                                                <td className="px-2 py-2 font-semibold text-slate-900 whitespace-nowrap">
+                                                    {c.complaintNumber}
+                                                </td>
+                                                <td className="px-2 py-2 font-medium text-slate-800">{c.customerName}</td>
+                                                <td className="px-2 py-2 text-slate-600">{c.sellerName}</td>
+                                                <td className="px-2 py-2 text-center text-slate-800">{c.defectiveQuantity}</td>
+                                                <td className="px-2 py-2 text-slate-600 text-[10px] truncate max-w-[120px]">{c.errorDefinition || '-'}</td>
+                                                <td className="px-2 py-2 text-center">
+                                                    <div className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold border ${c.status.includes('Gecikti') ? 'bg-red-50 text-red-600 border-red-200' :
+                                                            c.status.includes('Kapalı') || c.status.includes('Kapali') ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
+                                                                'bg-amber-50 text-amber-600 border-amber-200'
+                                                        }`}>
+                                                        <span className={`w-1 h-1 rounded-full mr-1 ${c.status.includes('Gecikti') ? 'bg-red-500' :
+                                                                c.status.includes('Kapalı') || c.status.includes('Kapali') ? 'bg-emerald-500' :
+                                                                    'bg-amber-500'
+                                                            }`} />
+                                                        {c.status}
+                                                    </div>
+                                                </td>
+                                                <td className="px-2 py-2">
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-700">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />YAPILDI
+                                                        </span>
+                                                        {c.qualityReportedByName && (
+                                                            <span className="text-[9px] text-slate-400">{c.qualityReportedByName}</span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="px-2 py-2">
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-blue-700">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block" />ONAYLANDI
+                                                        </span>
+                                                        {c.managementApprovedByName && (
+                                                            <span className="text-[9px] text-slate-400">{c.managementApprovedByName}</span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="px-2 py-2 text-center">
+                                                    {c.isCustomerFeedbackDone ? (
+                                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-orange-50 text-orange-700 border border-orange-200">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-orange-500 inline-block" />AKSİYON
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-purple-50 text-purple-600 border border-purple-200">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 inline-block" />BEKLİYOR
+                                                        </span>
                                                     )}
-                                                </div>
-                                            </td>
-                                            <td className="px-2 py-2">
-                                                <div className="flex flex-col gap-0.5">
-                                                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-blue-700">
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block" />ONAYLANDI
-                                                    </span>
-                                                    {c.managementApprovedByName && (
-                                                        <span className="text-[9px] text-slate-400">{c.managementApprovedByName}</span>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td className="px-2 py-2 text-center">
-                                                {c.isCustomerFeedbackDone ? (
-                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />YAPILDI
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-purple-50 text-purple-600 border border-purple-200">
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-purple-400 inline-block" />BEKLİYOR
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="px-2 py-2 text-[10px] text-slate-500">
-                                                {c.customerFeedbackByName || '-'}
-                                            </td>
-                                            <td className="px-2 py-2 text-right">
-                                                <button
-                                                    onClick={() => setSelectedComplaint(c)}
-                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-purple-50 hover:text-purple-600 hover:border-purple-200 transition-all shadow-sm"
-                                                >
-                                                    <svg className="w-3.5 h-3.5"fill="none"viewBox="0 0 24 24"stroke="currentColor">
-                                                        <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                    </svg>
-                                                    İşlem
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))
+                                                </td>
+                                                <td className="px-2 py-2 text-[10px] text-slate-500">
+                                                    {c.customerFeedbackByName || '-'}
+                                                </td>
+                                                <td className="px-2 py-2 text-right">
+                                                    <button
+                                                        onClick={() => setSelectedComplaint(c)}
+                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-purple-50 hover:text-purple-600 hover:border-purple-200 transition-all shadow-sm"
+                                                    >
+                                                        <svg className="w-3.5 h-3.5"fill="none"viewBox="0 0 24 24"stroke="currentColor">
+                                                            <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                        </svg>
+                                                        İşlem
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
                                 )}
                             </tbody>
                         </table>

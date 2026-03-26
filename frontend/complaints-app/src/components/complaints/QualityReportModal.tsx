@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
 import { complaintService } from '@/services/complaintService';
+import { errorOptionService } from '@/services/errorOptionService';
+import { ErrorDefinitionOption } from '@/types/errorOption';
 import { parseSingleBarcode } from '@/utils/barcodeParser';
 import DocumentSection from './DocumentSection';
 
@@ -15,8 +17,14 @@ interface Props {
 
 export default function QualityReportModal({ complaint, onClose, onSuccess, onUpload }: Props) {
     const [note, setNote] = useState(complaint.qualityReportNote || '');
+    const [errorDefinition, setErrorDefinition] = useState(complaint.errorDefinition || '');
     const [isUpdating, setIsUpdating] = useState(false);
     const [barcodeFilter, setBarcodeFilter] = useState<'ALL' | 'HSA1' | 'HSA2'>('ALL');
+    const [errorOptions, setErrorOptions] = useState<ErrorDefinitionOption[]>([]);
+
+    useEffect(() => {
+        errorOptionService.getAll().then(setErrorOptions).catch(err => console.error('Hata opsiyonları yüklenemedi:', err));
+    }, []);
 
     // Yönetim tarafından reddedildi mi?
     const isRejected = complaint.isManagementApproved === false;
@@ -34,11 +42,16 @@ export default function QualityReportModal({ complaint, onClose, onSuccess, onUp
     };
 
     const handleAction = async (isReported: boolean) => {
+        if (isReported && !errorDefinition) {
+            alert('Lütfen hata tanımını seçin.');
+            return;
+        }
         setIsUpdating(true);
         try {
             await complaintService.updateQualityReport(complaint.id, {
                 isQualityReported: isReported,
-                note: note
+                note: note,
+                errorDefinition: errorDefinition || undefined,
             });
             onSuccess();
             onClose();
@@ -136,12 +149,15 @@ export default function QualityReportModal({ complaint, onClose, onSuccess, onUp
                                         <div className="text-[10px] text-slate-500 font-semibold mb-0.5">Sayı</div>
                                         <div className="text-sm text-slate-800">{complaint.defectiveQuantity}</div>
                                     </div>
-                                    <div className="col-span-2">
-                                        <div className="text-[10px] text-slate-500 font-semibold mb-0.5">Hata Tanımı</div>
-                                        <div className="text-sm font-medium text-blue-700 bg-blue-50 px-2 py-1 rounded inline-block mt-1">
-                                            {complaint.errorDefinition}
+                                    {/* Hata Tanımı - mevcut ise göster, yoksa boş bırak (aşağıdaki seçim alanından girilecek) */}
+                                    {complaint.errorDefinition && (
+                                        <div className="col-span-2">
+                                            <div className="text-[10px] text-slate-500 font-semibold mb-0.5">Mevcut Hata Tanımı</div>
+                                            <div className="text-sm font-medium text-blue-700 bg-blue-50 px-2 py-1 rounded inline-block mt-1">
+                                                {complaint.errorDefinition}
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -207,6 +223,34 @@ export default function QualityReportModal({ complaint, onClose, onSuccess, onUp
                     <div className="mt-8 pt-6 border-t border-slate-100">
                         <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-4">Kalite Değerlendirmesi</h3>
                         <div className="space-y-4">
+
+                            {/* Hata Tanımı Seçimi */}
+                            <div>
+                                <label className="text-[10px] text-slate-500 font-semibold mb-1.5 block ml-1">
+                                    Hata Tanımı <span className="text-red-400">*</span>
+                                </label>
+                                {isLocked ? (
+                                    <div className="px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-sm font-medium text-blue-700 cursor-not-allowed">
+                                        {complaint.errorDefinition || errorDefinition || 'Belirtilmemiş'}
+                                    </div>
+                                ) : (
+                                    <select
+                                        value={errorDefinition}
+                                        onChange={(e) => setErrorDefinition(e.target.value)}
+                                        className={`w-full px-3 py-2.5 border rounded-xl text-sm font-bold outline-none transition-all ${
+                                            isRejected
+                                                ? 'border-red-300 bg-red-50/30 focus:ring-2 focus:ring-red-400 focus:border-red-400 text-red-700'
+                                                : 'bg-slate-50/30 border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-blue-700'
+                                        }`}
+                                    >
+                                        <option value="">Hata tanımı seçin...</option>
+                                        {errorOptions.map(o => (
+                                            <option key={o.id} value={o.label}>{o.label}</option>
+                                        ))}
+                                    </select>
+                                )}
+                            </div>
+
                             <div>
                                 <label className="text-[10px] text-slate-500 font-semibold mb-0.5 mb-1.5 block ml-1">
                                     Kalite Kontrol Notu

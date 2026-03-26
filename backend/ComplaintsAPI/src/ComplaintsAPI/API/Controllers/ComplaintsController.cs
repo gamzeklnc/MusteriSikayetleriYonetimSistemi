@@ -87,7 +87,6 @@ public class ComplaintsController : ControllerBase
             Hsa2               = req.Hsa2,
             Brand              = req.Brand,       // Manuel girilen
             ModulePower        = req.ModulePower, // Manuel girilen
-            ErrorDefinition    = req.ErrorDefinition,
             CreatedById        = CurrentUserId,
             Status             = "Acik",
             CurrentDepartmentId = 2 // Varsayılan "Kalite" departmanı (ID: 2)
@@ -384,6 +383,9 @@ public class ComplaintsController : ControllerBase
 
         complaint.IsQualityReported = req.IsQualityReported;
         complaint.QualityReportNote = req.Note;
+
+        // Hata tanımını güncelle
+        complaint.ErrorDefinition = req.ErrorDefinition;
 
         if (req.IsQualityReported)
             complaint.QualityReportedById = CurrentUserId;

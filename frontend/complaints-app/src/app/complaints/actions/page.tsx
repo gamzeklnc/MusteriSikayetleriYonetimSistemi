@@ -5,7 +5,6 @@ import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
 import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
 import ComplaintDetailModal from '@/components/complaints/ComplaintDetailModal';
-import DocumentSection from '@/components/complaints/DocumentSection';
 
 export default function ActionsPage() {
     const [complaints, setComplaints] = useState<ComplaintDto[]>([]);
@@ -13,12 +12,23 @@ export default function ActionsPage() {
     const [selectedComplaint, setSelectedComplaint] = useState<ComplaintDto | null>(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
 
+    const [filters, setFilters] = useState({
+        complaintNumber: '',
+        customerName: '',
+        projectName: '',
+        operationalStage: '',
+    });
+
+    const handleFilterChange = (key: keyof typeof filters, value: string) => {
+        setFilters(prev => ({ ...prev, [key]: value }));
+    };
+
     const fetchComplaints = async () => {
         try {
             setLoading(true);
             const data = await complaintService.getAll();
-            // Sadece "Aksiyon Planı" aşamasındakileri filtrele
-            const filtered = data.filter(c => c.currentDepartmentName === 'Aksiyon Planı');
+            // Sadece müşteri geri dönüşü yapılmış (Aksiyon aşaması) olanları filtrele
+            const filtered = data.filter(c => c.isCustomerFeedbackDone === true);
             setComplaints(filtered);
         } catch (error) {
             console.error('Şikayetler yüklenemedi:', error);
@@ -31,13 +41,24 @@ export default function ActionsPage() {
         fetchComplaints();
     }, []);
 
+    const filteredComplaints = complaints.filter(c => {
+        const safeMatch = (val: string | undefined | null, search: string) =>
+            !search || (val && val.toLowerCase().includes(search.toLowerCase()));
+        return (
+            safeMatch(c.complaintNumber, filters.complaintNumber) &&
+            safeMatch(c.customerName, filters.customerName) &&
+            safeMatch(c.projectName, filters.projectName) &&
+            safeMatch(c.operationalStage || 'Aşama Belirlenmedi', filters.operationalStage)
+        );
+    });
+
     return (
         <AppLayout>
             <div className="space-y-6">
                 <div className="flex justify-between items-center">
                     <div>
                         <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Aksiyonlar</h1>
-                        <p className="text-slate-500 text-sm mt-1">Geri dönüşü tamamlanmış şikayetlerin operasyonel takibi.</p>
+                        <p className="text-slate-500 text-sm mt-1">Müşteri geri dönüşü tamamlanmış şikayetlerin operasyonel takibi.</p>
                     </div>
                 </div>
 
@@ -46,11 +67,23 @@ export default function ActionsPage() {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50 border-b border-slate-200">
-                                    <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Şikayet No</th>
-                                    <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Müşteri</th>
-                                    <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Proje İsmi</th>
-                                    <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Mevcut Aşama</th>
-                                    <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider text-right">İşlemler</th>
+                                    <th className="px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider align-bottom">
+                                        <div className="mb-1.5">Şikayet No</div>
+                                        <input type="text" placeholder="Ara..." value={filters.complaintNumber} onChange={e => handleFilterChange('complaintNumber', e.target.value)} className="w-full px-1.5 py-1 border border-slate-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all normal-case" />
+                                    </th>
+                                    <th className="px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider align-bottom">
+                                        <div className="mb-1.5">Müşteri</div>
+                                        <input type="text" placeholder="Ara..." value={filters.customerName} onChange={e => handleFilterChange('customerName', e.target.value)} className="w-full px-1.5 py-1 border border-slate-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all normal-case" />
+                                    </th>
+                                    <th className="px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider align-bottom">
+                                        <div className="mb-1.5">Proje İsmi</div>
+                                        <input type="text" placeholder="Ara..." value={filters.projectName} onChange={e => handleFilterChange('projectName', e.target.value)} className="w-full px-1.5 py-1 border border-slate-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all normal-case" />
+                                    </th>
+                                    <th className="px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider align-bottom">
+                                        <div className="mb-1.5">Operasyonel Aşama</div>
+                                        <input type="text" placeholder="Ara..." value={filters.operationalStage} onChange={e => handleFilterChange('operationalStage', e.target.value)} className="w-full px-1.5 py-1 border border-slate-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all normal-case" />
+                                    </th>
+                                    <th className="px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider text-right align-bottom pb-7">İşlemler</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -58,17 +91,19 @@ export default function ActionsPage() {
                                     <tr>
                                         <td colSpan={5} className="px-6 py-12 text-center text-slate-400">Yükleniyor...</td>
                                     </tr>
-                                ) : complaints.length === 0 ? (
+                                ) : filteredComplaints.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="px-6 py-12 text-center text-slate-400">Bekleyen operasyonel aksiyon bulunmuyor.</td>
+                                        <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
+                                            {complaints.length === 0 ? 'Bekleyen operasyonel aksiyon bulunmuyor.' : 'Arama kriterlerine uygun kayıt bulunamadı.'}
+                                        </td>
                                     </tr>
                                 ) : (
-                                    complaints.map((c) => (
+                                    filteredComplaints.map((c) => (
                                         <tr key={c.id} className="hover:bg-slate-50/50 transition-colors group">
-                                            <td className="px-6 py-4 font-mono text-xs font-bold text-blue-600">{c.complaintNumber}</td>
-                                            <td className="px-6 py-4 text-sm font-medium text-slate-700">{c.customerName}</td>
-                                            <td className="px-6 py-4 text-sm text-slate-600">{c.projectName}</td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-4 py-4 font-mono text-xs font-bold text-blue-600">{c.complaintNumber}</td>
+                                            <td className="px-4 py-4 text-sm font-medium text-slate-700">{c.customerName}</td>
+                                            <td className="px-4 py-4 text-sm text-slate-600">{c.projectName}</td>
+                                            <td className="px-4 py-4">
                                                 <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
                                                     c.operationalStage 
                                                     ? 'bg-blue-50 text-blue-600 border border-blue-100' 
@@ -77,7 +112,7 @@ export default function ActionsPage() {
                                                     {c.operationalStage || 'Aşama Belirlenmedi'}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-4 py-4">
                                                 <div className="flex items-center justify-end gap-2">
                                                     <button
                                                         onClick={() => {

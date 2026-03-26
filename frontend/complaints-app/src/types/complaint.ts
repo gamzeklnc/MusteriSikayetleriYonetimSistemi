@@ -92,7 +92,6 @@ export interface CreateComplaintRequest {
   hsa1?: number;
   hsa2?: number;
   note?: string;
-  errorDefinition?: string;
 }
 
 export interface UpdateComplaintRequest {
@@ -145,6 +144,7 @@ export interface AddNoteRequest {
 export interface UpdateQualityReportRequest {
   isQualityReported: boolean;
   note?: string;
+  errorDefinition?: string;
 }
 
 export interface ManagementApprovalRequest {

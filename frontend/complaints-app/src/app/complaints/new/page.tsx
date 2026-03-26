@@ -4,10 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
-import { errorOptionService } from '@/services/errorOptionService';
 import { userService } from '@/services/userService';
 import { CreateComplaintRequest } from '@/types/complaint';
-import { ErrorDefinitionOption } from '@/types/errorOption';
 import { User } from '@/types/user';
 import { aggregateBarcodes } from '@/utils/barcodeParser';
 
@@ -15,7 +13,6 @@ export default function NewComplaintPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [errorOptions, setErrorOptions] = useState<ErrorDefinitionOption[]>([]);
     const [users, setUsers] = useState<User[]>([]);
 
     // Otomatik dolan alanlar (Örnek eşleme)
@@ -27,7 +24,6 @@ export default function NewComplaintPage() {
     };
 
     useEffect(() => {
-        errorOptionService.getAll().then(setErrorOptions).catch(err => console.error('Hata opsiyonları yüklenemedi:', err));
         userService.getAll().then(setUsers).catch(err => console.error('Kullanıcılar yüklenemedi:', err));
     }, []);
 
@@ -216,16 +212,7 @@ export default function NewComplaintPage() {
                                 />
                             </div>
 
-                            <div className="space-y-1">
-                                <label className="block text-[11px] font-bold text-slate-500  tracking-wider">Hata Tanımı</label>
-                                <select
-                                    name="errorDefinition" required value={formData.errorDefinition || ''} onChange={handleChange}
-                                    className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 font-bold text-blue-700"
-                                >
-                                    <option value="">Seçiniz...</option>
-                                    {errorOptions.map(o => <option key={o.id} value={o.label}>{o.label}</option>)}
-                                </select>
-                            </div>
+
                         </div>
 
                         {/* Alt Bölüm: Barkod ve Notlar */}

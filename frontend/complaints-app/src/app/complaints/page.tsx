@@ -312,7 +312,12 @@ export default function ComplaintsPage() {
                                                 </div>
                                             </td>
                                             <td className="px-1.5 py-1.5 whitespace-nowrap">
-                                                {complaint.currentDepartmentName === 'Müşteri Geri Dönüşü' ? (
+                                                {complaint.isCustomerFeedbackDone ? (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-orange-50 text-orange-700 border border-orange-200">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-orange-500 inline-block"></span>
+                                                        Aksiyon
+                                                    </span>
+                                                ) : complaint.currentDepartmentName === 'Müşteri Geri Dönüşü' ? (
                                                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-purple-500 inline-block"></span>
                                                         Müşteri Geri Dönüşü

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace ComplaintsAPI.Application.DTOs;
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -23,8 +25,7 @@ public record CreateComplaintRequest(
     int? Hsa2,
     string? Brand,         // Manuel girilebilir
     string? ModulePower,   // Manuel girilebilir
-    string? Note,          // Manuel girilebilir
-    string? ErrorDefinition
+    string? Note           // Manuel girilebilir
 );
 
 /// <summary>Şikayet güncelleme</summary>
@@ -69,7 +70,17 @@ public record TransferDepartmentRequest(int TargetDepartmentId, string? Note);
 public record AddNoteRequest(string Note, int DepartmentId);
 
 /// <summary>Kalite raporu güncelleme isteği</summary>
-public record QualityReportUpdateRequest(bool IsQualityReported, string? Note);
+public class QualityReportUpdateRequest
+{
+    [JsonPropertyName("isQualityReported")]
+    public bool IsQualityReported { get; set; }
+
+    [JsonPropertyName("note")]
+    public string? Note { get; set; }
+
+    [JsonPropertyName("errorDefinition")]
+    public string? ErrorDefinition { get; set; }
+}
 
 /// <summary>Yönetim onayı isteği</summary>
 public record ManagementApprovalRequest(bool? IsApproved, string? Note);
