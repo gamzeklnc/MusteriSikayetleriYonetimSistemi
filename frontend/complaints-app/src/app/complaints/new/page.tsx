@@ -15,12 +15,32 @@ export default function NewComplaintPage() {
     const [error, setError] = useState<string | null>(null);
     const [users, setUsers] = useState<User[]>([]);
 
-    // Otomatik dolan alanlar (Örnek eşleme)
-    const stockCodeMapping: Record<string, { brand: string, modulePower: string }> = {
-        'EL-450': { brand: 'Elin', modulePower: '450W' },
-        'EL-550': { brand: 'Elin', modulePower: '550W' },
-        'CW-550': { brand: 'CW Enerji', modulePower: '550W' },
-        'CW-450': { brand: 'CW Enerji', modulePower: '450W' },
+    // Stok kodundan marka ve güç bilgisini dinamik olarak türetir (backend ile aynı mantık)
+    const deriveFromStockCode = (stockCode: string): { brand: string, modulePower: string } => {
+        const code = stockCode.trim();
+        if (!code) return { brand: '', modulePower: '' };
+
+        const extractPowerBeforeW = (s: string): string => {
+            const match = s.match(/(\d+)[Ww]/);
+            return match ? match[1] + 'W' : '';
+        };
+
+        const extractPowerAfterPrefix = (s: string, prefix: string): string => {
+            const rest = s.slice(prefix.length);
+            const match = rest.match(/^(\d+)/);
+            return match ? match[1] + 'W' : '';
+        };
+
+        const upper = code.toUpperCase();
+
+        if (upper.startsWith('HSA'))    return { brand: 'Maviçam',  modulePower: extractPowerBeforeW(code) };
+        if (upper.startsWith('JKM'))    return { brand: 'Jinko',     modulePower: extractPowerAfterPrefix(code, 'JKM') };
+        if (upper.startsWith('SUNPWT')) return { brand: 'SunPwt',   modulePower: extractPowerBeforeW(code) };
+        if (upper.startsWith('JAM'))    return { brand: 'Ja Solar',  modulePower: extractPowerBeforeW(code) };
+        if (upper.startsWith('EL'))     return { brand: 'Elin',      modulePower: extractPowerBeforeW(code) };
+        if (upper.startsWith('CW'))     return { brand: 'CW Enerji', modulePower: extractPowerBeforeW(code) };
+
+        return { brand: '', modulePower: '' };
     };
 
     useEffect(() => {
@@ -71,16 +91,11 @@ export default function NewComplaintPage() {
 
         const newFormData = { ...formData, [name]: parsedValue };
 
-        // Stok Kodu bazlı otomatik dolum simülasyonu
+        // Stok Kodu değiştiğinde marka ve güç otomatik türetilir
         if (name === 'stockCode') {
-            const info = stockCodeMapping[value.toUpperCase()];
-            if (info) {
-                newFormData.brand = info.brand;
-                newFormData.modulePower = info.modulePower;
-            } else if (value === '') {
-                newFormData.brand = '';
-                newFormData.modulePower = '';
-            }
+            const derived = deriveFromStockCode(value);
+            newFormData.brand = derived.brand;
+            newFormData.modulePower = derived.modulePower;
         }
 
         setFormData(newFormData);
