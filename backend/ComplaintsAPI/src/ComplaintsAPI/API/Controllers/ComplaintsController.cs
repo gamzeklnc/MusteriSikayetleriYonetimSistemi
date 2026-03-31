@@ -525,6 +525,44 @@ public class ComplaintsController : ControllerBase
         return Ok(MapToDto(complaint));
     }
 
+    /// <summary>Hedef Tarih Güncelle</summary>
+    [HttpPatch("{id}/target-date")]
+    public async Task<IActionResult> UpdateTargetDate(int id, [FromBody] UpdateTargetDateRequest req)
+    {
+        var complaint = await _repo.GetByIdAsync(id);
+        if (complaint is null) return NotFound();
+
+        var oldHasTarget = complaint.HasTargetDate;
+        var oldTargetDate = complaint.TargetDate;
+
+        complaint.HasTargetDate = req.HasTargetDate;
+        if (req.HasTargetDate == true)
+        {
+            complaint.TargetDate = req.TargetDate;
+        }
+        else
+        {
+            complaint.TargetDate = null;
+        }
+
+        await _repo.UpdateAsync(complaint);
+        
+        // Geçmişe ekle
+        await _repo.AddHistoryAsync(new ComplaintHistory
+        {
+            ComplaintId = complaint.Id,
+            FromStatus = oldTargetDate?.ToString("dd.MM.yyyy"),
+            ToStatus = complaint.TargetDate?.ToString("dd.MM.yyyy"),
+            Note = $"Hedef Tarih Güncellendi: {(complaint.HasTargetDate == true ? complaint.TargetDate?.ToString("dd.MM.yyyy") : "Yok")}",
+            ChangedById = CurrentUserId,
+            DepartmentId = complaint.CurrentDepartmentId
+        });
+
+        await LogActivityAsync("Hedef Tarih Güncellendi", $"Şikayet No: {complaint.ComplaintNumber}");
+
+        return Ok(MapToDto(complaint));
+    }
+
     /// <summary>Şikayeti sil (Sadece Admin)</summary>
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
@@ -689,6 +727,8 @@ public class ComplaintsController : ControllerBase
             d.UploadedBy?.Name ?? "Bilinmiyor",
             d.UploadedAt,
             d.Is8DReport
-        ))
+        )),
+        c.HasTargetDate,
+        c.TargetDate
     );
 }

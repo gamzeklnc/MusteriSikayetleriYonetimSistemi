@@ -10,6 +10,7 @@ import type {
     ManagementApprovalRequest,
     CustomerFeedbackRequest,
     OperationalStageRequest,
+    UpdateTargetDateRequest,
     ComplaintDocument,
     DashboardStats
 } from '@/types/complaint';
@@ -71,6 +72,11 @@ export const complaintService = {
 
     update: async (id: number, data: any): Promise<void> => {
         await apiClient.put(`/api/complaints/${id}`, data);
+    },
+
+    updateTargetDate: async (id: number, data: UpdateTargetDateRequest): Promise<ComplaintDto> => {
+        const res = await apiClient.patch<ComplaintDto>(`/api/complaints/${id}/target-date`, data);
+        return res.data;
     },
 
     delete: async (id: number): Promise<void> => {

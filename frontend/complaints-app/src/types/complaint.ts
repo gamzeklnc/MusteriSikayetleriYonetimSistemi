@@ -65,6 +65,8 @@ export interface ComplaintDto {
   barcodeResults: ComplaintBarcodeResultDto[];
   documents: ComplaintDocument[];
   has8DReport?: boolean;
+  hasTargetDate?: boolean;
+  targetDate?: string;
 }
 
 export interface ComplaintHistoryDto {
@@ -80,6 +82,11 @@ export interface ComplaintHistoryDto {
 export interface ComplaintDetailDto {
   complaint: ComplaintDto;
   history: ComplaintHistoryDto[];
+}
+
+export interface UpdateTargetDateRequest {
+  hasTargetDate: boolean | null;
+  targetDate?: string | null;
 }
 
 export interface CreateComplaintRequest {

@@ -34,6 +34,13 @@ export default function ComplaintDetailModal({
     const [note, setNote] = useState('');
     const [has8DReport, setHas8DReport] = useState<boolean>(complaint.has8DReport || false);
     const docSectionRef = useRef<DocumentSectionRef>(null);
+
+    const [hasTargetDate, setHasTargetDate] = useState<boolean | null>(complaint.hasTargetDate ?? null);
+    const [targetDateInput, setTargetDateInput] = useState<string>(
+        complaint.targetDate ? complaint.targetDate.substring(0, 10) : ''
+    );
+    const [updatingTargetDate, setUpdatingTargetDate] = useState(false);
+    const [closing, setClosing] = useState(false);
     
     const [justificationCounts, setJustificationCounts] = useState({
         jhsa1: complaint.justifiedHsa1Count || 0,
@@ -238,6 +245,78 @@ export default function ComplaintDetailModal({
         }
     };
 
+    const handleTargetDateToggle = async (val: boolean) => {
+        setHasTargetDate(val);
+        if (!val) {
+            setTargetDateInput('');
+            try {
+                setUpdatingTargetDate(true);
+                const updated = await complaintService.updateTargetDate(complaint.id, {
+                    hasTargetDate: false,
+                    targetDate: null
+                });
+                if (onOperationalStageUpdate) {
+                    onOperationalStageUpdate(updated);
+                }
+            } catch (error) {
+                console.error('Hedef tarih güncellenemedi:', error);
+                alert('Hedef tarih güncellenirken bir hata oluştu.');
+                setHasTargetDate(complaint.hasTargetDate ?? null); // revert
+            } finally {
+                setUpdatingTargetDate(false);
+            }
+        }
+    };
+
+    const saveTargetDate = async () => {
+        if (hasTargetDate && !targetDateInput) {
+            alert('Lütfen bir hedef tarih seçiniz.');
+            return;
+        }
+        try {
+            setUpdatingTargetDate(true);
+            const updated = await complaintService.updateTargetDate(complaint.id, {
+                hasTargetDate: hasTargetDate,
+                targetDate: hasTargetDate ? targetDateInput : null
+            });
+            if (onOperationalStageUpdate) {
+                onOperationalStageUpdate(updated);
+            }
+            alert('Hedef tarih başarıyla kaydedildi.');
+        } catch (error) {
+            console.error('Hedef tarih güncellenemedi:', error);
+            alert('Hedef tarih güncellenirken bir hata oluştu.');
+        } finally {
+            setUpdatingTargetDate(false);
+        }
+    };
+
+    const handleCloseComplaint = async () => {
+        if (!window.confirm('Bu şikayeti kapatmak istediğinize emin misiniz?')) return;
+        
+        try {
+            setClosing(true);
+            await complaintService.changeStatus(complaint.id, {
+                status: 'Kapali' as any,
+                note: 'Şikayet kullanıcı tarafından kapatıldı.'
+            });
+            
+            if (onOperationalStageUpdate) {
+                const c = await complaintService.getById(complaint.id);
+                onOperationalStageUpdate(c.complaint);
+            }
+            alert('Şikayet başarıyla kapatıldı.');
+            onClose();
+        } catch (error) {
+            console.error('Şikayet kapatılamadı:', error);
+            alert('Şikayet kapatılırken bir hata oluştu.');
+        } finally {
+            setClosing(false);
+        }
+    };
+
+    const isClosed = complaint.status.includes('Kapalı') || complaint.status === 'Kapali';
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Backdrop */}
@@ -285,6 +364,56 @@ export default function ComplaintDetailModal({
 
                 {/* Body (Scrollable) */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-8">
+
+                    {/* Hedef Tarih */}
+                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div>
+                                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Hedef Tarih Var Mı?</h3>
+                                <p className="text-[10px] text-slate-500 mt-1 italic">Bu şikayet için planlanan bir hedef tarih olup olmadığı.</p>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto">
+                                <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm shrink-0">
+                                    <button 
+                                        type="button"
+                                        onClick={() => handleTargetDateToggle(true)}
+                                        disabled={updatingTargetDate || isClosed}
+                                        className={`px-6 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${hasTargetDate === true ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+                                    >
+                                        {hasTargetDate === true && <div className="w-1.5 h-1.5 rounded-full bg-white"></div>}
+                                        Evet
+                                    </button>
+                                    <button 
+                                        type="button"
+                                        onClick={() => handleTargetDateToggle(false)}
+                                        disabled={updatingTargetDate || isClosed}
+                                        className={`px-6 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${hasTargetDate === false ? 'bg-red-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+                                    >
+                                        {hasTargetDate === false && <div className="w-1.5 h-1.5 rounded-full bg-white"></div>}
+                                        Hayır
+                                    </button>
+                                </div>
+                                {hasTargetDate === true && (
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="date"
+                                            value={targetDateInput}
+                                            onChange={(e) => setTargetDateInput(e.target.value)}
+                                            disabled={updatingTargetDate || isClosed}
+                                            className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium text-slate-700"
+                                        />
+                                        <button
+                                            onClick={saveTargetDate}
+                                            disabled={updatingTargetDate || !targetDateInput || isClosed}
+                                            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm"
+                                        >
+                                            Kaydet
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
 
                     {/* Grid Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -442,7 +571,8 @@ export default function ComplaintDetailModal({
                                                                 name={`just-${barcode}`}
                                                                 checked={currentJust === true}
                                                                 onChange={() => setBarcodeJusts(prev => ({ ...prev, [barcode]: true }))}
-                                                                className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-slate-300"
+                                                                disabled={isClosed}
+                                                                className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-slate-300 disabled:opacity-50"
                                                             />
                                                             <span className={`text-xs font-bold ${currentJust === true ? 'text-emerald-700' : 'text-slate-500 group-hover:text-slate-700'}`}>Haklı</span>
                                                         </label>
@@ -452,17 +582,19 @@ export default function ComplaintDetailModal({
                                                                 name={`just-${barcode}`}
                                                                 checked={currentJust === false}
                                                                 onChange={() => setBarcodeJusts(prev => ({ ...prev, [barcode]: false }))}
-                                                                className="w-4 h-4 text-red-600 focus:ring-red-500 border-slate-300"
+                                                                disabled={isClosed}
+                                                                className="w-4 h-4 text-red-600 focus:ring-red-500 border-slate-300 disabled:opacity-50"
                                                             />
                                                             <span className={`text-xs font-bold ${currentJust === false ? 'text-red-700' : 'text-slate-500 group-hover:text-slate-700'}`}>Haksız</span>
                                                         </label>
-                                                        <button 
+                                                            <button 
                                                             onClick={() => setBarcodeJusts(prev => {
                                                                 const next = { ...prev };
                                                                 delete next[barcode];
                                                                 return next;
                                                             })}
-                                                            className="p-1 text-slate-400 hover:text-slate-600 rounded transition-colors"
+                                                            disabled={isClosed}
+                                                            className="p-1 text-slate-400 hover:text-slate-600 rounded transition-colors disabled:opacity-50"
                                                             title="Seçimi Temizle"
                                                         >
                                                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -495,8 +627,8 @@ export default function ComplaintDetailModal({
                                             <button 
                                                 type="button"
                                                 onClick={() => handle8DToggle(true)}
-                                                disabled={updating}
-                                                className={`px-6 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${has8DReport ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+                                                disabled={updating || isClosed}
+                                                className={`px-6 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${has8DReport ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'} disabled:opacity-50`}
                                             >
                                                 {has8DReport && <div className="w-1.5 h-1.5 rounded-full bg-white"></div>}
                                                 Evet
@@ -504,8 +636,8 @@ export default function ComplaintDetailModal({
                                             <button 
                                                 type="button"
                                                 onClick={() => handle8DToggle(false)}
-                                                disabled={updating}
-                                                className={`px-6 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${!has8DReport ? 'bg-red-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+                                                disabled={updating || isClosed}
+                                                className={`px-6 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${!has8DReport ? 'bg-red-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'} disabled:opacity-50`}
                                             >
                                                 {!has8DReport && <div className="w-1.5 h-1.5 rounded-full bg-white"></div>}
                                                 Hayır
@@ -522,7 +654,7 @@ export default function ComplaintDetailModal({
                                             complaintId={complaint.id} 
                                             initialDocuments={complaint.documents} 
                                             onUpload={onUpload}
-                                            canUpload={true}
+                                            canUpload={!isClosed}
                                             is8DOnly={true}
                                             title='8D/DF Dokümanı ve Ekler'
                                         />
@@ -555,7 +687,8 @@ export default function ComplaintDetailModal({
                                                     value={justificationCounts.jhsa1}
                                                     onChange={(e) => setJustificationCounts(prev => ({ ...prev, jhsa1: parseInt(e.target.value) || 0 }))}
                                                     onFocus={(e) => e.target.select()}
-                                                    className="w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none font-bold text-slate-900"
+                                                    readOnly={isClosed}
+                                                    className={`w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none font-bold text-slate-900 ${isClosed ? 'bg-slate-50 opacity-70' : ''}`}
                                                 />
                                             </td>
                                             <td className="px-4 py-3">
@@ -564,7 +697,8 @@ export default function ComplaintDetailModal({
                                                     value={justificationCounts.jhsa2}
                                                     onChange={(e) => setJustificationCounts(prev => ({ ...prev, jhsa2: parseInt(e.target.value) || 0 }))}
                                                     onFocus={(e) => e.target.select()}
-                                                    className="w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none font-bold text-slate-900"
+                                                    readOnly={isClosed}
+                                                    className={`w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none font-bold text-slate-900 ${isClosed ? 'bg-slate-50 opacity-70' : ''}`}
                                                 />
                                             </td>
                                             <td className="px-4 py-3">
@@ -573,7 +707,8 @@ export default function ComplaintDetailModal({
                                                     value={justificationCounts.jother}
                                                     onChange={(e) => setJustificationCounts(prev => ({ ...prev, jother: parseInt(e.target.value) || 0 }))}
                                                     onFocus={(e) => e.target.select()}
-                                                    className="w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none font-bold text-slate-900"
+                                                    readOnly={isClosed}
+                                                    className={`w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none font-bold text-slate-900 ${isClosed ? 'bg-slate-50 opacity-70' : ''}`}
                                                 />
                                             </td>
                                         </tr>
@@ -585,7 +720,8 @@ export default function ComplaintDetailModal({
                                                     value={justificationCounts.uhsa1}
                                                     onChange={(e) => setJustificationCounts(prev => ({ ...prev, uhsa1: parseInt(e.target.value) || 0 }))}
                                                     onFocus={(e) => e.target.select()}
-                                                    className="w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none font-bold text-slate-900"
+                                                    readOnly={isClosed}
+                                                    className={`w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none font-bold text-slate-900 ${isClosed ? 'bg-slate-50 opacity-70' : ''}`}
                                                 />
                                             </td>
                                             <td className="px-4 py-3">
@@ -594,7 +730,8 @@ export default function ComplaintDetailModal({
                                                     value={justificationCounts.uhsa2}
                                                     onChange={(e) => setJustificationCounts(prev => ({ ...prev, uhsa2: parseInt(e.target.value) || 0 }))}
                                                     onFocus={(e) => e.target.select()}
-                                                    className="w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none font-bold text-slate-900"
+                                                    readOnly={isClosed}
+                                                    className={`w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none font-bold text-slate-900 ${isClosed ? 'bg-slate-50 opacity-70' : ''}`}
                                                 />
                                             </td>
                                             <td className="px-4 py-3">
@@ -603,7 +740,8 @@ export default function ComplaintDetailModal({
                                                     value={justificationCounts.uother}
                                                     onChange={(e) => setJustificationCounts(prev => ({ ...prev, uother: parseInt(e.target.value) || 0 }))}
                                                     onFocus={(e) => e.target.select()}
-                                                    className="w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none font-bold text-slate-900"
+                                                    readOnly={isClosed}
+                                                    className={`w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none font-bold text-slate-900 ${isClosed ? 'bg-slate-50 opacity-70' : ''}`}
                                                 />
                                             </td>
                                         </tr>
@@ -626,8 +764,8 @@ export default function ComplaintDetailModal({
                                             <button
                                                 key={stage}
                                                 onClick={() => handleUpdateStage(stage)}
-                                                disabled={updating}
-                                                className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all border-2 flex items-center justify-between group
+                                                disabled={updating || isClosed}
+                                                className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all border-2 flex items-center justify-between group disabled:opacity-50 disabled:cursor-not-allowed
                                                     ${complaint.operationalStage === stage 
                                                         ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20' 
                                                         : 'bg-white border-slate-100 text-slate-600 hover:border-blue-200 hover:bg-blue-50'
@@ -650,12 +788,13 @@ export default function ComplaintDetailModal({
                                         value={note}
                                         onChange={(e) => setNote(e.target.value)}
                                         placeholder="Operasyonel aşama değişikliği için not ekleyin..."
-                                        className="flex-1 w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none min-h-[120px]"
+                                        disabled={isClosed}
+                                        className="flex-1 w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none min-h-[120px] text-slate-900 font-medium disabled:opacity-70"
                                     />
                                     
                                     <button
                                         onClick={handleSave}
-                                        disabled={updating}
+                                        disabled={updating || isClosed}
                                         className="mt-4 w-full py-3 bg-emerald-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 hover:bg-emerald-700 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                                     >
                                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -681,11 +820,27 @@ export default function ComplaintDetailModal({
                             complaintId={complaint.id} 
                             initialDocuments={complaint.documents} 
                             onUpload={onUpload}
-                            canUpload={true}
+                            canUpload={!isClosed}
                             is8DOnly={false}
                             title='İlgili Dokümanlar'
                         />
                     </div>
+
+                    {/* Şikayeti Kapat */}
+                    {!isClosed && (
+                        <div className="pt-8 flex justify-end">
+                            <button
+                                onClick={handleCloseComplaint}
+                                disabled={closing}
+                                className="px-6 py-3 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-xl text-sm font-bold shadow-lg shadow-red-500/25 transition-all flex items-center gap-2 disabled:opacity-50"
+                            >
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                {closing ? 'Kapatılıyor...' : 'Şikayeti Kapat'}
+                            </button>
+                        </div>
+                    )}
 
                 </div>
             </div>

@@ -105,6 +105,8 @@ public record OperationalStageRequest(
     List<ComplaintBarcodeResultDto>? BarcodeResults
 );
 
+public record UpdateTargetDateRequest(bool? HasTargetDate, DateTime? TargetDate);
+
 public record ComplaintBarcodeResultDto(
     int Id,
     string Barcode,
@@ -168,7 +170,9 @@ public record ComplaintDto(
     int UnjustifiedOtherCount,
     bool? Has8DReport,
     IEnumerable<ComplaintBarcodeResultDto> BarcodeResults,
-    IEnumerable<ComplaintDocumentDto> Documents
+    IEnumerable<ComplaintDocumentDto> Documents,
+    bool? HasTargetDate,
+    DateTime? TargetDate
 );
 
 /// <summary>Geçmiş satırı</summary>
