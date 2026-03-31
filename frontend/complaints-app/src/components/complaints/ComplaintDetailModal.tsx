@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import * as XLSX from 'xlsx-js-style';
 import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
 import { parseSingleBarcode } from '@/utils/barcodeParser';
-import DocumentSection from './DocumentSection';
+import DocumentSection, { DocumentSectionRef } from './DocumentSection';
 import { complaintService } from '@/services/complaintService';
 
 const STAGES = [
@@ -32,6 +32,8 @@ export default function ComplaintDetailModal({
     const [barcodeFilter, setBarcodeFilter] = useState<'ALL' | 'HSA1' | 'HSA2'>('ALL');
     const [updating, setUpdating] = useState(false);
     const [note, setNote] = useState('');
+    const [has8DReport, setHas8DReport] = useState<boolean>(complaint.has8DReport || false);
+    const docSectionRef = useRef<DocumentSectionRef>(null);
     
     const [justificationCounts, setJustificationCounts] = useState({
         jhsa1: complaint.justifiedHsa1Count || 0,
@@ -180,6 +182,7 @@ export default function ComplaintDetailModal({
                 unjustifiedHsa1Count: justificationCounts.uhsa1,
                 unjustifiedHsa2Count: justificationCounts.uhsa2,
                 unjustifiedOtherCount: justificationCounts.uother,
+                has8DReport: has8DReport,
                 barcodeResults: Object.entries(barcodeJusts)
                     .filter(([_, val]) => val !== null)
                     .map(([bc, val]) => ({ id: 0, barcode: bc, isJustified: !!val }))
@@ -208,6 +211,7 @@ export default function ComplaintDetailModal({
                 unjustifiedHsa1Count: justificationCounts.uhsa1,
                 unjustifiedHsa2Count: justificationCounts.uhsa2,
                 unjustifiedOtherCount: justificationCounts.uother,
+                has8DReport: has8DReport,
                 barcodeResults: Object.entries(barcodeJusts)
                     .filter(([_, val]) => val !== null)
                     .map(([bc, val]) => ({ id: 0, barcode: bc, isJustified: !!val }))
@@ -221,6 +225,16 @@ export default function ComplaintDetailModal({
             alert('Aşama güncellenirken bir hata oluştu.');
         } finally {
             setUpdating(false);
+        }
+    };
+
+    const handle8DToggle = (val: boolean) => {
+        setHas8DReport(val);
+        if (val) {
+            // "Evet" seçildiğinde doküman yükleme penceresini otomatik aç
+            setTimeout(() => {
+                docSectionRef.current?.openFileUpload();
+            }, 100);
         }
     };
 
@@ -405,14 +419,14 @@ export default function ComplaintDetailModal({
                             </div>
                         </div>
 
-                        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-inner">
+                        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-inner font-mono text-sm">
                             {filteredBarcodes.length > 0 ? (
                                 <ul className="max-h-60 overflow-y-auto divide-y divide-slate-100 p-2">
                                     {filteredBarcodes.map((barcode, idx) => {
                                         const factory = parseSingleBarcode(barcode).factory;
                                         const currentJust = barcodeJusts[barcode];
                                         return (
-                                            <li key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 font-mono text-sm text-slate-600 hover:bg-slate-50 rounded-md transition-colors gap-3">
+                                            <li key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-md transition-colors gap-3">
                                                 <div className="flex items-center gap-3">
                                                     <span className="text-slate-900 font-bold w-8 inline-block select-none">{idx + 1}.</span>
                                                     <span className="font-bold tracking-tight text-slate-700">{barcode}</span>
@@ -467,6 +481,55 @@ export default function ComplaintDetailModal({
                                 </div>
                             )}
                         </div>
+
+                        {/* 8D/DF Seçimi (Sadece Aksiyonlar Sayfası) */}
+                        {showOperationalStageUpdate && (
+                            <div className="mt-6 space-y-4">
+                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">8D/DF var mı?</h3>
+                                            <p className="text-[10px] text-slate-500 mt-1 italic">Düzeltici Önleyici Faaliyet (8D) dokümanı eklenip eklenmediği.</p>
+                                        </div>
+                                        <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+                                            <button 
+                                                type="button"
+                                                onClick={() => handle8DToggle(true)}
+                                                disabled={updating}
+                                                className={`px-6 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${has8DReport ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+                                            >
+                                                {has8DReport && <div className="w-1.5 h-1.5 rounded-full bg-white"></div>}
+                                                Evet
+                                            </button>
+                                            <button 
+                                                type="button"
+                                                onClick={() => handle8DToggle(false)}
+                                                disabled={updating}
+                                                className={`px-6 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${!has8DReport ? 'bg-red-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+                                            >
+                                                {!has8DReport && <div className="w-1.5 h-1.5 rounded-full bg-white"></div>}
+                                                Hayır
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* 8D Dokümanları - "Evet" seçildiyse hemen altında göster */}
+                                {(has8DReport || complaint.documents?.some(d => d.is8DReport)) && (
+                                    <div className="p-4 bg-white border border-blue-100 rounded-xl shadow-sm mb-4">
+                                        <DocumentSection 
+                                            ref={docSectionRef}
+                                            complaintId={complaint.id} 
+                                            initialDocuments={complaint.documents} 
+                                            onUpload={onUpload}
+                                            canUpload={true}
+                                            is8DOnly={true}
+                                            title='8D/DF Dokümanı ve Ekler'
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Manuel Haklı/Haksız Sayı Girişi Tablosu (Sadece Aksiyonlar Sayfası) */}
@@ -612,12 +675,15 @@ export default function ComplaintDetailModal({
                         </div>
                     )}
 
-                    {/* Dokümanlar Bölümü */}
+                    {/* Normal Dokümanlar Bölümü (Her zaman sayfanın en altında) */}
                     <div className="pt-6 border-t border-slate-100">
                         <DocumentSection 
                             complaintId={complaint.id} 
                             initialDocuments={complaint.documents} 
                             onUpload={onUpload}
+                            canUpload={true}
+                            is8DOnly={false}
+                            title='İlgili Dokümanlar'
                         />
                     </div>
 

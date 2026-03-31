@@ -264,6 +264,8 @@ public class ComplaintsController : ControllerBase
             complaint.IsManagementApproved = req.IsManagementApproved.Value;
         if (req.OperationalStage != null)
             complaint.OperationalStage = req.OperationalStage;
+        if (req.Has8DReport.HasValue)
+            complaint.Has8DReport = req.Has8DReport.Value;
 
         if (req.JustifiedHsa1Count.HasValue) complaint.JustifiedHsa1Count = req.JustifiedHsa1Count.Value;
         if (req.JustifiedHsa2Count.HasValue) complaint.JustifiedHsa2Count = req.JustifiedHsa2Count.Value;
@@ -392,6 +394,8 @@ public class ComplaintsController : ControllerBase
         else
             complaint.QualityReportedById = null;
 
+        complaint.Has8DReport = req.Has8DReport;
+
         // Yeniden rapor yapılırsa red durumunu sıfırla
         if (req.IsQualityReported)
             complaint.IsManagementApproved = null;
@@ -486,6 +490,9 @@ public class ComplaintsController : ControllerBase
         if (req.UnjustifiedHsa2Count.HasValue) complaint.UnjustifiedHsa2Count = req.UnjustifiedHsa2Count.Value;
         if (req.UnjustifiedOtherCount.HasValue) complaint.UnjustifiedOtherCount = req.UnjustifiedOtherCount.Value;
 
+        if (req.Has8DReport.HasValue)
+            complaint.Has8DReport = req.Has8DReport.Value;
+
         if (req.BarcodeResults != null)
         {
             _context.ComplaintBarcodeResults.RemoveRange(complaint.BarcodeResults);
@@ -536,7 +543,7 @@ public class ComplaintsController : ControllerBase
     // ── Dosya Yükleme / İndirme ───────────────────
 
     [HttpPost("{id}/documents")]
-    public async Task<IActionResult> UploadDocument(int id, IFormFile file)
+    public async Task<IActionResult> UploadDocument(int id, IFormFile file, [FromQuery] bool is8DReport = false)
     {
         var complaint = await _repo.GetByIdAsync(id);
         if (complaint == null) return NotFound("Şikayet bulunamadı.");
@@ -571,6 +578,7 @@ public class ComplaintsController : ControllerBase
             FilePath = $"/uploads/complaint-documents/{fileName}",
             FileSize = file.Length,
             FileType = file.ContentType,
+            Is8DReport = is8DReport,
             UploadedById = CurrentUserId,
             UploadedAt = DateTime.UtcNow
         };
@@ -581,7 +589,7 @@ public class ComplaintsController : ControllerBase
         await LogActivityAsync("Dosya Yüklendi", $"Şikayet No: {complaint.ComplaintNumber}, Dosya: {file.FileName}");
 
         return Ok(new ComplaintDocumentDto(
-            doc.Id, doc.FileName, doc.FileSize, doc.FileType, CurrentUserName, doc.UploadedAt));
+            doc.Id, doc.FileName, doc.FileSize, doc.FileType, CurrentUserName, doc.UploadedAt, doc.Is8DReport));
     }
 
     [HttpGet("documents/{documentId}/download")]
@@ -671,6 +679,7 @@ public class ComplaintsController : ControllerBase
         c.UnjustifiedHsa1Count,
         c.UnjustifiedHsa2Count,
         c.UnjustifiedOtherCount,
+        c.Has8DReport,
         c.BarcodeResults.Select(br => new ComplaintBarcodeResultDto(br.Id, br.Barcode, br.IsJustified)),
         c.Documents.Select(d => new ComplaintDocumentDto(
             d.Id,
@@ -678,7 +687,8 @@ public class ComplaintsController : ControllerBase
             d.FileSize,
             d.FileType,
             d.UploadedBy?.Name ?? "Bilinmiyor",
-            d.UploadedAt
+            d.UploadedAt,
+            d.Is8DReport
         ))
     );
 }

@@ -78,7 +78,7 @@ export default function QualityReportModal({ complaint, onClose, onSuccess, onUp
                 <div className={`flex items-center justify-between px-6 py-4 border-b ${isRejected ? 'bg-red-50 border-red-100' : 'bg-slate-50/50 border-slate-100'}`}>
                     <div>
                         <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                            Kalite Kontrol Raporu
+                            Kalite Müşteri Geri Bildirim Formu
                             <span className={`px-2.5 py-1 rounded-md text-sm font-bold tracking-wider ${isRejected ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
                                 {complaint.complaintNumber}
                             </span>

@@ -57,6 +57,7 @@ public record UpdateComplaintRequest(
     int? UnjustifiedHsa1Count,
     int? UnjustifiedHsa2Count,
     int? UnjustifiedOtherCount,
+    bool? Has8DReport,
     List<ComplaintBarcodeResultDto>? BarcodeResults
 );
 
@@ -80,6 +81,9 @@ public class QualityReportUpdateRequest
 
     [JsonPropertyName("errorDefinition")]
     public string? ErrorDefinition { get; set; }
+
+    [JsonPropertyName("has8DReport")]
+    public bool? Has8DReport { get; set; }
 }
 
 /// <summary>Yönetim onayı isteği</summary>
@@ -97,6 +101,7 @@ public record OperationalStageRequest(
     int? UnjustifiedHsa1Count,
     int? UnjustifiedHsa2Count,
     int? UnjustifiedOtherCount,
+    bool? Has8DReport,
     List<ComplaintBarcodeResultDto>? BarcodeResults
 );
 
@@ -112,7 +117,8 @@ public record ComplaintDocumentDto(
     long FileSize,
     string FileType,
     string UploadedByName,
-    DateTime UploadedAt
+    DateTime UploadedAt,
+    bool Is8DReport
 );
 
 /// <summary>Liste görünümü için özet DTO</summary>
@@ -160,6 +166,7 @@ public record ComplaintDto(
     int UnjustifiedHsa1Count,
     int UnjustifiedHsa2Count,
     int UnjustifiedOtherCount,
+    bool? Has8DReport,
     IEnumerable<ComplaintBarcodeResultDto> BarcodeResults,
     IEnumerable<ComplaintDocumentDto> Documents
 );

@@ -9,6 +9,7 @@ export interface ComplaintDocument {
     fileType: string;
     uploadedByName: string;
     uploadedAt: string;
+    is8DReport: boolean;
 }
 
 export interface ComplaintBarcodeResultDto {
@@ -63,6 +64,7 @@ export interface ComplaintDto {
   unjustifiedOtherCount: number;
   barcodeResults: ComplaintBarcodeResultDto[];
   documents: ComplaintDocument[];
+  has8DReport?: boolean;
 }
 
 export interface ComplaintHistoryDto {
@@ -122,6 +124,7 @@ export interface UpdateComplaintRequest {
   unjustifiedHsa1Count?: number;
   unjustifiedHsa2Count?: number;
   unjustifiedOtherCount?: number;
+  has8DReport?: boolean;
   barcodeResults?: ComplaintBarcodeResultDto[];
 }
 
@@ -145,6 +148,7 @@ export interface UpdateQualityReportRequest {
   isQualityReported: boolean;
   note?: string;
   errorDefinition?: string;
+  has8DReport?: boolean;
 }
 
 export interface ManagementApprovalRequest {
@@ -167,6 +171,7 @@ export interface OperationalStageRequest {
     unjustifiedHsa2Count?: number;
     unjustifiedOtherCount?: number;
     barcodeResults?: ComplaintBarcodeResultDto[];
+    has8DReport?: boolean;
 }
 
 export interface MonthlyStat {

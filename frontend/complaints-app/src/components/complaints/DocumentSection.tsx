@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useImperativeHandle, forwardRef, useRef, useEffect } from 'react';
 import { ComplaintDocument } from '@/types/complaint';
 import { complaintService } from '@/services/complaintService';
 import { toast } from 'react-hot-toast';
@@ -10,16 +10,37 @@ interface Props {
     initialDocuments: ComplaintDocument[];
     title?: string;
     onUpload?: (newDoc: ComplaintDocument) => void;
+    canUpload?: boolean;
+    is8DOnly?: boolean;
 }
 
-export default function DocumentSection({ complaintId, initialDocuments, title = 'İlgili Dokümanlar (PDF, Word, Excel)', onUpload }: Props) {
+export interface DocumentSectionRef {
+    openFileUpload: () => void;
+}
+
+const DocumentSection = forwardRef<DocumentSectionRef, Props>(
+    ({ complaintId, initialDocuments, title = 'İlgili Dokümanlar (PDF, Word, Excel)', onUpload, canUpload = true, is8DOnly = false }, ref) => {
     const [documents, setDocuments] = useState<ComplaintDocument[]>(initialDocuments || []);
+    
+    useEffect(() => {
+        setDocuments(initialDocuments || []);
+    }, [initialDocuments]);
+
+    const displayedDocuments = documents.filter(d => !!d.is8DReport === !!is8DOnly);
     const [isUploading, setIsUploading] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [previewDoc, setPreviewDoc] = useState<ComplaintDocument | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useImperativeHandle(ref, () => ({
+        openFileUpload: () => {
+            if (fileInputRef.current) {
+                fileInputRef.current.click();
+            }
+        }
+    }));
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        // ... (existing code)
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -33,7 +54,7 @@ export default function DocumentSection({ complaintId, initialDocuments, title =
 
         try {
             setIsUploading(true);
-            const newDoc = await complaintService.uploadDocument(complaintId, file);
+            const newDoc = await complaintService.uploadDocument(complaintId, file, is8DOnly);
             setDocuments(prev => [...prev, newDoc]);
             onUpload?.(newDoc);
             toast.success('Dosya başarıyla yüklendi.');
@@ -94,27 +115,30 @@ export default function DocumentSection({ complaintId, initialDocuments, title =
         <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <h3 className="text-xs font-black text-slate-900 tracking-wider uppercase">{title}</h3>
-                <label className={`
-                    flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer
-                    ${isUploading ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'}
-                `}>
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    {isUploading ? 'Yükleniyor...' : 'Yeni Doküman Ekle'}
-                    <input 
-                        type="file" 
-                        className="hidden" 
-                        onChange={handleFileUpload} 
-                        disabled={isUploading}
-                        accept=".pdf,.doc,.docx,.xls,.xlsx"
-                    />
-                </label>
+                {canUpload && (
+                    <label className={`
+                        flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer
+                        ${isUploading ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'}
+                    `}>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        {isUploading ? 'Yükleniyor...' : 'Yeni Doküman Ekle'}
+                        <input 
+                            type="file" 
+                            className="hidden" 
+                            ref={fileInputRef}
+                            onChange={handleFileUpload} 
+                            disabled={isUploading}
+                            accept=".pdf,.doc,.docx,.xls,.xlsx"
+                        />
+                    </label>
+                )}
             </div>
 
-            {documents.length > 0 ? (
+            {displayedDocuments.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {documents.map((doc) => (
+                    {displayedDocuments.map((doc) => (
                         <div key={doc.id} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl hover:border-blue-300 transition-colors group">
                             <div className="flex items-center gap-3 overflow-hidden">
                                 <div className="p-2 bg-white rounded-lg border border-slate-100 shadow-sm">
@@ -205,4 +229,7 @@ export default function DocumentSection({ complaintId, initialDocuments, title =
             )}
         </div>
     );
-}
+});
+
+DocumentSection.displayName = 'DocumentSection';
+export default DocumentSection;

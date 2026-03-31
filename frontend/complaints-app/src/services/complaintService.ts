@@ -77,10 +77,10 @@ export const complaintService = {
         await apiClient.delete(`/api/complaints/${id}`);
     },
 
-    uploadDocument: async (complaintId: number, file: File): Promise<ComplaintDocument> => {
+    uploadDocument: async (complaintId: number, file: File, is8DReport: boolean = false): Promise<ComplaintDocument> => {
         const formData = new FormData();
         formData.append('file', file);
-        const res = await apiClient.post<ComplaintDocument>(`/api/complaints/${complaintId}/documents`, formData, {
+        const res = await apiClient.post<ComplaintDocument>(`/api/complaints/${complaintId}/documents?is8DReport=${is8DReport}`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
         return res.data;

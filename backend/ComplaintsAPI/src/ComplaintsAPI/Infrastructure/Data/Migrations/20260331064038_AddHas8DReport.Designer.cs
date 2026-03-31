@@ -4,6 +4,7 @@ using ComplaintsAPI.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ComplaintsAPI.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260331064038_AddHas8DReport")]
+    partial class AddHas8DReport
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -257,9 +260,6 @@ namespace ComplaintsAPI.Infrastructure.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<bool>("Is8DReport")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime>("UploadedAt")
                         .HasColumnType("datetime2");
 
@@ -480,11 +480,11 @@ namespace ComplaintsAPI.Infrastructure.Data.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 3, 31, 7, 46, 33, 623, DateTimeKind.Utc).AddTicks(6254),
+                            CreatedAt = new DateTime(2026, 3, 31, 6, 40, 36, 816, DateTimeKind.Utc).AddTicks(1990),
                             DepartmentId = 5,
                             Email = "admin@sirket.com",
                             Name = "Sistem Yöneticisi",
-                            PasswordHash = "$2a$11$KGq8oOMoOHGp4fJGaqQIo.z.npAZBP2f3mg7GsCbgk6GW1Rfrld5W",
+                            PasswordHash = "$2a$11$Q41zggIHDhmRtHCdy1v40OcF0U1eb28j7BWKL2PniZRCCFBVozPCS",
                             Role = "Admin"
                         });
                 });

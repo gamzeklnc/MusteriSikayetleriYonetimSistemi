@@ -77,6 +77,7 @@ public class Complaint
     public bool IsQualityReported { get; set; } = false;
     public string? QualityReportNote { get; set; }
     public int? QualityReportedById { get; set; }
+    public bool? Has8DReport { get; set; }
 
     // ── Yönetim Onayı ────────────────────────────────────────────────────────
     public bool? IsManagementApproved { get; set; }
