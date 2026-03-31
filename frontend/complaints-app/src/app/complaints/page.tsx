@@ -26,7 +26,9 @@ export default function ComplaintsPage() {
         defectiveQuantity: '',
         errorDefinition: '',
         hsa1: '',
+        justifiedHsa1: '',
         hsa2: '',
+        justifiedHsa2: '',
         status: '',
         currentDepartmentName: ''
     });
@@ -78,7 +80,9 @@ export default function ComplaintsPage() {
             safeMatch(c.defectiveQuantity?.toString(), filters.defectiveQuantity) &&
             safeMatch(c.errorDefinition, filters.errorDefinition) &&
             safeMatch((c.hsa1 || 0).toString(), filters.hsa1) &&
+            safeMatch((c.justifiedHsa1Count || 0).toString(), filters.justifiedHsa1) &&
             safeMatch((c.hsa2 || 0).toString(), filters.hsa2) &&
+            safeMatch((c.justifiedHsa2Count || 0).toString(), filters.justifiedHsa2) &&
             safeMatch(c.status, filters.status) &&
             safeMatch(c.currentDepartmentName, filters.currentDepartmentName)
         );
@@ -97,7 +101,9 @@ export default function ComplaintsPage() {
             'Sayı': c.defectiveQuantity,
             'Hata Tanımı': c.errorDefinition || '',
             'HSA1': c.hsa1 || 0,
+            'HSA1/Haklı': c.justifiedHsa1Count || 0,
             'HSA2': c.hsa2 || 0,
+            'HSA2/Haklı': c.justifiedHsa2Count || 0,
             'Durum': c.status,
             'Aşama': c.currentDepartmentName
         }));
@@ -123,12 +129,14 @@ export default function ComplaintsPage() {
             { wch: 25 }, // Müşteri
             { wch: 20 }, // Satış Sorumlusu
             { wch: 20 }, // Proje İsmi
-                { wch: 15 }, // Marka
+            { wch: 15 }, // Marka
             { wch: 10 }, // Güç
             { wch: 10 }, // Sayı
             { wch: 30 }, // Hata Tanımı
             { wch: 10 }, // HSA1
+            { wch: 12 }, // HSA1/Haklı
             { wch: 10 }, // HSA2
+            { wch: 12 }, // HSA2/Haklı
             { wch: 15 }, // Durum
             { wch: 20 }, // Aşama
         ];
@@ -226,11 +234,19 @@ export default function ComplaintsPage() {
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
                                         <div className="mb-2 text-slate-500">HSA1</div>
-                                        <input type="text"placeholder="Ara..."value={filters.hsa1} onChange={e => handleFilterChange('hsa1', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                        <input type="text" placeholder="Ara..." value={filters.hsa1} onChange={e => handleFilterChange('hsa1', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-1.5 py-1.5 align-bottom">
+                                        <div className="mb-2 text-emerald-600 font-bold leading-tight">HSA1/Haklı</div>
+                                        <input type="text" placeholder="Ara..." value={filters.justifiedHsa1} onChange={e => handleFilterChange('justifiedHsa1', e.target.value)} className="w-full px-1 py-1 border border-emerald-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-emerald-400 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
                                         <div className="mb-2 text-slate-500">HSA2</div>
-                                        <input type="text"placeholder="Ara..."value={filters.hsa2} onChange={e => handleFilterChange('hsa2', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                        <input type="text" placeholder="Ara..." value={filters.hsa2} onChange={e => handleFilterChange('hsa2', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-1.5 py-1.5 align-bottom">
+                                        <div className="mb-2 text-indigo-600 font-bold leading-tight">HSA2/Haklı</div>
+                                        <input type="text" placeholder="Ara..." value={filters.justifiedHsa2} onChange={e => handleFilterChange('justifiedHsa2', e.target.value)} className="w-full px-1 py-1 border border-indigo-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-indigo-400 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
                                         <div className="mb-2 text-slate-500">Durum</div>
@@ -293,11 +309,17 @@ export default function ComplaintsPage() {
                                             <td className="px-1.5 py-1.5 text-slate-600">
                                                 {complaint.errorDefinition || '-'}
                                             </td>
-                                            <td className="px-1.5 py-1.5 font-medium text-slate-800 text-center">
-                                                {complaint.hsa1 || 0}
+                                            <td className="px-1.5 py-1.5 font-medium text-emerald-700 text-center">
+                                                {complaint.hsa1 || '-'}
                                             </td>
-                                            <td className="px-1.5 py-1.5 font-medium text-slate-800 text-center">
-                                                {complaint.hsa2 || 0}
+                                            <td className="px-1.5 py-1.5 font-bold text-emerald-600 text-center">
+                                                {complaint.justifiedHsa1Count || '-'}
+                                            </td>
+                                            <td className="px-1.5 py-1.5 font-medium text-indigo-700 text-center">
+                                                {complaint.hsa2 || '-'}
+                                            </td>
+                                            <td className="px-1.5 py-1.5 font-bold text-indigo-600 text-center">
+                                                {complaint.justifiedHsa2Count || '-'}
                                             </td>
                                             <td className="px-1.5 py-1.5">
                                                 <div className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-medium border ${complaint.status.includes('Gecikti') ? 'bg-red-50 text-red-600 border-red-200' :
