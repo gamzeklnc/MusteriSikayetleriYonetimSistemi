@@ -16,6 +16,7 @@ public class AppDbContext : DbContext
     public DbSet<UserActivityLog> UserActivityLogs => Set<UserActivityLog>();
     public DbSet<ComplaintDocument> ComplaintDocuments => Set<ComplaintDocument>();
     public DbSet<ComplaintBarcodeResult> ComplaintBarcodeResults => Set<ComplaintBarcodeResult>();
+    public DbSet<ProductionCount> ProductionCounts => Set<ProductionCount>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -156,6 +157,14 @@ public class AppDbContext : DbContext
             new Department { Id = 4, Name = "Yönetim" },
             new Department { Id = 5, Name = "IT" }
         );
+
+        // ProductionCount
+        modelBuilder.Entity<ProductionCount>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.Year, x.Month }).IsUnique();
+            e.Property(x => x.Count).IsRequired();
+        });
 
         // Seed Error Options
         modelBuilder.Entity<ErrorDefinitionOption>().HasData(

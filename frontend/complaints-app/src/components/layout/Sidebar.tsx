@@ -13,6 +13,7 @@ import {
     MessageCircle,
     Settings,
     Activity,
+    Factory,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
@@ -107,6 +108,12 @@ export default function Sidebar() {
                 <Link href="/complaints/actions" className={linkClass('/complaints/actions')}>
                     <Activity size={18} />
                     Aksiyonlar
+                </Link>
+
+                {/* Üretim Sayıları */}
+                <Link href="/production-counts" className={linkClass('/production-counts')}>
+                    <Factory size={18} />
+                    Üretim Sayıları
                 </Link>
 
                 <div className="pt-6 pb-2 px-3">
