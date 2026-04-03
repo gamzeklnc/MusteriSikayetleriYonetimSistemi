@@ -193,6 +193,16 @@ export interface JustificationChartData {
     cumulativeRate: number;
 }
 
+export interface YearlyJustificationStat {
+    year: number;
+    rate: number;
+}
+
+export interface MonthlyJustificationRateStat {
+    month: number;
+    rate: number;
+}
+
 export interface DashboardStats {
     totalComplaints: number;
     openComplaints: number;
@@ -202,4 +212,6 @@ export interface DashboardStats {
     justifiedRatio: number;
     monthlyStats: MonthlyStat[] | null;
     justificationChart: JustificationChartData;
+    yearlyStats: YearlyJustificationStat[];
+    monthlyJustificationStats: MonthlyJustificationRateStat[];
 }

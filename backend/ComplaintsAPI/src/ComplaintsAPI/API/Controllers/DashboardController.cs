@@ -28,10 +28,10 @@ public class DashboardController : ControllerBase
         var query = _context.Complaints.AsQueryable();
 
         if (startDate.HasValue)
-            query = query.Where(c => c.RegistrationDate >= startDate.Value);
+            query = query.Where(c => c.ComplaintDate >= startDate.Value);
         
         if (endDate.HasValue)
-            query = query.Where(c => c.RegistrationDate <= endDate.Value);
+            query = query.Where(c => c.ComplaintDate <= endDate.Value);
 
         var total = await query.CountAsync();
         var open = await query.CountAsync(c => c.Status != "Kapali");
@@ -53,7 +53,7 @@ public class DashboardController : ControllerBase
         DateTime effectiveEndDate = endDate ?? DateTime.UtcNow;
 
         var monthlyData = await query
-            .GroupBy(c => new { c.RegistrationDate.Year, c.RegistrationDate.Month })
+            .GroupBy(c => new { c.ComplaintDate.Year, c.ComplaintDate.Month })
             .Select(g => new
             {
                 Year = g.Key.Year,
@@ -65,7 +65,7 @@ public class DashboardController : ControllerBase
 
         var stats = new List<MonthlyStatDto>();
         int runningTotal = await _context.Complaints
-            .Where(c => c.RegistrationDate < effectiveStartDate)
+            .Where(c => c.ComplaintDate < effectiveStartDate)
             .CountAsync();
 
         // Kaç ay olduğunu hesapla
@@ -95,7 +95,7 @@ public class DashboardController : ControllerBase
 
         // 1. Half (Jan-Jun)
         var firstHalfJustified = await _context.Complaints
-            .Where(c => c.RegistrationDate.Year == currentYear && c.RegistrationDate.Month >= 1 && c.RegistrationDate.Month <= 6)
+            .Where(c => c.ComplaintDate.Year == currentYear && c.ComplaintDate.Month >= 1 && c.ComplaintDate.Month <= 6)
             .SumAsync(c => c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount);
 
         var firstHalfProduction = await _context.ProductionCounts
@@ -104,7 +104,7 @@ public class DashboardController : ControllerBase
 
         // 2. Half (Jul-Dec)
         var secondHalfJustified = await _context.Complaints
-            .Where(c => c.RegistrationDate.Year == currentYear && c.RegistrationDate.Month >= 7 && c.RegistrationDate.Month <= 12)
+            .Where(c => c.ComplaintDate.Year == currentYear && c.ComplaintDate.Month >= 7 && c.ComplaintDate.Month <= 12)
             .SumAsync(c => c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount);
 
         var secondHalfProduction = await _context.ProductionCounts
@@ -124,6 +124,50 @@ public class DashboardController : ControllerBase
             cumulativeProduction > 0 ? (double)cumulativeJustified * 100 / cumulativeProduction : 0
         );
 
+        // Yearly Justification Stats
+        var productionByYear = await _context.ProductionCounts
+            .GroupBy(p => p.Year)
+            .Select(g => new { Year = g.Key, TotalProduction = g.Sum(p => (long)p.Count) })
+            .ToListAsync();
+
+        var justifiedByYear = await _context.Complaints
+            .GroupBy(c => c.ComplaintDate.Year)
+            .Select(g => new { Year = g.Key, TotalJustified = g.Sum(c => c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount) })
+            .ToListAsync();
+
+        var yearlyStats = productionByYear
+            .Select(p => new YearlyJustificationDto(
+                p.Year,
+                p.TotalProduction > 0 ? (double)(justifiedByYear.FirstOrDefault(j => j.Year == p.Year)?.TotalJustified ?? 0) * 100 / p.TotalProduction : 0
+            ))
+            .OrderBy(y => y.Year)
+            .ToList();
+
+        // 12-Month Justification Stats for the target year
+        int targetYear = endDate?.Year ?? currentYear;
+        var monthlyJustificationStats = new List<MonthlyJustificationRateDto>();
+
+        var productionByMonthThisYear = await _context.ProductionCounts
+            .Where(p => p.Year == targetYear)
+            .ToListAsync();
+
+        var justifiedByMonthThisYear = await _context.Complaints
+            .Where(c => c.ComplaintDate.Year == targetYear)
+            .GroupBy(c => c.ComplaintDate.Month)
+            .Select(g => new { Month = g.Key, TotalJustified = g.Sum(c => c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount) })
+            .ToListAsync();
+
+        for (int m = 1; m <= 12; m++)
+        {
+            var prod = productionByMonthThisYear.FirstOrDefault(p => p.Month == m)?.Count ?? 0;
+            var just = justifiedByMonthThisYear.FirstOrDefault(j => j.Month == m)?.TotalJustified ?? 0;
+            
+            monthlyJustificationStats.Add(new MonthlyJustificationRateDto(
+                m,
+                prod > 0 ? (double)just * 100 / prod : 0
+            ));
+        }
+
         return Ok(new DashboardStatsDto(
             total,
             open,
@@ -132,7 +176,9 @@ public class DashboardController : ControllerBase
             unjustifiedProducts,
             ratio,
             stats,
-            chartData
+            chartData,
+            yearlyStats,
+            monthlyJustificationStats
         ));
     }
 }

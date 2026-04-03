@@ -215,8 +215,14 @@ public record DashboardStatsDto(
     int TotalUnjustifiedProducts,
     double JustifiedRatio,
     IEnumerable<MonthlyStatDto> MonthlyStats,
-    JustificationChartDto JustificationChart
+    JustificationChartDto JustificationChart,
+    IEnumerable<YearlyJustificationDto> YearlyStats,
+    IEnumerable<MonthlyJustificationRateDto> MonthlyJustificationStats
 );
+
+public record MonthlyJustificationRateDto(int Month, double Rate);
+
+public record YearlyJustificationDto(int Year, double Rate);
 
 public record JustificationChartDto(
     double FirstHalfRate,

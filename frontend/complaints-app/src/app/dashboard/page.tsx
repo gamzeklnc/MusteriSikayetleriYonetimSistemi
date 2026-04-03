@@ -4,35 +4,40 @@ import { useEffect, useState } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
 import { productionCountService } from '@/services/productionCountService';
-import { DashboardStats, JustificationChartData } from '@/types/complaint';
+import { DashboardStats } from '@/types/complaint';
 import { 
     BarChart3, FileText, CheckCircle2, Clock, AlertCircle, 
     TrendingUp, RefreshCw 
 } from 'lucide-react';
 
-function JustificationRateChart({ data }: { data: JustificationChartData }) {
-    const chartItems = [
-        { label: '1. ALTI AY', value: data.firstHalfRate, color: 'from-blue-500 to-indigo-600' },
-        { label: '2. ALTI AY', value: data.secondHalfRate, color: 'from-indigo-400 to-indigo-600' },
-        { label: 'KÜMÜLATİF', value: data.cumulativeRate, color: 'from-emerald-500 to-teal-600' }
+interface ChartItem {
+    label: string;
+    value: number;
+    color?: string;
+}
+
+function GenericBarChart({ title, subtitle, data, rotateLabels = false, children, paddingBottom = 40 }: { 
+    title: string, 
+    subtitle?: string, 
+    data: ChartItem[], 
+    rotateLabels?: boolean,
+    children?: React.ReactNode,
+    paddingBottom?: number
+}) {
+    const defaultColors = [
+        'from-blue-500 to-indigo-600',
+        'from-indigo-400 to-indigo-600',
+        'from-emerald-500 to-teal-600',
+        'from-violet-500 to-purple-600',
+        'from-amber-500 to-orange-600',
+        'from-rose-500 to-red-600'
     ];
 
-    // Determine the max scale dynamically
-    const maxVal = Math.max(...chartItems.map(i => i.value));
-    let chartMax = 1;
-
-    if (maxVal < 0.1) {
-        chartMax = 0.1;
-    } else if (maxVal < 1) {
-        chartMax = 1;
-    } else if (maxVal < 5) {
-        chartMax = 5;
-    } else if (maxVal < 10) {
-        chartMax = 10;
-    } else {
-        // For higher values, round up to the nearest 10 or 20
-        chartMax = Math.ceil(maxVal / 10) * 10;
-    }
+    // Determine the max scale dynamically (Purely relative to data)
+    const maxVal = Math.max(...data.map(i => i.value));
+    
+    // Fallback if no data or all zero
+    let chartMax = maxVal > 0 ? maxVal * 1.25 : 1; // Add 25% headroom
 
     // Generate 5 dynamic steps for the Y-Axis
     const gridSteps = Array.from({ length: 6 }, (_, i) => (chartMax / 5) * i);
@@ -43,49 +48,54 @@ function JustificationRateChart({ data }: { data: JustificationChartData }) {
                 <div className="flex flex-col gap-0.5">
                     <h3 className="text-sm font-black text-slate-800 flex items-center gap-2">
                         <BarChart3 className="w-4 h-4 text-blue-600" />
-                        Haklılık Oranı (%)
+                        {title}
                     </h3>
-                    <p className="text-[10px] text-slate-400 font-bold pl-6 uppercase">Performans Grafiği</p>
+                    <p className="text-[10px] text-slate-400 font-bold pl-6 uppercase">{subtitle || 'Performans Grafiği'}</p>
                 </div>
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
-                    {new Date().getFullYear()} DURUMU
-                </span>
+                <div className="flex items-center gap-2">
+                    {children}
+                </div>
             </div>
             
             <div className="flex-1 flex gap-4 relative">
                 {/* Y-Axis Labels & Vertical Axis */}
-                <div className="flex flex-col justify-between h-full pb-10 pr-3 border-r-2 border-slate-200 min-w-[45px]">
+                <div className="flex flex-col justify-between h-full pr-3 border-r-2 border-slate-200 min-w-[45px]" style={{ paddingBottom: `${paddingBottom}px` }}>
                     {[...gridSteps].reverse().map((step, idx) => (
                         <span key={idx} className="text-[10px] font-black text-slate-500 text-right leading-none">
-                            {chartMax <= 1 ? step.toFixed(2) : Math.round(step)}%
+                            {chartMax <= 0.1 
+                                ? step.toFixed(4) 
+                                : chartMax <= 2 
+                                    ? step.toFixed(2) 
+                                    : Math.round(step)}%
                         </span>
                     ))}
                 </div>
 
                 {/* Chart Area */}
-                <div className="flex-1 relative flex items-end justify-around pb-10">
+                <div className="flex-1 relative flex items-end justify-around" style={{ paddingBottom: `${paddingBottom}px` }}>
                     {/* Grid Lines */}
-                    <div className="absolute inset-0 pb-10 flex flex-col justify-between pointer-events-none">
-                        {gridSteps.reverse().map((step, idx) => (
+                    <div className="absolute inset-0 flex flex-col justify-between pointer-events-none" style={{ paddingBottom: `${paddingBottom}px` }}>
+                        {[...gridSteps].reverse().map((step, idx) => (
                             <div key={idx} className={`w-full border-t ${step === 0 ? 'border-transparent' : 'border-slate-100'} border-dashed`} />
                         ))}
                     </div>
 
                     {/* Bars */}
-                    {chartItems.map((item) => {
+                    {data.map((item, idx) => {
                         const heightPercent = (item.value / chartMax) * 100;
+                        const color = item.color || defaultColors[idx % defaultColors.length];
                         return (
-                            <div key={item.label} className="z-10 flex-1 flex flex-col items-center group relative h-full justify-end">
+                            <div key={item.label} className="z-10 flex-1 flex flex-col items-center group relative h-full justify-end px-2">
                                 {/* Percentage Label */}
                                 <div className="absolute transition-all duration-300 group-hover:-translate-y-2" style={{ bottom: `calc(${Math.max(heightPercent, 2)}% + 15px)` }}>
-                                    <span className="text-[10px] font-black text-slate-700 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md border border-slate-200 shadow-sm whitespace-nowrap">
+                                    <span className="text-[10px] font-black text-slate-700 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-sm border border-slate-200 shadow-sm whitespace-nowrap">
                                         %{item.value.toFixed(4)}
                                     </span>
                                 </div>
                                 
                                 {/* Bar Body */}
                                 <div 
-                                    className={`w-full max-w-[60px] rounded-t-xl bg-gradient-to-t ${item.color} shadow-lg transition-all duration-1000 ease-in-out relative group-hover:brightness-110 group-hover:shadow-2xl`}
+                                    className={`w-full max-w-[60px] rounded-t-lg bg-gradient-to-t ${color} shadow-lg transition-all duration-1000 ease-in-out relative group-hover:brightness-110 group-hover:shadow-2xl`}
                                     style={{ height: `${Math.max(heightPercent, 2)}%`, minHeight: item.value > 0 ? '4px' : '0' }}
                                 >
                                     {/* Subtle shine */}
@@ -93,8 +103,8 @@ function JustificationRateChart({ data }: { data: JustificationChartData }) {
                                 </div>
 
                                 {/* X-Axis Item Label */}
-                                <div className="absolute top-full pt-4">
-                                    <span className="text-[10px] font-black text-slate-600 uppercase tracking-tighter whitespace-nowrap">
+                                <div className={`absolute top-full ${rotateLabels ? 'pt-8 -rotate-45 origin-top-left -translate-x-2' : 'pt-4'}`}>
+                                    <span className={`font-black text-slate-600 uppercase tracking-tighter whitespace-nowrap ${rotateLabels ? 'text-[9px]' : 'text-[10px]'}`}>
                                         {item.label}
                                     </span>
                                 </div>
@@ -103,12 +113,17 @@ function JustificationRateChart({ data }: { data: JustificationChartData }) {
                     })}
 
                     {/* X-Axis Line (Bold) */}
-                    <div className="absolute bottom-10 left-0 right-0 h-[2px] bg-slate-400" />
+                    <div className="absolute left-0 right-0 h-[2px] bg-slate-400" style={{ bottom: `${paddingBottom}px` }} />
                 </div>
             </div>
         </div>
     );
 }
+
+const monthNames = [
+    'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+    'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+];
 
 export default function DashboardPage() {
     const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -202,47 +217,10 @@ export default function DashboardPage() {
 
     return (
         <AppLayout>
-            <div className="space-y-6">
+            <div className="space-y-4 -mt-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Dashboard</h1>
-                        <p className="text-slate-500 text-sm mt-1">Sistem genelindeki şikayet istatistikleri ve KPI takibi.</p>
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                        <div className="hidden md:flex items-center gap-4">
-                            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Başlangıç</span>
-                                <input 
-                                    type="date" 
-                                    value={startDate}
-                                    onChange={(e) => setStartDate(e.target.value)}
-                                    className="text-xs font-bold text-slate-700 outline-none bg-transparent"
-                                />
-                            </div>
-                            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Bitiş</span>
-                                <input 
-                                    type="date" 
-                                    value={endDate}
-                                    onChange={(e) => setEndDate(e.target.value)}
-                                    className="text-xs font-bold text-slate-700 outline-none bg-transparent"
-                                />
-                            </div>
-                        </div>
-
-                        <button 
-                            onClick={() => {
-                                setStartDate('');
-                                setEndDate('');
-                                fetchStats();
-                            }}
-                            disabled={loading}
-                            className="p-2 text-slate-500 hover:text-blue-600 hover:bg-white bg-slate-50 border border-slate-100 rounded-xl transition-all disabled:opacity-50 shadow-sm"
-                            title="Filtreleri Temizle & Yenile"
-                        >
-                            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-                        </button>
+                        <h1 className="text-3xl font-black text-slate-900 tracking-tight">Dashboard</h1>
                     </div>
                 </div>
 
@@ -265,10 +243,18 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    {/* Top-Right: Justification Rate Chart */}
+                    {/* Top-Right: Half-Yearly/Cumulative Chart */}
                     <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[350px]">
                         {stats?.justificationChart ? (
-                            <JustificationRateChart data={stats.justificationChart} />
+                            <GenericBarChart 
+                                title="Haklılık Oranı (%)" 
+                                subtitle="Yıllık Dönemsel Durum"
+                                data={[
+                                    { label: '1. ALTI AY', value: stats.justificationChart.firstHalfRate, color: 'from-blue-500 to-indigo-600' },
+                                    { label: '2. ALTI AY', value: stats.justificationChart.secondHalfRate, color: 'from-indigo-400 to-indigo-600' },
+                                    { label: 'KÜMÜLATİF', value: stats.justificationChart.cumulativeRate, color: 'from-emerald-500 to-teal-600' }
+                                ]}
+                            />
                         ) : (
                             <div className="flex-1 flex items-center justify-center">
                                 <div className="text-center text-slate-400">
@@ -279,20 +265,65 @@ export default function DashboardPage() {
                         )}
                     </div>
 
-                    {/* Bottom-Left: Placeholder */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center min-h-[350px]">
-                        <div className="text-center text-slate-400">
-                            <TrendingUp className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                            <p className="text-sm font-medium">Grafik Alanı (Sol Alt)</p>
-                        </div>
+                    {/* Bottom-Left: Yearly Justification Chart */}
+                    <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[350px]">
+                        {stats?.yearlyStats ? (
+                            <GenericBarChart 
+                                title="Yıllık Haklılık Oranı" 
+                                subtitle="Tüm Yılların Karşılaştırması"
+                                paddingBottom={80}
+                                data={stats.yearlyStats.map(y => ({
+                                    label: y.year.toString(),
+                                    value: y.rate
+                                }))}
+                            />
+                        ) : (
+                            <div className="flex-1 flex items-center justify-center">
+                                <div className="text-center text-slate-400">
+                                    <TrendingUp className="w-12 h-12 mx-auto mb-2 opacity-20" />
+                                    <p className="text-sm font-medium">Yıllık Veri Bekleniyor...</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
-                    {/* Bottom-Right: Placeholder */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center min-h-[350px]">
-                        <div className="text-center text-slate-400">
-                            <FileText className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                            <p className="text-sm font-medium">Grafik Alanı (Sağ Alt)</p>
-                        </div>
+                    {/* Sağ Alt: Seçilen Yılın 12 Aylık Dağılımı */}
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[350px]">
+                        {stats?.monthlyJustificationStats ? (
+                            <GenericBarChart 
+                                title={`${endDate ? new Date(endDate).getFullYear() : new Date().getFullYear()} Aylık Haklılık Oranı`} 
+                                subtitle="Ay Bazlı Performans Dağılımı"
+                                rotateLabels={true}
+                                paddingBottom={80}
+                                data={stats.monthlyJustificationStats.map(m => ({
+                                    label: monthNames[m.month - 1].toUpperCase(),
+                                    value: m.rate
+                                }))}
+                            >
+                                {/* Year Selector for this chart */}
+                                <select 
+                                    className="text-[10px] font-black text-blue-600 bg-blue-50 border border-blue-100 rounded-lg px-2 py-1 outline-none cursor-pointer hover:bg-blue-100 transition-colors"
+                                    value={endDate ? new Date(endDate).getFullYear().toString() : new Date().getFullYear().toString()}
+                                    onChange={(e) => {
+                                        const year = e.target.value;
+                                        setEndDate(`${year}-12-31`);
+                                        // Update startDate too if we want to focus on that specific year
+                                        setStartDate(`${year}-01-01`);
+                                    }}
+                                >
+                                    {(stats?.yearlyStats || []).map(y => (
+                                        <option key={y.year} value={y.year}>{y.year}</option>
+                                    ))}
+                                </select>
+                            </GenericBarChart>
+                        ) : (
+                            <div className="flex-1 flex items-center justify-center">
+                                <div className="text-center text-slate-400">
+                                    <FileText className="w-12 h-12 mx-auto mb-2 opacity-20" />
+                                    <p className="text-sm font-medium">Aylık Veri Bekleniyor...</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
