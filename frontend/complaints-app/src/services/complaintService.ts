@@ -16,12 +16,15 @@ import type {
 } from '@/types/complaint';
 
 export const complaintService = {
-    getDashboardStats: async (startDate?: string, endDate?: string, brand?: string): Promise<DashboardStats> => {
-        const params: Record<string, string> = {};
-        if (startDate) params.startDate = startDate;
-        if (endDate) params.endDate = endDate;
-        if (brand) params.brand = brand;
-        const response = await apiClient.get('/api/dashboard/stats', { params });
+    getDashboardStats: async (startDate?: string, endDate?: string, brand?: string, targetCustomer?: string, targetError?: string): Promise<DashboardStats> => {
+        const params = new URLSearchParams();
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        if (brand) params.append('brand', brand);
+        if (targetCustomer) params.append('targetCustomer', targetCustomer);
+        if (targetError) params.append('targetError', targetError);
+        
+        const response = await apiClient.get<DashboardStats>(`/api/dashboard/stats?${params.toString()}`);
         return response.data;
     },
 

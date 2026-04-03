@@ -220,7 +220,11 @@ public record DashboardStatsDto(
     IEnumerable<MonthlyJustificationRateDto> MonthlyJustificationStats,
     IEnumerable<BrandStatDto> BrandStats,
     IEnumerable<string> AllBrands,
-    IEnumerable<ErrorStatDto> ErrorStats
+    IEnumerable<ErrorStatDto> ErrorStats,
+    IEnumerable<SourceStatDto> SourceStats,
+    IEnumerable<CustomerErrorStatDto> CustomerErrorStats,
+    IEnumerable<string> AllCustomers,
+    IEnumerable<string> AllErrorLabels
 );
 
 public record MonthlyJustificationRateDto(int Month, double Rate);
@@ -230,6 +234,10 @@ public record BrandStatDto(string BrandName, int ComplaintCount, double Justific
 public record ErrorStatDto(string ErrorLabel, int TotalCount, IEnumerable<BrandBreakdownDto> BrandBreakdown);
 
 public record BrandBreakdownDto(string BrandName, int Count);
+
+public record SourceStatDto(string SourceLabel, int TotalCount, int JustifiedCount);
+
+public record CustomerErrorStatDto(string Label, int Count);
 
 public record YearlyJustificationDto(int Year, double Rate);
 

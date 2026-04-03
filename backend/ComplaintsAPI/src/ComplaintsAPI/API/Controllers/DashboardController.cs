@@ -23,7 +23,12 @@ public class DashboardController : ControllerBase
     }
 
     [HttpGet("stats")]
-    public async Task<IActionResult> GetStats([FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null, [FromQuery] string? brand = null)
+    public async Task<ActionResult<DashboardStatsDto>> GetStats(
+        [FromQuery] DateTime? startDate = null, 
+        [FromQuery] DateTime? endDate = null, 
+        [FromQuery] string? brand = null,
+        [FromQuery] string? targetCustomer = null,
+        [FromQuery] string? targetError = null)
     {
         var query = _context.Complaints.AsQueryable();
 
@@ -32,6 +37,15 @@ public class DashboardController : ControllerBase
         
         if (endDate.HasValue)
             query = query.Where(c => c.ComplaintDate <= endDate.Value);
+
+        if (!string.IsNullOrWhiteSpace(brand)) 
+            query = query.Where(c => c.Brand != null && c.Brand.ToUpper() == brand.ToUpper());
+
+        if (!string.IsNullOrWhiteSpace(targetCustomer)) 
+            query = query.Where(c => c.CustomerName != null && c.CustomerName.ToUpper() == targetCustomer.ToUpper());
+
+        if (!string.IsNullOrWhiteSpace(targetError)) 
+            query = query.Where(c => c.ErrorDefinition != null && c.ErrorDefinition.ToUpper().Contains(targetError.ToUpper()));
 
         var total = await query.CountAsync();
         var open = await query.CountAsync(c => c.Status != "Kapali");
@@ -261,6 +275,72 @@ public class DashboardController : ControllerBase
             e.Value.Select(b => new BrandBreakdownDto(b.Key, b.Value)).ToList()
         )).OrderByDescending(e => e.TotalCount).Take(10).ToList();
 
+        // HSA Source Analysis
+        var sourceRaw = await query
+            .GroupBy(_ => 1)
+            .Select(g => new {
+                H1Total = g.Sum(c => c.JustifiedHsa1Count + c.UnjustifiedHsa1Count),
+                H1Just = g.Sum(c => c.JustifiedHsa1Count),
+                H2Total = g.Sum(c => c.JustifiedHsa2Count + c.UnjustifiedHsa2Count),
+                H2Just = g.Sum(c => c.JustifiedHsa2Count),
+                OTotal = g.Sum(c => c.JustifiedOtherCount + c.UnjustifiedOtherCount),
+                OJust = g.Sum(c => c.JustifiedOtherCount)
+            })
+            .FirstOrDefaultAsync();
+
+        var sourceStats = new List<SourceStatDto>
+        {
+            new SourceStatDto("HSA1", sourceRaw?.H1Total ?? 0, sourceRaw?.H1Just ?? 0),
+            new SourceStatDto("HSA2", sourceRaw?.H2Total ?? 0, sourceRaw?.H2Just ?? 0),
+            new SourceStatDto("DİĞER", sourceRaw?.OTotal ?? 0, sourceRaw?.OJust ?? 0)
+        };
+
+        // Customer-Error Analysis (8th Quadrant)
+        var customerComplaints = await query
+            .Where(c => !string.IsNullOrEmpty(c.ErrorDefinition))
+            .Select(c => new { c.CustomerName, c.ErrorDefinition })
+            .ToListAsync();
+
+        var customerErrorCounts = new Dictionary<string, int>();
+        foreach (var c in customerComplaints)
+        {
+            var errors = c.ErrorDefinition!.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var cust = c.CustomerName.Trim().ToUpper();
+            
+            foreach (var err in errors)
+            {
+                // If targetError label is specified in query, we can filter further
+                if (!string.IsNullOrWhiteSpace(targetError) && err.ToUpper() != targetError.ToUpper()) continue;
+
+                // Label logic: If a single customer is selected, show error breakdown. Otherwise show customer distribution.
+                string label = string.IsNullOrWhiteSpace(targetCustomer) ? cust : err;
+                
+                if (!customerErrorCounts.ContainsKey(label)) customerErrorCounts[label] = 0;
+                customerErrorCounts[label]++;
+            }
+        }
+
+        var customerErrorStats = customerErrorCounts
+            .Select(x => new CustomerErrorStatDto(x.Key, x.Value))
+            .OrderByDescending(x => x.Count)
+            .Take(10)
+            .ToList();
+
+        var allCustomers = await _context.Complaints
+            .Where(c => !string.IsNullOrWhiteSpace(c.CustomerName))
+            .Select(c => c.CustomerName.Trim().ToUpper())
+            .Distinct().OrderBy(x => x).ToListAsync();
+
+        var allErrorList = await _context.Complaints
+            .Where(c => !string.IsNullOrWhiteSpace(c.ErrorDefinition))
+            .Select(c => c.ErrorDefinition)
+            .ToListAsync();
+            
+        var allErrorLabels = allErrorList
+            .SelectMany(e => e!.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .Select(e => e.Trim().ToUpper())
+            .Distinct().OrderBy(x => x).ToList();
+
         return Ok(new DashboardStatsDto(
             total,
             open,
@@ -274,7 +354,11 @@ public class DashboardController : ControllerBase
             monthlyJustificationStats,
             brandStats,
             allBrands,
-            errorStatsDtos
+            errorStatsDtos,
+            sourceStats,
+            customerErrorStats,
+            allCustomers,
+            allErrorLabels
         ));
     }
 }

@@ -7,7 +7,7 @@ import { productionCountService } from '@/services/productionCountService';
 import { DashboardStats, ErrorStat } from '@/types/complaint';
 import { 
     BarChart3, FileText, CheckCircle2, Clock, AlertCircle, 
-    TrendingUp 
+    TrendingUp, Activity, Users
 } from 'lucide-react';
 
 interface ChartItem {
@@ -16,13 +16,15 @@ interface ChartItem {
     color?: string;
 }
 
-function GenericBarChart({ title, subtitle, data, rotateLabels = false, children, paddingBottom = 40 }: { 
+function GenericBarChart({ title, subtitle, data, rotateLabels = false, children, paddingBottom = 40, barColor, isRate = true }: { 
     title: string, 
     subtitle?: string, 
     data: ChartItem[], 
     rotateLabels?: boolean,
     children?: React.ReactNode,
-    paddingBottom?: number
+    paddingBottom?: number,
+    barColor?: string,
+    isRate?: boolean
 }) {
     const defaultColors = [
         'from-blue-500 to-indigo-600',
@@ -33,8 +35,18 @@ function GenericBarChart({ title, subtitle, data, rotateLabels = false, children
         'from-rose-500 to-red-600'
     ];
 
-    const maxVal = Math.max(...data.map(i => i.value));
-    let chartMax = maxVal > 0 ? maxVal * 1.25 : 1;
+    const maxVal = Math.max(...data.map(i => i.value), 0);
+    let chartMax = maxVal > 0 ? maxVal * 1.15 : 1; 
+
+    const formatValue = (val: number) => {
+        if (!isRate) return val.toLocaleString(); // Just the number for counts
+        if (val === 0) return '0';
+        if (val < 0.001) return val.toFixed(5);
+        if (val < 0.01) return val.toFixed(4);
+        if (val < 1) return val.toFixed(3);
+        return val.toFixed(2);
+    };
+
     const gridSteps = Array.from({ length: 6 }, (_, i) => (chartMax / 5) * i);
 
     return (
@@ -53,31 +65,31 @@ function GenericBarChart({ title, subtitle, data, rotateLabels = false, children
             </div>
             
             <div className="flex-1 flex gap-4 relative">
-                <div className="flex flex-col justify-between h-full pr-3 border-r-2 border-slate-200 min-w-[40px]" style={{ paddingBottom: `${paddingBottom}px` }}>
+                <div className="flex flex-col justify-between h-full pr-3 border-r-2 border-slate-200 min-w-[45px]" style={{ paddingBottom: `${paddingBottom}px` }}>
                     {[...gridSteps].reverse().map((step, idx) => (
-                        <span key={idx} className="text-[9px] font-black text-slate-500 text-right leading-none">
-                            {chartMax <= 0.1 ? step.toFixed(4) : chartMax <= 2 ? step.toFixed(2) : Math.round(step)}%
+                        <span key={idx} className="text-[8px] font-black text-slate-500 text-right leading-none">
+                            {isRate && '%'}{formatValue(step)}
                         </span>
                     ))}
                 </div>
 
                 <div className="flex-1 relative flex items-end justify-around" style={{ paddingBottom: `${paddingBottom}px` }}>
                     {data.map((item, idx) => {
-                        const heightPercent = (item.value / chartMax) * 100;
-                        const color = item.color || defaultColors[idx % defaultColors.length];
+                        const heightPercent = chartMax > 0 ? (item.value / chartMax) * 100 : 0;
+                        const color = barColor || defaultColors[idx % defaultColors.length];
                         return (
                             <div key={item.label} className="z-10 flex-1 flex flex-col items-center group relative h-full justify-end px-1">
                                 <div className="absolute transition-all duration-300 group-hover:-translate-y-2 z-20" style={{ bottom: `calc(${Math.max(heightPercent, 2)}% + 12px)` }}>
-                                    <span className="text-[9px] font-black text-slate-700 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-sm border border-slate-200 shadow-sm whitespace-nowrap">
-                                        %{item.value.toFixed(4)}
+                                    <span className="text-[8px] font-black text-slate-700 bg-white/95 backdrop-blur-sm px-1 py-0.5 rounded-sm border border-slate-200 shadow-sm whitespace-nowrap">
+                                        {isRate && '%'}{formatValue(item.value)}
                                     </span>
                                 </div>
                                 <div 
                                     className={`w-full max-w-[45px] rounded-t-sm bg-gradient-to-t ${color} shadow-sm transition-all duration-1000 relative group-hover:brightness-110`}
                                     style={{ height: `${Math.max(heightPercent, 2)}%` }}
                                 />
-                                <div className={`absolute top-full ${rotateLabels ? 'pt-6 -rotate-45 origin-top-left -translate-x-1' : 'pt-3'}`}>
-                                    <span className="font-black text-slate-600 uppercase tracking-tighter whitespace-nowrap text-[8.5px]">
+                                <div className="absolute top-full pt-4 w-full text-center px-1">
+                                    <span className="font-black text-slate-600 uppercase tracking-tighter block truncate text-[8px]">
                                         {item.label}
                                     </span>
                                 </div>
@@ -94,10 +106,18 @@ function GenericBarChart({ title, subtitle, data, rotateLabels = false, children
 interface DualChartItem {
     label: string;
     v1: number; // Count
-    v2: number; // Rate
+    v2: number; // Rate OR JustifiedCount
+    v2IsRate?: boolean;
 }
 
-function BrandDualBarChart({ title, subtitle, data, children }: { title: string, subtitle?: string, data: DualChartItem[], children?: React.ReactNode }) {
+function DualBarChart({ title, subtitle, data, children, v1Label, v2Label }: { 
+    title: string, 
+    subtitle?: string, 
+    data: DualChartItem[], 
+    children?: React.ReactNode,
+    v1Label: string,
+    v2Label: string
+}) {
     const maxV1 = Math.max(...data.map(i => i.v1), 1);
     const maxV2 = Math.max(...data.map(i => i.v2), 0.1);
     
@@ -115,11 +135,11 @@ function BrandDualBarChart({ title, subtitle, data, children }: { title: string,
                     <div className="flex flex-col items-end gap-1 mr-4">
                         <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-blue-500" />
-                            <span className="text-[8px] font-black text-slate-500 uppercase">Şikayet (Adet)</span>
+                            <span className="text-[8px] font-black text-slate-500 uppercase">{v1Label}</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                            <span className="text-[8px] font-black text-slate-500 uppercase">Haklılık (%)</span>
+                            <span className="text-[8px] font-black text-slate-500 uppercase">{v2Label}</span>
                         </div>
                     </div>
                     {children}
@@ -127,8 +147,7 @@ function BrandDualBarChart({ title, subtitle, data, children }: { title: string,
             </div>
             
             <div className="flex-1 flex gap-2 relative">
-                <div className="absolute left-[38px] top-0 bottom-14 w-[1.5px] bg-slate-400 z-10" />
-                
+                <div className="absolute left-[38px] top-0 bottom-14 w-[1.5px] bg-slate-300 z-10" />
                 <div className="flex flex-col justify-between h-full pb-14 pr-3 min-w-[38px]">
                     <span className="text-[8px] font-black text-slate-400 text-right">MAX</span>
                     <span className="text-[8px] font-black text-slate-400 text-right">MID</span>
@@ -162,7 +181,7 @@ function BrandDualBarChart({ title, subtitle, data, children }: { title: string,
                                     <div className="flex-1 flex flex-col items-center group/bar2 relative h-full justify-end">
                                         <div className="absolute bottom-full mb-1 z-20 pointer-events-none transition-all group-hover/bar2:scale-110">
                                             <span className="text-[8px] font-black text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded border border-emerald-100 shadow-sm">
-                                                %{item.v2.toFixed(3)}
+                                                {item.v2IsRate ? `%${item.v2.toFixed(3)}` : item.v2}
                                             </span>
                                         </div>
                                         <div 
@@ -179,7 +198,7 @@ function BrandDualBarChart({ title, subtitle, data, children }: { title: string,
                             </div>
                         );
                     })}
-                    <div className="absolute bottom-14 left-0 right-0 h-[2px] bg-slate-400" />
+                    <div className="absolute bottom-14 left-0 right-0 h-[2px] bg-slate-300" />
                 </div>
             </div>
         </div>
@@ -264,7 +283,7 @@ function StackedErrorBarChart({ title, subtitle, data, allBrands, children }: { 
                             </div>
                         );
                     })}
-                    <div className="absolute bottom-14 left-0 right-0 h-[1.5px] bg-slate-400" />
+                    <div className="absolute bottom-14 left-0 right-0 h-[1.5px] bg-slate-300" />
                 </div>
             </div>
         </div>
@@ -279,6 +298,10 @@ export default function DashboardPage() {
     const [brandYear, setBrandYear] = useState<string>('Hepsi');
     const [brandFilter, setBrandFilter] = useState<string>('Hepsi');
     const [errorYear, setErrorYear] = useState<string>('Hepsi');
+    const [sourceYear, setSourceYear] = useState<string>('Hepsi');
+    const [c8Year, setC8Year] = useState<string>('Hepsi');
+    const [c8Customer, setC8Customer] = useState<string>('Hepsi');
+    const [c8Error, setC8Error] = useState<string>('Hepsi');
     const [totalProductionCount, setTotalProductionCount] = useState<number>(0);
 
     const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
@@ -295,34 +318,48 @@ export default function DashboardPage() {
 
     const fetchBrandStats = async () => {
         try {
-            let sDate = undefined;
-            let eDate = undefined;
-            if (brandYear !== 'Hepsi') {
-                sDate = `${brandYear}-01-01`;
-                eDate = `${brandYear}-12-31`;
-            }
+            let sDate = undefined, eDate = undefined;
+            if (brandYear !== 'Hepsi') { sDate = `${brandYear}-01-01`; eDate = `${brandYear}-12-31`; }
             const brnd = brandFilter === 'Hepsi' ? undefined : brandFilter;
             const data = await complaintService.getDashboardStats(sDate, eDate, brnd);
             if (stats) setStats({ ...stats, brandStats: data.brandStats });
         } catch (error) { console.error(error); }
     };
 
-    useEffect(() => { if (stats) fetchBrandStats(); }, [brandYear, brandFilter]);
-
     const fetchErrorStats = async () => {
         try {
-            let sDate = undefined;
-            let eDate = undefined;
-            if (errorYear !== 'Hepsi') {
-                sDate = `${errorYear}-01-01`;
-                eDate = `${errorYear}-12-31`;
-            }
+            let sDate = undefined, eDate = undefined;
+            if (errorYear !== 'Hepsi') { sDate = `${errorYear}-01-01`; eDate = `${errorYear}-12-31`; }
             const data = await complaintService.getDashboardStats(sDate, eDate);
             if (stats) setStats({ ...stats, errorStats: data.errorStats });
         } catch (error) { console.error(error); }
     };
 
+    const fetchSourceStats = async () => {
+        try {
+            let sDate = undefined, eDate = undefined;
+            if (sourceYear !== 'Hepsi') { sDate = `${sourceYear}-01-01`; eDate = `${sourceYear}-12-31`; }
+            const data = await complaintService.getDashboardStats(sDate, eDate);
+            if (stats) setStats({ ...stats, sourceStats: data.sourceStats });
+        } catch (error) { console.error(error); }
+    };
+
+    const fetchC8Stats = async () => {
+        try {
+            let sDate = undefined, eDate = undefined;
+            if (c8Year !== 'Hepsi') { sDate = `${c8Year}-01-01`; eDate = `${c8Year}-12-31`; }
+            const cust = c8Customer === 'Hepsi' ? undefined : c8Customer;
+            const err = c8Error === 'Hepsi' ? undefined : c8Error;
+            const data = await complaintService.getDashboardStats(sDate, eDate, undefined, cust, err);
+            if (stats) setStats({ ...stats, customerErrorStats: data.customerErrorStats });
+        } catch (error) { console.error(error); }
+    };
+
+    useEffect(() => { if (stats) fetchBrandStats(); }, [brandYear, brandFilter]);
     useEffect(() => { if (stats) fetchErrorStats(); }, [errorYear]);
+    useEffect(() => { if (stats) fetchSourceStats(); }, [sourceYear]);
+    useEffect(() => { if (stats) fetchC8Stats(); }, [c8Year, c8Customer, c8Error]);
+
     useEffect(() => {
         productionCountService.getAll().then(data => {
             setTotalProductionCount(data.reduce((sum, item) => sum + item.count, 0));
@@ -348,6 +385,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between"><h1 className="text-3xl font-black text-slate-900 tracking-tight">Dashboard</h1></div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-8">
+                    {/* Q1, Q2, Q3, Q4 remain the same */}
                     <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[350px]">
                         <div className="grid grid-cols-3 grid-rows-2 gap-4 flex-1">
                             {topMetrics.map((m) => (
@@ -399,62 +437,88 @@ export default function DashboardPage() {
                         ) : <div className="flex-1 flex items-center justify-center text-slate-400">Aylık Veri Bekleniyor...</div>}
                     </div>
 
-                    {/* 5. Brand Performance */}
+                    {/* 5. Brand */}
                     <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[400px]">
-                        <div className="flex-1">
-                            <BrandDualBarChart 
-                                title="Marka Bazlı Şikayet & Haklılık" 
-                                subtitle={brandYear === 'Hepsi' && brandFilter !== 'Hepsi' ? `${brandFilter} - Yıllık Performans Dağılımı` : "Detaylı Performans Bilgileri"}
-                                data={(stats?.brandStats || []).map(b => ({ label: b.brandName, v1: b.complaintCount, v2: b.justificationRate }))}
-                            >
-                                <div className="flex items-center gap-2">
-                                    <select 
-                                        className="text-[9px] font-black text-blue-600 bg-blue-50 border border-blue-100 rounded px-1.5 py-1 outline-none"
-                                        value={brandYear}
-                                        onChange={(e) => setBrandYear(e.target.value)}
-                                    >
-                                        <option value="Hepsi">YIL: HEPSİ</option>
-                                        {(stats?.yearlyStats || []).map(y => ( <option key={y.year} value={y.year}>{y.year}</option> ))}
-                                    </select>
-                                    <select 
-                                        className="text-[9px] font-black text-emerald-600 bg-emerald-50 border border-emerald-100 rounded px-1.5 py-1 outline-none max-w-[80px]"
-                                        value={brandFilter}
-                                        onChange={(e) => setBrandFilter(e.target.value)}
-                                    >
-                                        <option value="Hepsi">MARKA: HEPSİ</option>
-                                        {(stats?.allBrands || []).map(b => ( <option key={b} value={b}>{b}</option> ))}
-                                    </select>
-                                </div>
-                            </BrandDualBarChart>
-                        </div>
-                    </div>
-
-                    {/* 6. Error Analysis Analysis */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[400px]">
-                        {stats?.errorStats ? (
-                            <StackedErrorBarChart 
-                                title="Hata Tanımları & Marka Kıyaslaması" 
-                                subtitle={errorYear === 'Hepsi' ? "Tüm Zamanlar Hata Dağılımı" : `${errorYear} Yılı Hata Analizi`}
-                                data={stats.errorStats}
-                                allBrands={stats.allBrands}
-                            >
-                                <select 
-                                    className="text-[9px] font-black text-red-600 bg-red-50 border border-red-100 rounded px-1.5 py-1 outline-none"
-                                    value={errorYear}
-                                    onChange={(e) => setErrorYear(e.target.value)}
-                                >
+                        <DualBarChart 
+                            title="Marka Bazlı Şikayet & Haklılık" 
+                            v1Label="Şikayet (Adet)" v2Label="Haklılık (%)"
+                            subtitle={brandYear === 'Hepsi' && brandFilter !== 'Hepsi' ? `${brandFilter} - Yıllık Performans Dağılımı` : "Detaylı Performans Bilgileri"}
+                            data={(stats?.brandStats || []).map(b => ({ label: b.brandName, v1: b.complaintCount, v2: b.justificationRate, v2IsRate: true }))}
+                        >
+                            <div className="flex items-center gap-2">
+                                <select className="text-[9px] font-black text-blue-600 bg-blue-50 border border-blue-100 rounded px-1 py-1 outline-none"
+                                    value={brandYear} onChange={(e) => setBrandYear(e.target.value)}>
                                     <option value="Hepsi">YIL: HEPSİ</option>
                                     {(stats?.yearlyStats || []).map(y => ( <option key={y.year} value={y.year}>{y.year}</option> ))}
                                 </select>
-                            </StackedErrorBarChart>
-                        ) : <div className="flex-1 flex items-center justify-center text-slate-400">Hata Verisi Bekleniyor...</div>}
+                                <select className="text-[9px] font-black text-emerald-600 bg-emerald-50 border border-emerald-100 rounded px-1 py-1 outline-none max-w-[80px]"
+                                    value={brandFilter} onChange={(e) => setBrandFilter(e.target.value)}>
+                                    <option value="Hepsi">MARKA: HEPSİ</option>
+                                    {(stats?.allBrands || []).map(b => ( <option key={b} value={b}>{b}</option> ))}
+                                </select>
+                            </div>
+                        </DualBarChart>
                     </div>
 
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center min-h-[350px] border-dashed border-2 border-slate-100">
-                        <AlertCircle className="w-10 h-10 opacity-5" />
+                    {/* 6. Error Analysis */}
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[400px]">
+                        <StackedErrorBarChart 
+                            title="Hata Tanımları & Marka Kıyaslaması" 
+                            subtitle={errorYear === 'Hepsi' ? "Tüm Zamanlar Hata Dağılımı" : `${errorYear} Yılı Hata Analizi`}
+                            data={stats?.errorStats || []} allBrands={stats?.allBrands || []}
+                        >
+                            <select className="text-[9px] font-black text-red-600 bg-red-50 border border-red-100 rounded px-1 py-1 outline-none"
+                                value={errorYear} onChange={(e) => setErrorYear(e.target.value)}>
+                                <option value="Hepsi">YIL: HEPSİ</option>
+                                {(stats?.yearlyStats || []).map(y => ( <option key={y.year} value={y.year}>{y.year}</option> ))}
+                            </select>
+                        </StackedErrorBarChart>
                     </div>
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center min-h-[350px] border-dashed border-2 border-slate-100">
-                        <Clock className="w-10 h-10 opacity-5" />
+
+                    {/* 7. Production Site */}
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[400px]">
+                        <DualBarChart 
+                            title="Şikayet - Üretim Tesisi Dağılışı" 
+                            subtitle={sourceYear === 'Hepsi' ? "HSA1, HSA2 ve Diğer Kaynak Analizi" : `${sourceYear} Yılı HSA Analizi`}
+                            v1Label="Şikayet" v2Label="Haklı"
+                            data={(stats?.sourceStats || []).map(s => ({ label: s.sourceLabel, v1: s.totalCount, v2: s.justifiedCount }))}
+                        >
+                            <select className="text-[9px] font-black text-indigo-600 bg-indigo-50 border border-indigo-100 rounded px-1 py-1 outline-none"
+                                value={sourceYear} onChange={(e) => setSourceYear(e.target.value)}>
+                                <option value="Hepsi">YIL: HEPSİ</option>
+                                {(stats?.yearlyStats || []).map(y => ( <option key={y.year} value={y.year}>{y.year}</option> ))}
+                            </select>
+                        </DualBarChart>
+                    </div>
+
+                    {/* 8. Customer Error Analysis */}
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[400px]">
+                        <GenericBarChart 
+                            title="Müşteriye Göre Hata Tanımı" 
+                            subtitle={c8Customer !== 'Hepsi' ? `${c8Customer} Hata Dağılımı` : c8Error !== 'Hepsi' ? `${c8Error} Bildiren Müşteriler` : "Müşteri ve Hata Yoğunluğu"}
+                            barColor="from-violet-600 to-purple-400"
+                            rotateLabels={true} paddingBottom={80}
+                            isRate={false}
+                            data={(stats?.customerErrorStats || []).map(c => ({ label: c.label, value: c.count }))}
+                        >
+                            <div className="flex items-center gap-1">
+                                <select className="text-[8px] font-black text-violet-600 bg-violet-50 border border-violet-100 rounded px-1 py-1 outline-none max-w-[70px]"
+                                    value={c8Year} onChange={(e) => setC8Year(e.target.value)}>
+                                    <option value="Hepsi">YIL</option>
+                                    {(stats?.yearlyStats || []).map(y => ( <option key={y.year} value={y.year}>{y.year}</option> ))}
+                                </select>
+                                <select className="text-[8px] font-black text-violet-600 bg-violet-50 border border-violet-100 rounded px-1 py-1 outline-none max-w-[70px]"
+                                    value={c8Customer} onChange={(e) => setC8Customer(e.target.value)}>
+                                    <option value="Hepsi">MÜŞTERİ</option>
+                                    {(stats?.allCustomers || []).map(c => ( <option key={c} value={c}>{c}</option> ))}
+                                </select>
+                                <select className="text-[8px] font-black text-violet-600 bg-violet-50 border border-violet-100 rounded px-1 py-1 outline-none max-w-[70px]"
+                                    value={c8Error} onChange={(e) => setC8Error(e.target.value)}>
+                                    <option value="Hepsi">HATA</option>
+                                    {(stats?.allErrorLabels || []).map(e => ( <option key={e} value={e}>{e}</option> ))}
+                                </select>
+                            </div>
+                        </GenericBarChart>
                     </div>
                 </div>
             </div>

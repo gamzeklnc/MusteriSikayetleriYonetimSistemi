@@ -220,6 +220,17 @@ export interface BrandBreakdown {
     count: number;
 }
 
+export interface SourceStat {
+    sourceLabel: string;
+    totalCount: number;
+    justifiedCount: number;
+}
+
+export interface CustomerErrorStat {
+    label: string;
+    count: number;
+}
+
 export interface DashboardStats {
     totalComplaints: number;
     openComplaints: number;
@@ -234,4 +245,8 @@ export interface DashboardStats {
     brandStats: BrandStat[];
     allBrands: string[];
     errorStats: ErrorStat[];
+    sourceStats: SourceStat[];
+    customerErrorStats: CustomerErrorStat[];
+    allCustomers: string[];
+    allErrorLabels: string[];
 }
