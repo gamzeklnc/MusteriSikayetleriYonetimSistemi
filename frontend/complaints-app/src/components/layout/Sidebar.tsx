@@ -35,13 +35,13 @@ export default function Sidebar() {
 
     const isActive = (href: string) => pathname === href;
     const linkClass = (href: string) =>
-        `flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${isActive(href)
+        `flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${isActive(href)
             ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/10'
             : 'text-slate-300 hover:bg-white/10 hover:text-white'
         }`;
 
     return (
-        <aside className="flex flex-col w-64 min-h-screen bg-[#002A3A] border-r border-slate-700/50">
+        <aside className="flex flex-col w-64 h-full bg-[#002A3A] border-r border-slate-700/50">
             {/* Logo */}
             <div className="px-6 py-6 mb-2">
                 <div className="flex items-center gap-3">
@@ -58,8 +58,8 @@ export default function Sidebar() {
             </div>
 
             {/* Nav */}
-            <nav className="flex-1 overflow-y-auto px-3 space-y-1">
-                <div className="pb-2 px-3">
+            <nav className="flex-1 px-3 space-y-0.5 overflow-hidden">
+                <div className="pb-1.5 px-3">
                     <span className="text-[10px] font-bold text-slate-500  tracking-widest">Genel</span>
                 </div>
 
@@ -75,7 +75,7 @@ export default function Sidebar() {
                     Şikayetler
                 </Link>
 
-                <div className="pt-6 pb-2 px-3">
+                <div className="pt-3 pb-1.5 px-3">
                     <span className="text-[10px] font-bold text-slate-500  tracking-widest">İş Akış Adımları</span>
                 </div>
 
@@ -100,7 +100,7 @@ export default function Sidebar() {
                     Müşteriye Geri Dönüş
                 </Link>
 
-                <div className="pt-6 pb-2 px-3">
+                <div className="pt-3 pb-1.5 px-3">
                     <span className="text-[10px] font-bold text-slate-500  tracking-widest">Operasyon</span>
                 </div>
 
@@ -116,7 +116,7 @@ export default function Sidebar() {
                     Üretim Adetleri
                 </Link>
 
-                <div className="pt-6 pb-2 px-3">
+                <div className="pt-3 pb-1.5 px-3">
                     <span className="text-[10px] font-bold text-slate-500  tracking-widest">Yönetim</span>
                 </div>
 
