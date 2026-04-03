@@ -203,6 +203,12 @@ export interface MonthlyJustificationRateStat {
     rate: number;
 }
 
+export interface BrandStat {
+    brandName: string;
+    complaintCount: number;
+    justificationRate: number;
+}
+
 export interface DashboardStats {
     totalComplaints: number;
     openComplaints: number;
@@ -214,4 +220,6 @@ export interface DashboardStats {
     justificationChart: JustificationChartData;
     yearlyStats: YearlyJustificationStat[];
     monthlyJustificationStats: MonthlyJustificationRateStat[];
+    brandStats: BrandStat[];
+    allBrands: string[];
 }

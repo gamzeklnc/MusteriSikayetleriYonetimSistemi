@@ -23,7 +23,7 @@ public class DashboardController : ControllerBase
     }
 
     [HttpGet("stats")]
-    public async Task<IActionResult> GetStats([FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
+    public async Task<IActionResult> GetStats([FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null, [FromQuery] string? brand = null)
     {
         var query = _context.Complaints.AsQueryable();
 
@@ -168,6 +168,73 @@ public class DashboardController : ControllerBase
             ));
         }
 
+        // Brand-based Stats for the target year
+        long totalYearlyProduction = productionByMonthThisYear.Sum(p => (long)p.Count);
+        
+        var brandStatsRaw = await query
+            .Where(c => !string.IsNullOrWhiteSpace(c.Brand))
+            .GroupBy(c => c.Brand!.Trim().ToUpper())
+            .Select(g => new 
+            { 
+                BrandName = g.Key, 
+                ComplaintProductCount = g.Sum(c => c.DefectiveQuantity),
+                JustifiedProductCount = g.Sum(c => (long)(c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount))
+            })
+            .ToListAsync();
+
+        var brandStats = brandStatsRaw
+            .Select(b => new BrandStatDto(
+                b.BrandName ?? "Bilinmiyor",
+                b.ComplaintProductCount,
+                totalYearlyProduction > 0 ? (double)b.JustifiedProductCount * 100 / totalYearlyProduction : 0
+            ))
+            .OrderByDescending(b => b.ComplaintCount)
+            .ToList();
+
+        if (!string.IsNullOrWhiteSpace(brand))
+        {
+            if (!startDate.HasValue && !endDate.HasValue)
+            {
+                // Special case: Single Brand across All Years
+                var bUpper = brand.Trim().ToUpper();
+                var yearlyBrandRaw = await _context.Complaints
+                    .Where(c => !string.IsNullOrWhiteSpace(c.Brand) && c.Brand.Trim().ToUpper() == bUpper)
+                    .GroupBy(c => c.ComplaintYear)
+                    .Select(g => new { 
+                        Year = g.Key, 
+                        Count = g.Sum(c => c.DefectiveQuantity),
+                        Justified = g.Sum(c => (long)(c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount))
+                    })
+                    .ToListAsync();
+
+                var yearListForProduction = yearlyBrandRaw.Select(y => y.Year).ToList();
+                var productionsForYears = await _context.ProductionCounts
+                    .Where(p => yearListForProduction.Contains(p.Year))
+                    .GroupBy(p => p.Year)
+                    .Select(g => new { Year = g.Key, Total = g.Sum(p => (long)p.Count) })
+                    .ToListAsync();
+
+                brandStats = yearlyBrandRaw.Select(y => new BrandStatDto(
+                    y.Year.ToString(),
+                    y.Count,
+                    productionsForYears.FirstOrDefault(p => p.Year == y.Year)?.Total > 0 
+                        ? (double)y.Justified * 100 / productionsForYears.FirstOrDefault(p => p.Year == y.Year)!.Total 
+                        : 0
+                )).OrderBy(y => y.BrandName).ToList();
+            }
+            else
+            {
+                brandStats = brandStats.Where(b => b.BrandName == brand.Trim().ToUpper()).ToList();
+            }
+        }
+
+        var allBrands = await _context.Complaints
+            .Where(c => !string.IsNullOrWhiteSpace(c.Brand))
+            .Select(c => c.Brand!.Trim().ToUpper())
+            .Distinct()
+            .OrderBy(x => x)
+            .ToListAsync();
+
         return Ok(new DashboardStatsDto(
             total,
             open,
@@ -178,7 +245,9 @@ public class DashboardController : ControllerBase
             stats,
             chartData,
             yearlyStats,
-            monthlyJustificationStats
+            monthlyJustificationStats,
+            brandStats,
+            allBrands
         ));
     }
 }

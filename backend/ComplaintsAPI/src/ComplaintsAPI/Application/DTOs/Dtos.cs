@@ -217,10 +217,14 @@ public record DashboardStatsDto(
     IEnumerable<MonthlyStatDto> MonthlyStats,
     JustificationChartDto JustificationChart,
     IEnumerable<YearlyJustificationDto> YearlyStats,
-    IEnumerable<MonthlyJustificationRateDto> MonthlyJustificationStats
+    IEnumerable<MonthlyJustificationRateDto> MonthlyJustificationStats,
+    IEnumerable<BrandStatDto> BrandStats,
+    IEnumerable<string> AllBrands
 );
 
 public record MonthlyJustificationRateDto(int Month, double Rate);
+
+public record BrandStatDto(string BrandName, int ComplaintCount, double JustificationRate);
 
 public record YearlyJustificationDto(int Year, double Rate);
 
