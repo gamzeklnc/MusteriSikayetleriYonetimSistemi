@@ -3,14 +3,11 @@
 import { useEffect, useState } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
+import { productionCountService } from '@/services/productionCountService';
 import { DashboardStats } from '@/types/complaint';
 import { 
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-    AreaChart, Area, Legend 
-} from 'recharts';
-import { 
-    FileText, CheckCircle2, Clock, AlertCircle, 
-    TrendingUp, BarChart3, RefreshCw 
+    BarChart3, FileText, CheckCircle2, Clock, AlertCircle, 
+    TrendingUp, RefreshCw 
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -18,12 +15,12 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
     const [startDate, setStartDate] = useState<string>('');
     const [endDate, setEndDate] = useState<string>('');
+    const [totalProductionCount, setTotalProductionCount] = useState<number>(0);
 
     const fetchStats = async (start?: string, end?: string) => {
         try {
             setLoading(true);
             const data = await complaintService.getDashboardStats(start || undefined, end || undefined);
-            console.log('Dashboard Data Received:', data);
             setStats(data);
         } catch (error) {
             console.error('İstatistikler yüklenemedi:', error);
@@ -32,9 +29,66 @@ export default function DashboardPage() {
         }
     };
 
+    const fetchProductionCounts = async () => {
+        try {
+            const data = await productionCountService.getAll();
+            const total = data.reduce((sum, item) => sum + item.count, 0);
+            setTotalProductionCount(total);
+        } catch (error) {
+            console.error('Üretim adetleri yüklenemedi:', error);
+        }
+    };
+
     useEffect(() => {
         fetchStats(startDate, endDate);
     }, [startDate, endDate]);
+
+    useEffect(() => {
+        fetchProductionCounts();
+    }, []);
+
+    const justifiedRatio = totalProductionCount > 0 
+        ? ((stats?.totalJustifiedProducts || 0) / totalProductionCount) * 100 
+        : 0;
+
+    const topMetrics = [
+        { 
+            label: 'Toplam Şikayet', 
+            value: stats?.totalComplaints || 0, 
+            icon: <FileText className="w-5 h-5 text-blue-600" />,
+            color: 'bg-blue-50 border-blue-100'
+        },
+        { 
+            label: 'Açık Şikayetler', 
+            value: stats?.openComplaints || 0, 
+            icon: <Clock className="w-5 h-5 text-amber-600" />,
+            color: 'bg-amber-50 border-amber-100'
+        },
+        { 
+            label: 'Kapalı Şikayetler', 
+            value: stats?.closedComplaints || 0, 
+            icon: <CheckCircle2 className="w-5 h-5 text-slate-600" />,
+            color: 'bg-slate-50 border-slate-100'
+        },
+        { 
+            label: 'Haklılık Oranı', 
+            value: `%${justifiedRatio.toFixed(4)}`, 
+            icon: <TrendingUp className="w-5 h-5 text-emerald-600" />,
+            color: 'bg-emerald-50 border-emerald-100'
+        },
+        { 
+            label: 'Haklı Ürün', 
+            value: stats?.totalJustifiedProducts || 0, 
+            icon: <CheckCircle2 className="w-5 h-5 text-emerald-500" />,
+            color: 'bg-emerald-50 border-emerald-100'
+        },
+        { 
+            label: 'Haksız Ürün', 
+            value: stats?.totalUnjustifiedProducts || 0, 
+            icon: <AlertCircle className="w-5 h-5 text-red-500" />,
+            color: 'bg-red-50 border-red-100'
+        },
+    ];
 
     if (loading && !stats) {
         return (
@@ -46,51 +100,12 @@ export default function DashboardPage() {
         );
     }
 
-    const kpiCards = [
-        { 
-            label: 'Toplam Şikayet', 
-            value: stats?.totalComplaints || 0, 
-            icon: <FileText className="w-6 h-6 text-blue-600" />,
-            color: 'border-blue-100 bg-blue-50/50'
-        },
-        { 
-            label: 'Açık Şikayetler', 
-            value: stats?.openComplaints || 0, 
-            icon: <Clock className="w-6 h-6 text-amber-600" />,
-            color: 'border-amber-100 bg-amber-50/50'
-        },
-        { 
-            label: 'Kapalı Şikayetler', 
-            value: stats?.closedComplaints || 0, 
-            icon: <CheckCircle2 className="w-6 h-6 text-slate-600" />,
-            color: 'border-slate-100 bg-slate-50/50'
-        },
-        { 
-            label: 'Haklılık Oranı', 
-            value: `${((stats?.justifiedRatio || 0) * 100).toFixed(1)}%`, 
-            icon: <TrendingUp className="w-6 h-6 text-emerald-600" />,
-            color: 'border-emerald-100 bg-emerald-50/50'
-        },
-        { 
-            label: 'Haklı Ürün', 
-            value: stats?.totalJustifiedProducts || 0, 
-            icon: <CheckCircle2 className="w-6 h-6 text-emerald-500" />,
-            color: 'border-emerald-100 bg-emerald-50/30'
-        },
-        { 
-            label: 'Haksız Ürün', 
-            value: stats?.totalUnjustifiedProducts || 0, 
-            icon: <AlertCircle className="w-6 h-6 text-red-500" />,
-            color: 'border-red-100 bg-red-50/30'
-        },
-    ];
-
     return (
         <AppLayout>
-            <div className="space-y-8">
+            <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Performans Özeti</h1>
+                        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Dashboard</h1>
                         <p className="text-slate-500 text-sm mt-1">Sistem genelindeki şikayet istatistikleri ve KPI takibi.</p>
                     </div>
                     
@@ -131,74 +146,46 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                {/* KPI Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
-                    {kpiCards.map((card) => (
-                        <div key={card.label} className={`p-6 rounded-2xl border ${card.color} shadow-sm transition-all hover:shadow-md`}>
-                            <div className="flex items-center justify-between mb-4">
-                                <span className="p-2 bg-white rounded-xl shadow-sm border border-white/50">{card.icon}</span>
-                            </div>
-                            <p className="text-sm font-medium text-slate-500 uppercase tracking-wider">{card.label}</p>
-                            <p className="text-3xl font-black text-slate-900 mt-2">{card.value}</p>
-                        </div>
-                    ))}
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Dönemsel Şikayet Sayısı */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <div className="flex items-center gap-2 mb-6">
-                            <BarChart3 className="w-5 h-5 text-indigo-600" />
-                            <h2 className="text-lg font-bold text-slate-900">Dönemsel Şikayet Sayısı</h2>
-                        </div>
-                        <div className="h-[300px] w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={stats?.monthlyStats}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
-                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
-                                    <Tooltip 
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                                        cursor={{ fill: '#f8fafc' }}
-                                    />
-                                    <Bar dataKey="count" name="Şikayet Sayısı" fill="#4f46e5" radius={[4, 4, 0, 0]} barSize={32} />
-                                </BarChart>
-                            </ResponsiveContainer>
+                {/* Dashboard Grid (4 Quads) */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[calc(100vh-250px)]">
+                    {/* Top-Left: Metrics Grid */}
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+                        <div className="grid grid-cols-3 grid-rows-2 gap-4 flex-1">
+                            {topMetrics.map((metric) => (
+                                <div key={metric.label} className={`p-4 rounded-xl border ${metric.color} flex flex-col justify-between shadow-sm transition-all hover:shadow-md`}>
+                                    <div className="flex items-center justify-between">
+                                        <span className="p-1.5 bg-white rounded-lg shadow-sm">{metric.icon}</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider line-clamp-1">{metric.label}</p>
+                                        <p className="text-2xl font-black text-slate-900 mt-1">{metric.value}</p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
-                    {/* Kümülatif Şikayet Sayısı */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <div className="flex items-center gap-2 mb-6">
-                            <TrendingUp className="w-5 h-5 text-emerald-600" />
-                            <h2 className="text-lg font-bold text-slate-900">Kümülatif Şikayet Artışı</h2>
+                    {/* Top-Right: Placeholder */}
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center min-h-[350px]">
+                        <div className="text-center text-slate-400">
+                            <BarChart3 className="w-12 h-12 mx-auto mb-2 opacity-20" />
+                            <p className="text-sm font-medium">Grafik Alanı (Sağ Üst)</p>
                         </div>
-                        <div className="h-[300px] w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={stats?.monthlyStats}>
-                                    <defs>
-                                        <linearGradient id="colorCum" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                                            <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
-                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
-                                    <Tooltip 
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                                    />
-                                    <Area 
-                                        type="monotone" 
-                                        dataKey="cumulativeCount" 
-                                        name="Kümülatif Toplam" 
-                                        stroke="#10b981" 
-                                        strokeWidth={3}
-                                        fillOpacity={1} 
-                                        fill="url(#colorCum)" 
-                                    />
-                                </AreaChart>
-                            </ResponsiveContainer>
+                    </div>
+
+                    {/* Bottom-Left: Placeholder */}
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center min-h-[350px]">
+                        <div className="text-center text-slate-400">
+                            <TrendingUp className="w-12 h-12 mx-auto mb-2 opacity-20" />
+                            <p className="text-sm font-medium">Grafik Alanı (Sol Alt)</p>
+                        </div>
+                    </div>
+
+                    {/* Bottom-Right: Placeholder */}
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center min-h-[350px]">
+                        <div className="text-center text-slate-400">
+                            <FileText className="w-12 h-12 mx-auto mb-2 opacity-20" />
+                            <p className="text-sm font-medium">Grafik Alanı (Sağ Alt)</p>
                         </div>
                     </div>
                 </div>

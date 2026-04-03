@@ -46,7 +46,7 @@ export default function Sidebar() {
             <div className="px-6 py-6 mb-2">
                 <div className="flex items-center gap-3">
                     <div className="bg-white p-1.5 rounded-lg flex items-center justify-center">
-                        <img src="/hsa-logo.png"alt="HSA Enerji"className="h-6 w-auto object-contain" />
+                        <img src="/hsa-logo.png" alt="HSA Enerji" className="h-6 w-auto object-contain" />
                     </div>
                     <div>
                         <h1 className="text-white font-bold text-sm leading-tight">
@@ -113,7 +113,7 @@ export default function Sidebar() {
                 {/* Üretim Sayıları */}
                 <Link href="/production-counts" className={linkClass('/production-counts')}>
                     <Factory size={18} />
-                    Üretim Sayıları
+                    Üretim Adetleri
                 </Link>
 
                 <div className="pt-6 pb-2 px-3">

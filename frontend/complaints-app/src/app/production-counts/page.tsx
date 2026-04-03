@@ -77,16 +77,29 @@ export default function ProductionCountsPage() {
         try {
             setSaving(true);
             setError(null);
+            
+            // Check if record exists BEFORE saving to determines the success message
+            const existsBefore = records.some(r => Number(r.year) === Number(selectedYear) && Number(r.month) === Number(selectedMonth));
+            
             await productionCountService.create(dto);
 
-            const existingRecord = records.find(r => r.year === selectedYear && r.month === selectedMonth);
-            if (existingRecord) {
+            if (existsBefore) {
                 setSuccess(`${selectedYear} ${MONTH_NAMES[selectedMonth - 1]} üretim sayısı güncellendi: ${count.toLocaleString('tr-TR')}`);
             } else {
                 setSuccess(`${selectedYear} ${MONTH_NAMES[selectedMonth - 1]} üretim sayısı kaydedildi: ${count.toLocaleString('tr-TR')}`);
             }
 
+            // Reset production count input
             setProductionCount('');
+            
+            // Increment month automatically for next entry
+            if (selectedMonth === 12) {
+                setSelectedMonth(1);
+                setSelectedYear(prev => prev + 1);
+            } else {
+                setSelectedMonth(prev => prev + 1);
+            }
+
             await fetchRecords();
         } catch (err: unknown) {
             console.error('Kayıt hatası:', err);
@@ -136,7 +149,7 @@ export default function ProductionCountsPage() {
                         <div className="p-2 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl text-white shadow-lg shadow-violet-500/20">
                             <Factory size={22} />
                         </div>
-                        Üretim Sayıları
+                        Üretim Adetleri
                     </h1>
                     <p className="text-slate-500 font-medium text-sm mt-1 ml-12">Aylık üretim adetlerini girin ve takip edin.</p>
                 </div>
@@ -267,19 +280,24 @@ export default function ProductionCountsPage() {
                                 </div>
 
                                 {/* Existing record warning */}
-                                {records.find(r => r.year === selectedYear && r.month === selectedMonth) && (
-                                    <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl">
-                                        <svg className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                                        </svg>
-                                        <div>
-                                            <p className="text-xs font-semibold text-amber-700">Bu ay için zaten kayıt mevcut</p>
-                                            <p className="text-[10px] text-amber-600 mt-0.5">
-                                                Mevcut değer: <strong>{records.find(r => r.year === selectedYear && r.month === selectedMonth)?.count.toLocaleString('tr-TR')}</strong> — Kaydettiğinizde güncellenecektir.
-                                            </p>
+                                {(() => {
+                                    const existing = records.find(r => Number(r.year) === Number(selectedYear) && Number(r.month) === Number(selectedMonth));
+                                    if (!existing) return null;
+                                    
+                                    return (
+                                        <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl animate-fade-in">
+                                            <svg className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                            </svg>
+                                            <div>
+                                                <p className="text-xs font-semibold text-amber-700">Bu ay için zaten kayıt mevcut</p>
+                                                <p className="text-[10px] text-amber-600 mt-0.5">
+                                                    Mevcut değer: <strong>{existing.count.toLocaleString('tr-TR')}</strong> — Kaydettiğinizde güncellenecektir.
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
+                                    );
+                                })()}
 
                                 {/* Submit */}
                                 <button
@@ -308,7 +326,7 @@ export default function ProductionCountsPage() {
                         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                                 <div>
-                                    <h2 className="text-sm font-bold text-slate-800">Kayıtlı Üretim Sayıları</h2>
+                                    <h2 className="text-sm font-bold text-slate-800">Aylık Üretim Adetleri</h2>
                                     <p className="text-xs text-slate-400 mt-0.5">{filteredRecords.length} kayıt listeleniyor</p>
                                 </div>
                                 <div className="flex items-center gap-2">

@@ -248,7 +248,7 @@ export default function NewComplaintPage() {
                             <div className="grid grid-cols-1 gap-4">
                                 <div className="grid grid-cols-3 gap-3">
                                     <div className="space-y-1">
-                                        <label className="block text-[11px] font-bold text-slate-500  tracking-wider">Kusurlu</label>
+                                        <label className="block text-[11px] font-bold text-slate-500  tracking-wider">Toplam Kusurlu Ürün Miktarı </label>
                                         <input
                                             type="number"name="defectiveQuantity"required min="1" value={formData.defectiveQuantity || ''} onChange={handleChange}
                                             className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 font-bold"
