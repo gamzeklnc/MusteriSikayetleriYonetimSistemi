@@ -235,6 +235,32 @@ public class DashboardController : ControllerBase
             .OrderBy(x => x)
             .ToListAsync();
 
+        // Error Analysis
+        var complaintsWithErrors = await query
+            .Where(c => !string.IsNullOrWhiteSpace(c.ErrorDefinition))
+            .Select(c => new { c.ErrorDefinition, c.Brand })
+            .ToListAsync();
+
+        var errorCounts = new Dictionary<string, Dictionary<string, int>>();
+
+        foreach (var c in complaintsWithErrors)
+        {
+            var errors = c.ErrorDefinition!.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var b = c.Brand?.Trim().ToUpper() ?? "BELİRTİLMEMİŞ";
+            foreach (var err in errors)
+            {
+                if (!errorCounts.ContainsKey(err)) errorCounts[err] = new Dictionary<string, int>();
+                if (!errorCounts[err].ContainsKey(b)) errorCounts[err][b] = 0;
+                errorCounts[err][b]++;
+            }
+        }
+
+        var errorStatsDtos = errorCounts.Select(e => new ErrorStatDto(
+            e.Key,
+            e.Value.Values.Sum(),
+            e.Value.Select(b => new BrandBreakdownDto(b.Key, b.Value)).ToList()
+        )).OrderByDescending(e => e.TotalCount).Take(10).ToList();
+
         return Ok(new DashboardStatsDto(
             total,
             open,
@@ -247,7 +273,8 @@ public class DashboardController : ControllerBase
             yearlyStats,
             monthlyJustificationStats,
             brandStats,
-            allBrands
+            allBrands,
+            errorStatsDtos
         ));
     }
 }

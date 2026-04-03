@@ -209,6 +209,17 @@ export interface BrandStat {
     justificationRate: number;
 }
 
+export interface ErrorStat {
+    errorLabel: string;
+    totalCount: number;
+    brandBreakdown: BrandBreakdown[];
+}
+
+export interface BrandBreakdown {
+    brandName: string;
+    count: number;
+}
+
 export interface DashboardStats {
     totalComplaints: number;
     openComplaints: number;
@@ -222,4 +233,5 @@ export interface DashboardStats {
     monthlyJustificationStats: MonthlyJustificationRateStat[];
     brandStats: BrandStat[];
     allBrands: string[];
+    errorStats: ErrorStat[];
 }

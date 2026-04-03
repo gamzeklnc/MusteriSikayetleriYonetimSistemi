@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
 import { productionCountService } from '@/services/productionCountService';
-import { DashboardStats } from '@/types/complaint';
+import { DashboardStats, ErrorStat } from '@/types/complaint';
 import { 
     BarChart3, FileText, CheckCircle2, Clock, AlertCircle, 
     TrendingUp 
@@ -127,10 +127,8 @@ function BrandDualBarChart({ title, subtitle, data, children }: { title: string,
             </div>
             
             <div className="flex-1 flex gap-2 relative">
-                {/* Y-Axis (Vertical Line) */}
                 <div className="absolute left-[38px] top-0 bottom-14 w-[1.5px] bg-slate-400 z-10" />
                 
-                {/* Y-Axis Scale Placeholder */}
                 <div className="flex flex-col justify-between h-full pb-14 pr-3 min-w-[38px]">
                     <span className="text-[8px] font-black text-slate-400 text-right">MAX</span>
                     <span className="text-[8px] font-black text-slate-400 text-right">MID</span>
@@ -138,7 +136,6 @@ function BrandDualBarChart({ title, subtitle, data, children }: { title: string,
                 </div>
 
                 <div className="flex-1 relative flex items-end justify-around pb-14">
-                    {/* Grid Lines */}
                     <div className="absolute inset-0 bottom-14 flex flex-col justify-between pointer-events-none">
                         <div className="w-full border-t border-slate-100 border-dashed" />
                         <div className="w-full border-t border-slate-100 border-dashed" />
@@ -151,7 +148,6 @@ function BrandDualBarChart({ title, subtitle, data, children }: { title: string,
                         return (
                             <div key={item.label} className="flex-1 flex flex-col items-center group relative h-full justify-end px-1">
                                 <div className="flex items-end gap-1 w-full max-w-[60px] h-full">
-                                    {/* Bar 1: Count */}
                                     <div className="flex-1 flex flex-col items-center group/bar1 relative h-full justify-end">
                                         <div className="absolute bottom-full mb-1 z-20 pointer-events-none transition-all group-hover/bar1:scale-110">
                                             <span className="text-[8px] font-black text-blue-700 bg-blue-50 px-1 py-0.5 rounded border border-blue-100 shadow-sm">
@@ -163,7 +159,6 @@ function BrandDualBarChart({ title, subtitle, data, children }: { title: string,
                                             style={{ height: `${Math.max(h1, 2)}%` }}
                                         />
                                     </div>
-                                    {/* Bar 2: Rate */}
                                     <div className="flex-1 flex flex-col items-center group/bar2 relative h-full justify-end">
                                         <div className="absolute bottom-full mb-1 z-20 pointer-events-none transition-all group-hover/bar2:scale-110">
                                             <span className="text-[8px] font-black text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded border border-emerald-100 shadow-sm">
@@ -184,8 +179,92 @@ function BrandDualBarChart({ title, subtitle, data, children }: { title: string,
                             </div>
                         );
                     })}
-                    {/* X-Axis (Horizontal Line) */}
                     <div className="absolute bottom-14 left-0 right-0 h-[2px] bg-slate-400" />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function StackedErrorBarChart({ title, subtitle, data, allBrands, children }: { title: string, subtitle?: string, data: ErrorStat[], allBrands: string[], children?: React.ReactNode }) {
+    const brandColors: Record<string, string> = {};
+    const colorPalette = [
+        'bg-blue-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 
+        'bg-violet-500', 'bg-indigo-500', 'bg-orange-500', 'bg-teal-500'
+    ];
+    allBrands.forEach((b, i) => brandColors[b] = colorPalette[i % colorPalette.length]);
+
+    const maxTotal = Math.max(...data.map(d => d.totalCount), 1);
+
+    return (
+        <div className="w-full h-full flex flex-col">
+            <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col gap-0.5">
+                    <h3 className="text-[12px] font-black text-slate-800 flex items-center gap-2">
+                        <AlertCircle className="w-3.5 h-3.5 text-red-600" />
+                        {title}
+                    </h3>
+                    <p className="text-[9px] text-slate-400 font-bold pl-5 uppercase">{subtitle || 'Hata Dağılımı'}</p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap justify-end gap-x-2 gap-y-1 max-w-[280px]">
+                        {allBrands.map(b => (
+                            <div key={b} className="flex items-center gap-1.5 px-2 py-1 bg-slate-50 rounded border border-slate-100 shadow-sm transition-all hover:bg-white">
+                                <div className={`w-2 h-2 rounded-full ${brandColors[b] || 'bg-slate-300'} shadow-sm`} />
+                                <span className="text-[8px] font-black text-slate-700 uppercase tracking-tighter">{b}</span>
+                            </div>
+                        ))}
+                    </div>
+                    {children}
+                </div>
+            </div>
+
+            <div className="flex-1 flex gap-2 relative">
+                <div className="absolute left-[38px] top-0 bottom-14 w-[1.5px] bg-slate-300 z-10" />
+                <div className="flex flex-col justify-between h-full pb-14 pr-3 min-w-[38px]">
+                    <span className="text-[8px] font-black text-slate-400 text-right">{maxTotal}</span>
+                    <span className="text-[8px] font-black text-slate-400 text-right">{Math.round(maxTotal/2)}</span>
+                    <span className="text-[8px] font-black text-slate-400 text-right">0</span>
+                </div>
+
+                <div className="flex-1 relative flex items-end justify-around pb-14">
+                    {data.map((item) => {
+                        const totalH = (item.totalCount / (maxTotal * 1.1)) * 100;
+                        return (
+                            <div key={item.errorLabel} className="flex-1 flex flex-col items-center group relative h-full justify-end px-1">
+                                <div className="absolute bottom-full mb-1 z-20 pointer-events-none transition-all group-hover:scale-110">
+                                    <span className="text-[8px] font-black text-slate-700 bg-white px-1 py-0.5 rounded border border-slate-200 shadow-sm">
+                                        {item.totalCount}
+                                    </span>
+                                </div>
+                                <div className="w-full max-w-[30px] flex flex-col-reverse rounded-t-sm overflow-hidden shadow-sm" style={{ height: `${totalH}%` }}>
+                                    {item.brandBreakdown.map((b, bi) => {
+                                        const segmentH = (b.count / item.totalCount) * 100;
+                                        return (
+                                            <div 
+                                                key={bi}
+                                                className={`${brandColors[b.brandName]} w-full transition-all group-hover:brightness-110 flex items-center justify-center relative`}
+                                                style={{ height: `${segmentH}%` }}
+                                                title={`${b.brandName}: ${b.count}`}
+                                            >
+                                                {segmentH > 8 && (
+                                                    <span className="text-[7px] font-black text-white drop-shadow-md">
+                                                        {b.count}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <div className="absolute top-full pt-3 w-full text-center">
+                                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-tighter block truncate">
+                                        {item.errorLabel}
+                                    </span>
+                                </div>
+                            </div>
+                        );
+                    })}
+                    <div className="absolute bottom-14 left-0 right-0 h-[1.5px] bg-slate-400" />
                 </div>
             </div>
         </div>
@@ -195,15 +274,11 @@ function BrandDualBarChart({ title, subtitle, data, children }: { title: string,
 export default function DashboardPage() {
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [loading, setLoading] = useState(true);
-    
-    // Global filters
     const [startDate, setStartDate] = useState<string>('');
     const [endDate, setEndDate] = useState<string>('');
-    
-    // Brand chart specific filters
     const [brandYear, setBrandYear] = useState<string>('Hepsi');
     const [brandFilter, setBrandFilter] = useState<string>('Hepsi');
-    
+    const [errorYear, setErrorYear] = useState<string>('Hepsi');
     const [totalProductionCount, setTotalProductionCount] = useState<number>(0);
 
     const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
@@ -216,10 +291,8 @@ export default function DashboardPage() {
         } catch (error) { console.error(error); } finally { setLoading(false); }
     };
 
-    // Main fetch
     useEffect(() => { fetchStats(startDate, endDate); }, [startDate, endDate]);
 
-    // Local brand fetch
     const fetchBrandStats = async () => {
         try {
             let sDate = undefined;
@@ -234,10 +307,22 @@ export default function DashboardPage() {
         } catch (error) { console.error(error); }
     };
 
-    useEffect(() => {
-        if (stats) fetchBrandStats();
-    }, [brandYear, brandFilter]);
+    useEffect(() => { if (stats) fetchBrandStats(); }, [brandYear, brandFilter]);
 
+    const fetchErrorStats = async () => {
+        try {
+            let sDate = undefined;
+            let eDate = undefined;
+            if (errorYear !== 'Hepsi') {
+                sDate = `${errorYear}-01-01`;
+                eDate = `${errorYear}-12-31`;
+            }
+            const data = await complaintService.getDashboardStats(sDate, eDate);
+            if (stats) setStats({ ...stats, errorStats: data.errorStats });
+        } catch (error) { console.error(error); }
+    };
+
+    useEffect(() => { if (stats) fetchErrorStats(); }, [errorYear]);
     useEffect(() => {
         productionCountService.getAll().then(data => {
             setTotalProductionCount(data.reduce((sum, item) => sum + item.count, 0));
@@ -263,7 +348,6 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between"><h1 className="text-3xl font-black text-slate-900 tracking-tight">Dashboard</h1></div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-8">
-                    {/* 1. Metrics */}
                     <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[350px]">
                         <div className="grid grid-cols-3 grid-rows-2 gap-4 flex-1">
                             {topMetrics.map((m) => (
@@ -278,7 +362,6 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    {/* 2. Half-Yearly */}
                     <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[350px]">
                         {stats?.justificationChart ? (
                             <GenericBarChart title="Haklılık Oranı (%)" subtitle="Yıllık Dönemsel Durum"
@@ -291,7 +374,6 @@ export default function DashboardPage() {
                         ) : <div className="flex-1 flex items-center justify-center text-slate-400">Veri Yüklenemedi</div>}
                     </div>
 
-                    {/* 3. Yearly */}
                     <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[350px]">
                         {stats?.yearlyStats ? (
                             <GenericBarChart title="Yıllık Haklılık Oranı" subtitle="Tüm Yılların Karşılaştırması" paddingBottom={80}
@@ -300,7 +382,6 @@ export default function DashboardPage() {
                         ) : <div className="flex-1 flex items-center justify-center text-slate-400">Yıllık Veri Bekleniyor...</div>}
                     </div>
 
-                    {/* 4. Monthly */}
                     <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[350px]">
                         {stats?.monthlyJustificationStats ? (
                             <GenericBarChart rotateLabels={true} paddingBottom={80}
@@ -318,7 +399,7 @@ export default function DashboardPage() {
                         ) : <div className="flex-1 flex items-center justify-center text-slate-400">Aylık Veri Bekleniyor...</div>}
                     </div>
 
-                    {/* 5. Brand Performance (Enhanced) */}
+                    {/* 5. Brand Performance */}
                     <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[400px]">
                         <div className="flex-1">
                             <BrandDualBarChart 
@@ -348,10 +429,27 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    {/* 6-8 Placeholders */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center min-h-[350px] border-dashed border-2 border-slate-100">
-                        <TrendingUp className="w-10 h-10 opacity-5" />
+                    {/* 6. Error Analysis Analysis */}
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[400px]">
+                        {stats?.errorStats ? (
+                            <StackedErrorBarChart 
+                                title="Hata Tanımları & Marka Kıyaslaması" 
+                                subtitle={errorYear === 'Hepsi' ? "Tüm Zamanlar Hata Dağılımı" : `${errorYear} Yılı Hata Analizi`}
+                                data={stats.errorStats}
+                                allBrands={stats.allBrands}
+                            >
+                                <select 
+                                    className="text-[9px] font-black text-red-600 bg-red-50 border border-red-100 rounded px-1.5 py-1 outline-none"
+                                    value={errorYear}
+                                    onChange={(e) => setErrorYear(e.target.value)}
+                                >
+                                    <option value="Hepsi">YIL: HEPSİ</option>
+                                    {(stats?.yearlyStats || []).map(y => ( <option key={y.year} value={y.year}>{y.year}</option> ))}
+                                </select>
+                            </StackedErrorBarChart>
+                        ) : <div className="flex-1 flex items-center justify-center text-slate-400">Hata Verisi Bekleniyor...</div>}
                     </div>
+
                     <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center min-h-[350px] border-dashed border-2 border-slate-100">
                         <AlertCircle className="w-10 h-10 opacity-5" />
                     </div>
