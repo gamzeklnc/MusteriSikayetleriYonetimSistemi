@@ -90,6 +90,40 @@ public class DashboardController : ControllerBase
             ));
         }
 
+        // Justification Chart Calculations
+        int currentYear = DateTime.UtcNow.Year;
+
+        // 1. Half (Jan-Jun)
+        var firstHalfJustified = await _context.Complaints
+            .Where(c => c.RegistrationDate.Year == currentYear && c.RegistrationDate.Month >= 1 && c.RegistrationDate.Month <= 6)
+            .SumAsync(c => c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount);
+
+        var firstHalfProduction = await _context.ProductionCounts
+            .Where(p => p.Year == currentYear && p.Month >= 1 && p.Month <= 6)
+            .SumAsync(p => (long)p.Count); // Long for safety
+
+        // 2. Half (Jul-Dec)
+        var secondHalfJustified = await _context.Complaints
+            .Where(c => c.RegistrationDate.Year == currentYear && c.RegistrationDate.Month >= 7 && c.RegistrationDate.Month <= 12)
+            .SumAsync(c => c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount);
+
+        var secondHalfProduction = await _context.ProductionCounts
+            .Where(p => p.Year == currentYear && p.Month >= 7 && p.Month <= 12)
+            .SumAsync(p => (long)p.Count);
+
+        // Cumulative (All time)
+        var cumulativeJustified = await _context.Complaints
+            .SumAsync(c => c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount);
+
+        var cumulativeProduction = await _context.ProductionCounts
+            .SumAsync(p => (long)p.Count);
+
+        var chartData = new JustificationChartDto(
+            firstHalfProduction > 0 ? (double)firstHalfJustified * 100 / firstHalfProduction : 0,
+            secondHalfProduction > 0 ? (double)secondHalfJustified * 100 / secondHalfProduction : 0,
+            cumulativeProduction > 0 ? (double)cumulativeJustified * 100 / cumulativeProduction : 0
+        );
+
         return Ok(new DashboardStatsDto(
             total,
             open,
@@ -97,7 +131,8 @@ public class DashboardController : ControllerBase
             justifiedProducts,
             unjustifiedProducts,
             ratio,
-            stats
+            stats,
+            chartData
         ));
     }
 }

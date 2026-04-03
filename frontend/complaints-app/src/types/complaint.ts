@@ -187,6 +187,12 @@ export interface MonthlyStat {
     cumulativeCount: number;
 }
 
+export interface JustificationChartData {
+    firstHalfRate: number;
+    secondHalfRate: number;
+    cumulativeRate: number;
+}
+
 export interface DashboardStats {
     totalComplaints: number;
     openComplaints: number;
@@ -194,5 +200,6 @@ export interface DashboardStats {
     totalJustifiedProducts: number;
     totalUnjustifiedProducts: number;
     justifiedRatio: number;
-    monthlyStats: MonthlyStat[];
+    monthlyStats: MonthlyStat[] | null;
+    justificationChart: JustificationChartData;
 }

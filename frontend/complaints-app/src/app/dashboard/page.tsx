@@ -4,11 +4,111 @@ import { useEffect, useState } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
 import { productionCountService } from '@/services/productionCountService';
-import { DashboardStats } from '@/types/complaint';
+import { DashboardStats, JustificationChartData } from '@/types/complaint';
 import { 
     BarChart3, FileText, CheckCircle2, Clock, AlertCircle, 
     TrendingUp, RefreshCw 
 } from 'lucide-react';
+
+function JustificationRateChart({ data }: { data: JustificationChartData }) {
+    const chartItems = [
+        { label: '1. ALTI AY', value: data.firstHalfRate, color: 'from-blue-500 to-indigo-600' },
+        { label: '2. ALTI AY', value: data.secondHalfRate, color: 'from-indigo-400 to-indigo-600' },
+        { label: 'KÜMÜLATİF', value: data.cumulativeRate, color: 'from-emerald-500 to-teal-600' }
+    ];
+
+    // Determine the max scale dynamically
+    const maxVal = Math.max(...chartItems.map(i => i.value));
+    let chartMax = 1;
+
+    if (maxVal < 0.1) {
+        chartMax = 0.1;
+    } else if (maxVal < 1) {
+        chartMax = 1;
+    } else if (maxVal < 5) {
+        chartMax = 5;
+    } else if (maxVal < 10) {
+        chartMax = 10;
+    } else {
+        // For higher values, round up to the nearest 10 or 20
+        chartMax = Math.ceil(maxVal / 10) * 10;
+    }
+
+    // Generate 5 dynamic steps for the Y-Axis
+    const gridSteps = Array.from({ length: 6 }, (_, i) => (chartMax / 5) * i);
+
+    return (
+        <div className="w-full h-full flex flex-col">
+            <div className="flex items-center justify-between mb-10">
+                <div className="flex flex-col gap-0.5">
+                    <h3 className="text-sm font-black text-slate-800 flex items-center gap-2">
+                        <BarChart3 className="w-4 h-4 text-blue-600" />
+                        Haklılık Oranı (%)
+                    </h3>
+                    <p className="text-[10px] text-slate-400 font-bold pl-6 uppercase">Performans Grafiği</p>
+                </div>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
+                    {new Date().getFullYear()} DURUMU
+                </span>
+            </div>
+            
+            <div className="flex-1 flex gap-4 relative">
+                {/* Y-Axis Labels & Vertical Axis */}
+                <div className="flex flex-col justify-between h-full pb-10 pr-3 border-r-2 border-slate-200 min-w-[45px]">
+                    {[...gridSteps].reverse().map((step, idx) => (
+                        <span key={idx} className="text-[10px] font-black text-slate-500 text-right leading-none">
+                            {chartMax <= 1 ? step.toFixed(2) : Math.round(step)}%
+                        </span>
+                    ))}
+                </div>
+
+                {/* Chart Area */}
+                <div className="flex-1 relative flex items-end justify-around pb-10">
+                    {/* Grid Lines */}
+                    <div className="absolute inset-0 pb-10 flex flex-col justify-between pointer-events-none">
+                        {gridSteps.reverse().map((step, idx) => (
+                            <div key={idx} className={`w-full border-t ${step === 0 ? 'border-transparent' : 'border-slate-100'} border-dashed`} />
+                        ))}
+                    </div>
+
+                    {/* Bars */}
+                    {chartItems.map((item) => {
+                        const heightPercent = (item.value / chartMax) * 100;
+                        return (
+                            <div key={item.label} className="z-10 flex-1 flex flex-col items-center group relative h-full justify-end">
+                                {/* Percentage Label */}
+                                <div className="absolute transition-all duration-300 group-hover:-translate-y-2" style={{ bottom: `calc(${Math.max(heightPercent, 2)}% + 15px)` }}>
+                                    <span className="text-[10px] font-black text-slate-700 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md border border-slate-200 shadow-sm whitespace-nowrap">
+                                        %{item.value.toFixed(4)}
+                                    </span>
+                                </div>
+                                
+                                {/* Bar Body */}
+                                <div 
+                                    className={`w-full max-w-[60px] rounded-t-xl bg-gradient-to-t ${item.color} shadow-lg transition-all duration-1000 ease-in-out relative group-hover:brightness-110 group-hover:shadow-2xl`}
+                                    style={{ height: `${Math.max(heightPercent, 2)}%`, minHeight: item.value > 0 ? '4px' : '0' }}
+                                >
+                                    {/* Subtle shine */}
+                                    <div className="absolute top-0 left-1/4 w-1/2 h-full bg-white/10 skew-x-12" />
+                                </div>
+
+                                {/* X-Axis Item Label */}
+                                <div className="absolute top-full pt-4">
+                                    <span className="text-[10px] font-black text-slate-600 uppercase tracking-tighter whitespace-nowrap">
+                                        {item.label}
+                                    </span>
+                                </div>
+                            </div>
+                        );
+                    })}
+
+                    {/* X-Axis Line (Bold) */}
+                    <div className="absolute bottom-10 left-0 right-0 h-[2px] bg-slate-400" />
+                </div>
+            </div>
+        </div>
+    );
+}
 
 export default function DashboardPage() {
     const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -165,12 +265,18 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    {/* Top-Right: Placeholder */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center min-h-[350px]">
-                        <div className="text-center text-slate-400">
-                            <BarChart3 className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                            <p className="text-sm font-medium">Grafik Alanı (Sağ Üst)</p>
-                        </div>
+                    {/* Top-Right: Justification Rate Chart */}
+                    <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[350px]">
+                        {stats?.justificationChart ? (
+                            <JustificationRateChart data={stats.justificationChart} />
+                        ) : (
+                            <div className="flex-1 flex items-center justify-center">
+                                <div className="text-center text-slate-400">
+                                    <BarChart3 className="w-12 h-12 mx-auto mb-2 opacity-20" />
+                                    <p className="text-sm font-medium">Veri Yüklenemedi</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Bottom-Left: Placeholder */}
