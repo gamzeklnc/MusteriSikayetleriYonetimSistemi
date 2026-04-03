@@ -104,12 +104,13 @@ export default function ActionsPage() {
                                             <td className="px-4 py-4 text-sm font-medium text-slate-700">{c.customerName}</td>
                                             <td className="px-4 py-4 text-sm text-slate-600">{c.projectName}</td>
                                             <td className="px-4 py-4">
-                                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                                                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[9px] font-bold border ${
                                                     c.operationalStage 
-                                                    ? 'bg-blue-50 text-blue-600 border border-blue-100' 
+                                                    ? 'bg-orange-50 text-orange-700 border border-orange-200' 
                                                     : 'bg-slate-100 text-slate-500 border border-slate-200'
                                                 }`}>
-                                                    {c.operationalStage || 'Aşama Belirlenmedi'}
+                                                    <span className={`w-1.5 h-1.5 rounded-full inline-block ${c.operationalStage ? 'bg-orange-500' : 'bg-slate-400'}`}></span>
+                                                    {c.operationalStage || 'Aksiyon Planı'}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-4">

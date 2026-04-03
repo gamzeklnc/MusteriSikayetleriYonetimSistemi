@@ -105,7 +105,12 @@ export default function ComplaintsPage() {
             'HSA2': c.hsa2 || 0,
             'HSA2/Haklı': c.justifiedHsa2Count || 0,
             'Durum': c.status,
-            'Aşama': c.currentDepartmentName
+            'Aşama': c.isCustomerFeedbackDone ? (c.operationalStage || 'Aksiyon Planı') : (
+                c.currentDepartmentName === 'Kalite Raporlaması' ? 'Kalite Raporlaması Bekleniyor' :
+                c.currentDepartmentName === 'Yönetim Onayı' ? 'Yönetim Onayı Bekleniyor' :
+                c.currentDepartmentName === 'Müşteri Geri Dönüşü' ? 'Müşteri Geri Dönüşü Bekleniyor' :
+                c.currentDepartmentName
+            )
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -337,22 +342,27 @@ export default function ComplaintsPage() {
                                                 {complaint.isCustomerFeedbackDone ? (
                                                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-orange-50 text-orange-700 border border-orange-200">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-orange-500 inline-block"></span>
-                                                        Aksiyon
+                                                        {complaint.operationalStage || 'Aksiyon Planı'}
                                                     </span>
                                                 ) : complaint.currentDepartmentName === 'Müşteri Geri Dönüşü' ? (
                                                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-purple-500 inline-block"></span>
-                                                        Müşteri Geri Dönüşü
+                                                        Müşteri Geri Dönüşü Bekleniyor
                                                     </span>
                                                 ) : complaint.currentDepartmentName === 'Yönetim Onayı' ? (
                                                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block"></span>
-                                                        Yönetim Onayı
+                                                        Yönetim Onayı Bekleniyor
                                                     </span>
-                                                ) : (
+                                                ) : complaint.currentDepartmentName === 'Kalite Raporlaması' ? (
                                                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
-                                                        Kalite Raporlaması
+                                                        Kalite Raporlaması Bekleniyor
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-slate-50 text-slate-700 border border-slate-200">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-500 inline-block"></span>
+                                                        Yeni Kayıt
                                                     </span>
                                                 )}
                                             </td>

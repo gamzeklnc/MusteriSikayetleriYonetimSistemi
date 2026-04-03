@@ -252,8 +252,11 @@ export default function CustomerResponsePage() {
     });
 
     const getStageLabel = (c: ComplaintDto) => {
-        if (c.isCustomerFeedbackDone) return { label: 'Aksiyon', color: 'bg-orange-50 text-orange-700 border-orange-200', dot: 'bg-orange-500' };
-        return { label: 'Müşteri Geri Dönüşü', color: 'bg-purple-50 text-purple-700 border-purple-200', dot: 'bg-purple-500' };
+        if (c.isCustomerFeedbackDone) return c.operationalStage || 'Aksiyon Planı';
+        if (c.currentDepartmentName === 'Müşteri Geri Dönüşü') return 'Müşteri Geri Dönüşü Bekleniyor';
+        if (c.currentDepartmentName === 'Yönetim Onayı') return 'Yönetim Onayı Bekleniyor';
+        if (c.currentDepartmentName === 'Kalite Raporlaması') return 'Kalite Raporlaması Bekleniyor';
+        return 'Yeni Kayıt';
     };
 
     return (
@@ -330,7 +333,7 @@ export default function CustomerResponsePage() {
                                     </tr>
                                 ) : (
                                     filteredComplaints.map((c) => {
-                                        const stage = getStageLabel(c);
+                                        const stageLabel = getStageLabel(c);
                                         return (
                                             <tr key={c.id} className={`transition-colors text-[11px] ${c.isCustomerFeedbackDone ? 'bg-orange-50/20 hover:bg-orange-50/40' : 'hover:bg-purple-50/30'}`}>
                                                 <td className="px-2 py-2 font-semibold text-slate-900 whitespace-nowrap">
@@ -372,14 +375,27 @@ export default function CustomerResponsePage() {
                                                         )}
                                                     </div>
                                                 </td>
-                                                <td className="px-2 py-2 text-center">
+                                                <td className="px-1.5 py-1.5 text-center">
                                                     {c.isCustomerFeedbackDone ? (
-                                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-orange-50 text-orange-700 border border-orange-200">
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-orange-500 inline-block" />AKSİYON
+                                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-orange-50 text-orange-700 border border-orange-200 uppercase">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-orange-500 inline-block"></span>
+                                                            {c.operationalStage || 'Aksiyon Planı'}
+                                                        </span>
+                                                    ) : stageLabel === 'Müşteri Geri Dönüşü Bekleniyor' ? (
+                                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-purple-500 inline-block"></span>Müşteri Geri Dönüşü Bekleniyor
+                                                        </span>
+                                                    ) : stageLabel === 'Yönetim Onayı Bekleniyor' ? (
+                                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block"></span>Yönetim Onayı Bekleniyor
+                                                        </span>
+                                                    ) : stageLabel === 'Kalite Raporlaması Bekleniyor' ? (
+                                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>Kalite Raporlaması Bekleniyor
                                                         </span>
                                                     ) : (
-                                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-purple-50 text-purple-600 border border-purple-200">
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 inline-block" />BEKLİYOR
+                                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-slate-50 text-slate-700 border border-slate-200">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-slate-500 inline-block"></span>Yeni Kayıt
                                                         </span>
                                                     )}
                                                 </td>

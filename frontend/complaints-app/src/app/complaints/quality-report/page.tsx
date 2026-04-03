@@ -50,10 +50,11 @@ export default function QualityReportPage() {
     }, []);
 
     const getStageLabel = (c: ComplaintDto) => {
-        if (c.isCustomerFeedbackDone) return 'Aksiyon';
-        if (c.currentDepartmentName === 'Müşteri Geri Dönüşü') return 'Müşteri Geri Dönüşü';
-        if (c.currentDepartmentName === 'Yönetim Onayı') return 'Yönetim Onayı';
-        return 'Kalite Raporlaması';
+        if (c.isCustomerFeedbackDone) return c.operationalStage || 'Aksiyon Planı';
+        if (c.currentDepartmentName === 'Müşteri Geri Dönüşü') return 'Müşteri Geri Dönüşü Bekleniyor';
+        if (c.currentDepartmentName === 'Yönetim Onayı') return 'Yönetim Onayı Bekleniyor';
+        if (c.currentDepartmentName === 'Kalite Raporlaması') return 'Kalite Raporlaması Bekleniyor';
+        return 'Yeni Kayıt';
     };
 
     const filteredComplaints = complaints.filter(c => {
@@ -207,21 +208,26 @@ export default function QualityReportPage() {
                                                     </div>
                                                 </td>
                                                 <td className="px-1.5 py-1.5 text-center">
-                                                    {stageLabel === 'Aksiyon' ? (
+                                                    {c.isCustomerFeedbackDone ? (
                                                         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-orange-50 text-orange-700 border border-orange-200">
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-orange-500 inline-block"></span>Aksiyon
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-orange-500 inline-block"></span>
+                                                            {c.operationalStage || 'Aksiyon Planı'}
                                                         </span>
-                                                    ) : stageLabel === 'Müşteri Geri Dönüşü' ? (
+                                                    ) : stageLabel === 'Müşteri Geri Dönüşü Bekleniyor' ? (
                                                         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-purple-500 inline-block"></span>Müşteri Geri Dönüşü
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-purple-500 inline-block"></span>Müşteri Geri Dönüşü Bekleniyor
                                                         </span>
-                                                    ) : stageLabel === 'Yönetim Onayı' ? (
+                                                    ) : stageLabel === 'Yönetim Onayı Bekleniyor' ? (
                                                         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block"></span>Yönetim Onayı
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block"></span>Yönetim Onayı Bekleniyor
+                                                        </span>
+                                                    ) : stageLabel === 'Kalite Raporlaması Bekleniyor' ? (
+                                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>Kalite Raporlaması Bekleniyor
                                                         </span>
                                                     ) : (
-                                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>Kalite Raporlaması
+                                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-slate-50 text-slate-700 border border-slate-200">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-slate-500 inline-block"></span>Yeni Kayıt
                                                         </span>
                                                     )}
                                                 </td>
@@ -232,7 +238,7 @@ export default function QualityReportPage() {
                                                         : 'bg-slate-50 text-slate-400 border-slate-100'
                                                     }`}>
                                                         <div className={`w-1.5 h-1.5 rounded-full ${c.isQualityReported ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
-                                                        {c.isQualityReported ? 'YAPILDI' : 'YOK'}
+                                                        {c.isQualityReported ? 'Yapıldı' : 'Yok'}
                                                     </div>
                                                 </td>
                                                 <td className="px-1.5 py-1.5 text-center text-[10px] font-medium text-slate-600 whitespace-nowrap">
