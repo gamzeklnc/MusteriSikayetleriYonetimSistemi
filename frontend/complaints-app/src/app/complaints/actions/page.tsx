@@ -98,8 +98,10 @@ export default function ActionsPage() {
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredComplaints.map((c) => (
-                                        <tr key={c.id} className="hover:bg-slate-50/50 transition-colors group">
+                                    filteredComplaints.map((c) => {
+                                        const isOverdue = c.status.includes('Gecikti');
+                                        return (
+                                            <tr key={c.id} className="hover:bg-blue-50/30 transition-colors group text-[11px] text-slate-700 font-medium">
                                             <td className="px-4 py-4 font-mono text-xs font-bold text-blue-600">{c.complaintNumber}</td>
                                             <td className="px-4 py-4 text-sm font-medium text-slate-700">{c.customerName}</td>
                                             <td className="px-4 py-4 text-sm text-slate-600">{c.projectName}</td>
@@ -131,7 +133,8 @@ export default function ActionsPage() {
                                                 </div>
                                             </td>
                                         </tr>
-                                    ))
+                                    );
+                                })
                                 )}
                             </tbody>
                         </table>

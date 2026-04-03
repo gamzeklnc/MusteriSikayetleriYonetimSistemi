@@ -334,8 +334,9 @@ export default function CustomerResponsePage() {
                                 ) : (
                                     filteredComplaints.map((c) => {
                                         const stageLabel = getStageLabel(c);
+                                        const isOverdue = c.status.includes('Gecikti');
                                         return (
-                                            <tr key={c.id} className={`transition-colors text-[11px] ${c.isCustomerFeedbackDone ? 'bg-orange-50/20 hover:bg-orange-50/40' : 'hover:bg-purple-50/30'}`}>
+                                            <tr key={c.id} className={`${c.isCustomerFeedbackDone ? 'bg-orange-50/20 hover:bg-orange-50/40' : 'hover:bg-purple-50/30'} transition-colors text-[11px]`}>
                                                 <td className="px-2 py-2 font-semibold text-slate-900 whitespace-nowrap">
                                                     {c.complaintNumber}
                                                 </td>
@@ -358,7 +359,7 @@ export default function CustomerResponsePage() {
                                                 <td className="px-2 py-2">
                                                     <div className="flex flex-col gap-0.5">
                                                         <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-700">
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />YAPILDI
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />Yapıldı
                                                         </span>
                                                         {c.qualityReportedByName && (
                                                             <span className="text-[9px] text-slate-400">{c.qualityReportedByName}</span>
@@ -368,7 +369,7 @@ export default function CustomerResponsePage() {
                                                 <td className="px-2 py-2">
                                                     <div className="flex flex-col gap-0.5">
                                                         <span className="inline-flex items-center gap-1 text-[9px] font-bold text-blue-700">
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block" />ONAYLANDI
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block" />Onaylandı
                                                         </span>
                                                         {c.managementApprovedByName && (
                                                             <span className="text-[9px] text-slate-400">{c.managementApprovedByName}</span>
@@ -377,7 +378,7 @@ export default function CustomerResponsePage() {
                                                 </td>
                                                 <td className="px-1.5 py-1.5 text-center">
                                                     {c.isCustomerFeedbackDone ? (
-                                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-orange-50 text-orange-700 border border-orange-200 uppercase">
+                                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-orange-50 text-orange-700 border border-orange-200">
                                                             <span className="w-1.5 h-1.5 rounded-full bg-orange-500 inline-block"></span>
                                                             {c.operationalStage || 'Aksiyon Planı'}
                                                         </span>

@@ -154,6 +154,7 @@ export default function ApprovalPage() {
                                 ) : (
                                     filteredComplaints.map((c) => {
                                         const stageLabel = getStageLabel(c);
+                                        const isOverdue = c.status.includes('Gecikti');
                                         return (
                                             <tr key={c.id} className="hover:bg-blue-50/30 transition-colors group text-[11px]">
                                                 <td className="px-1.5 py-1.5 font-semibold text-slate-900">{c.complaintNumber}</td>
@@ -162,7 +163,7 @@ export default function ApprovalPage() {
                                                 <td className="px-1.5 py-1.5 text-center text-slate-800">{c.defectiveQuantity}</td>
                                                 <td className="px-1.5 py-1.5 text-slate-600 text-[10px] leading-snug truncate max-w-[150px]">{c.errorDefinition || '-'}</td>
                                                 <td className="px-1.5 py-1.5 text-center">
-                                                    <div className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold border ${c.status.includes('Gecikti') ? 'bg-red-50 text-red-600 border-red-200' :
+                                                    <div className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold border ${c.status.includes('Gecikti') ? 'bg-red-100/80 text-red-600 border-red-200' :
                                                             c.status.includes('Kapalı') || c.status.includes('Kapali') ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
                                                                 'bg-amber-50 text-amber-600 border-amber-200'
                                                         }`}>

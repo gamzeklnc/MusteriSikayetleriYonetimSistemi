@@ -188,17 +188,19 @@ export default function ManagementApprovalModal({ complaint, onClose, onSuccess,
                                 <textarea
                                     value={note}
                                     onChange={(e) => setNote(e.target.value)}
-                                    placeholder="Kararınız hakkında bir not bırakın..." className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-300 min-h-[120px] resize-none shadow-inner bg-slate-50/30"
+                                    disabled={complaint.isManagementApproved === false || isUpdating || !complaint.isQualityReported}
+                                    placeholder={complaint.isManagementApproved === false ? "Bu şikayet reddedilmiştir. Yeniden kalite raporu bekleniyor." : "Kararınız hakkında bir not bırakın..."}
+                                    className={`w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-300 min-h-[120px] resize-none shadow-inner bg-slate-50/30 ${complaint.isManagementApproved === false ? 'opacity-70 cursor-not-allowed bg-slate-100' : ''}`}
                                 />
                             </div>
                             <div className="flex items-center gap-4">
                                 <button
                                     onClick={() => handleAction(true)}
-                                    disabled={isUpdating || !complaint.isQualityReported}
+                                    disabled={isUpdating || !complaint.isQualityReported || complaint.isManagementApproved === false}
                                     className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all shadow-lg ${complaint.isManagementApproved === true
                                         ? 'bg-emerald-600 text-white shadow-emerald-500/20'
                                         : 'bg-white text-emerald-600 border-2 border-emerald-600 hover:bg-emerald-50'
-                                        } ${isUpdating || !complaint.isQualityReported ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.98]'}`}
+                                        } ${isUpdating || !complaint.isQualityReported || complaint.isManagementApproved === false ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.98]'}`}
                                 >
                                     {isUpdating ? <div className="w-5 h-5 border-2 border-emerald-600/30 border-t-emerald-600 rounded-full animate-spin"></div> : (
                                         <>
@@ -211,11 +213,11 @@ export default function ManagementApprovalModal({ complaint, onClose, onSuccess,
                                 </button>
                                 <button
                                     onClick={() => handleAction(false)}
-                                    disabled={isUpdating || !complaint.isQualityReported}
+                                    disabled={isUpdating || !complaint.isQualityReported || complaint.isManagementApproved === false}
                                     className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all shadow-lg ${complaint.isManagementApproved === false
                                         ? 'bg-red-600 text-white shadow-red-500/20'
                                         : 'bg-white text-red-600 border-2 border-red-600 hover:bg-red-50'
-                                        } ${isUpdating || !complaint.isQualityReported ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.98]'}`}
+                                        } ${isUpdating || !complaint.isQualityReported || complaint.isManagementApproved === false ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.98]'}`}
                                 >
                                     {isUpdating ? <div className="w-5 h-5 border-2 border-red-600/30 border-t-red-600 rounded-full animate-spin"></div> : (
                                         <>
@@ -227,6 +229,11 @@ export default function ManagementApprovalModal({ complaint, onClose, onSuccess,
                                     )}
                                 </button>
                             </div>
+                            {complaint.isManagementApproved === false && (
+                                <p className="text-center text-xs text-red-600 font-bold bg-red-50 p-2 rounded-lg border border-red-100">
+                                    ⚠ Bu şikayet reddedilmiştir. Düzenleme yapılamaz. Kalite birimi yeni rapor gönderdiğinde işleme açılacaktır.
+                                </p>
+                            )}
                             {!complaint.isQualityReported && (
                                 <p className="text-center text-xs text-amber-600 font-medium">Bu şikayet henüz kalite raporu aşamasını tamamlamamıştır.</p>
                             )}

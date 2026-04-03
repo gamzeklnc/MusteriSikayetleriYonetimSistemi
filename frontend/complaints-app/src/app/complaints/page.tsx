@@ -281,8 +281,10 @@ export default function ComplaintsPage() {
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredComplaints.map((complaint) => (
-                                        <tr key={complaint.id} className="hover:bg-blue-50/30 transition-colors group text-[11px] text-slate-700">
+                                    filteredComplaints.map((complaint) => {
+                                        const isOverdue = complaint.status.includes('Gecikti');
+                                        return (
+                                            <tr key={complaint.id} className="hover:bg-blue-50/30 transition-colors group text-[11px] text-slate-700">
                                             <td className="px-1.5 py-1.5 font-semibold text-slate-900">
                                                 {complaint.complaintNumber}
                                             </td>
@@ -327,7 +329,7 @@ export default function ComplaintsPage() {
                                                 {complaint.justifiedHsa2Count || '-'}
                                             </td>
                                             <td className="px-1.5 py-1.5">
-                                                <div className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-medium border ${complaint.status.includes('Gecikti') ? 'bg-red-50 text-red-600 border-red-200' :
+                                                <div className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold border ${complaint.status.includes('Gecikti') ? 'bg-red-100/80 text-red-600 border-red-200' :
                                                         complaint.status.includes('Kapalı') || complaint.status.includes('Kapali') ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
                                                             'bg-amber-50 text-amber-600 border-amber-200'
                                                     }`}>
@@ -379,7 +381,8 @@ export default function ComplaintsPage() {
                                                 </button>
                                             </td>
                                         </tr>
-                                    ))
+                                        );
+                                    })
                                 )}
                             </tbody>
                         </table>

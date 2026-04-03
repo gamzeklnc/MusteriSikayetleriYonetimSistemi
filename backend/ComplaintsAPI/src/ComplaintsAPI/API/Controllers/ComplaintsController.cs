@@ -648,27 +648,29 @@ public class ComplaintsController : ControllerBase
     {
         if (c.Status == "Kapali") return "Kapalı";
         
-        // RegistrationDate'den itibaren 48 saat (Kayıt tarihi baz alınır)
-        var deadline = c.RegistrationDate.AddHours(48);
         var now = DateTime.UtcNow;
-
+        var deadline48h = c.RegistrationDate.AddHours(48);
+        
+        // Hedef tarih kontrolü (varsa ve geçmişse)
+        bool isTargetOverdue = c.HasTargetDate == true && c.TargetDate.HasValue && now > c.TargetDate.Value;
+        
+        // 48 saat kontrolü
+        bool is48hOverdue = false;
         if (!c.IsCustomerFeedbackDone)
         {
-            return now <= deadline ? "Açık: Devam ediyor" : "Açık: Gecikti";
+            is48hOverdue = now > deadline48h;
         }
-        else
+        else if (c.CustomerFeedbackAt.HasValue)
         {
-            // Müşteri dönüşü yapılmış. CustomerFeedbackAt değeri yoksa (eski kayıtlar) 
-            // ama IsCustomerFeedbackDone true ise "Devam ediyor" kabul edebiliriz veya 
-            // RegistrationDate+48h ile karşılaştırabiliriz.
-            if (c.CustomerFeedbackAt.HasValue)
-            {
-                return c.CustomerFeedbackAt.Value <= deadline ? "Açık: Devam ediyor" : "Açık: Gecikerek devam ediyor";
-            }
-            
-            // Eğer tarih yoksa ama tamamlanmışsa varsayılan olarak zamanında yapıldı sayalım (veya tam tersi)
-            return "Açık: Devam ediyor";
+            is48hOverdue = c.CustomerFeedbackAt.Value > deadline48h;
         }
+
+        if (is48hOverdue || isTargetOverdue)
+        {
+            return c.IsCustomerFeedbackDone ? "Açık: Gecikerek devam ediyor" : "Açık: Gecikti";
+        }
+
+        return "Açık: Devam ediyor";
     }
 
     private static ComplaintDto MapToDto(Domain.Entities.Complaint c) => new(

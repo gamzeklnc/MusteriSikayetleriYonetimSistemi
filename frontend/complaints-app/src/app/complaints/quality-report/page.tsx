@@ -175,9 +175,17 @@ export default function QualityReportPage() {
                                     </tr>
                                 ) : (
                                     filteredComplaints.map((c) => {
+                                        const isOverdue = c.status.includes('Gecikti');
+                                        const isRejected = c.isManagementApproved === false;
                                         const stageLabel = getStageLabel(c);
                                         return (
-                                            <tr key={c.id} className={`transition-colors group text-[11px] ${c.isManagementApproved === false ? 'bg-red-50 hover:bg-red-100/60' : 'hover:bg-blue-50/30'}`}>
+                                            <tr 
+                                                key={c.id} 
+                                                className={`${
+                                                    isRejected ? 'bg-yellow-50/70' : 
+                                                    'hover:bg-blue-50/30'
+                                                } transition-colors group text-[11px]`}
+                                            >
                                                 <td className="px-1.5 py-1.5 font-semibold text-slate-900 whitespace-nowrap">
                                                     <div className="flex flex-col gap-0.5">
                                                         {c.complaintNumber}
