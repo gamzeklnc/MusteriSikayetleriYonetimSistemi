@@ -238,6 +238,15 @@ export interface DashboardStats {
     totalJustifiedProducts: number;
     totalUnjustifiedProducts: number;
     justifiedRatio: number;
+
+    // Global Stats
+    globalTotalComplaints: number;
+    globalOpenComplaints: number;
+    globalClosedComplaints: number;
+    globalTotalJustifiedProducts: number;
+    globalTotalUnjustifiedProducts: number;
+    globalJustifiedRatio: number;
+
     monthlyStats: MonthlyStat[] | null;
     justificationChart: JustificationChartData;
     yearlyStats: YearlyJustificationStat[];

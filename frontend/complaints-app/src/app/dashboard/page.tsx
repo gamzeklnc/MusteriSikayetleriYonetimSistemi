@@ -302,7 +302,6 @@ export default function DashboardPage() {
     const [c8Year, setC8Year] = useState<string>('Hepsi');
     const [c8Customer, setC8Customer] = useState<string>('Hepsi');
     const [c8Error, setC8Error] = useState<string>('Hepsi');
-    const [totalProductionCount, setTotalProductionCount] = useState<number>(0);
 
     const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 
@@ -360,21 +359,14 @@ export default function DashboardPage() {
     useEffect(() => { if (stats) fetchSourceStats(); }, [sourceYear]);
     useEffect(() => { if (stats) fetchC8Stats(); }, [c8Year, c8Customer, c8Error]);
 
-    useEffect(() => {
-        productionCountService.getAll().then(data => {
-            setTotalProductionCount(data.reduce((sum, item) => sum + item.count, 0));
-        });
-    }, []);
-
-    const justifiedRatio = totalProductionCount > 0 ? ((stats?.totalJustifiedProducts || 0) / totalProductionCount) * 100 : 0;
 
     const topMetrics = [
-        { label: 'Toplam Şikayet', value: stats?.totalComplaints || 0, icon: <FileText className="w-5 h-5 text-blue-600" />, color: 'bg-blue-50 border-blue-100' },
-        { label: 'Açık Şikayetler', value: stats?.openComplaints || 0, icon: <Clock className="w-5 h-5 text-amber-600" />, color: 'bg-amber-50 border-amber-100' },
-        { label: 'Kapalı Şikayetler', value: stats?.closedComplaints || 0, icon: <CheckCircle2 className="w-5 h-5 text-slate-600" />, color: 'bg-slate-50 border-slate-100' },
-        { label: 'Haklılık Oranı', value: `%${justifiedRatio.toFixed(4)}`, icon: <TrendingUp className="w-5 h-5 text-emerald-600" />, color: 'bg-emerald-50 border-emerald-100' },
-        { label: 'Haklı Ürün', value: stats?.totalJustifiedProducts || 0, icon: <CheckCircle2 className="w-5 h-5 text-emerald-500" />, color: 'bg-emerald-50 border-emerald-100' },
-        { label: 'Haksız Ürün', value: stats?.totalUnjustifiedProducts || 0, icon: <AlertCircle className="w-5 h-5 text-red-500" />, color: 'bg-red-50 border-red-100' },
+        { label: 'Toplam Şikayet', value: stats?.globalTotalComplaints || 0, icon: <FileText className="w-5 h-5 text-blue-600" />, color: 'bg-blue-50 border-blue-100' },
+        { label: 'Açık Şikayetler', value: stats?.globalOpenComplaints || 0, icon: <Clock className="w-5 h-5 text-amber-600" />, color: 'bg-amber-50 border-amber-100' },
+        { label: 'Kapalı Şikayetler', value: stats?.globalClosedComplaints || 0, icon: <CheckCircle2 className="w-5 h-5 text-slate-600" />, color: 'bg-slate-50 border-slate-100' },
+        { label: 'Haklılık Oranı', value: `%${(stats?.globalJustifiedRatio || 0).toFixed(4)}`, icon: <TrendingUp className="w-5 h-5 text-emerald-600" />, color: 'bg-emerald-50 border-emerald-100' },
+        { label: 'Haklı Ürün', value: stats?.globalTotalJustifiedProducts || 0, icon: <CheckCircle2 className="w-5 h-5 text-emerald-500" />, color: 'bg-emerald-50 border-emerald-100' },
+        { label: 'Haksız Ürün', value: stats?.globalTotalUnjustifiedProducts || 0, icon: <AlertCircle className="w-5 h-5 text-red-500" />, color: 'bg-red-50 border-red-100' },
     ];
 
     if (loading && !stats) return <AppLayout><div className="flex items-center justify-center min-h-[400px]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div></AppLayout>;

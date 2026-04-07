@@ -47,18 +47,30 @@ public class DashboardController : ControllerBase
         if (!string.IsNullOrWhiteSpace(targetError)) 
             query = query.Where(c => c.ErrorDefinition != null && c.ErrorDefinition.ToUpper().Contains(targetError.ToUpper()));
 
+        // Global Stats (No filters)
+        var globalQuery = _context.Complaints.AsQueryable();
+        var globalTotal = await globalQuery.CountAsync();
+        var globalOpen = await globalQuery.CountAsync(c => c.Status != "Kapali");
+        var globalClosed = await globalQuery.CountAsync(c => c.Status == "Kapali");
+        var globalJustified = await globalQuery.SumAsync(c => (long)(c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount));
+        var globalUnjustified = await globalQuery.SumAsync(c => (long)(c.UnjustifiedHsa1Count + c.UnjustifiedHsa2Count + c.UnjustifiedOtherCount));
+        
+        var globalProductionCount = await _context.ProductionCounts.SumAsync(p => (long)p.Count);
+        double globalRatio = globalProductionCount > 0 ? (double)globalJustified * 100 / globalProductionCount : 0;
+
+        // Filtered Stats
         var total = await query.CountAsync();
         var open = await query.CountAsync(c => c.Status != "Kapali");
         var closed = await query.CountAsync(c => c.Status == "Kapali");
         
         // Ürün bazlı haklılık hesaplaması
-        var justifiedProducts = await query.SumAsync(c => c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount);
-        var unjustifiedProducts = await query.SumAsync(c => c.UnjustifiedHsa1Count + c.UnjustifiedHsa2Count + c.UnjustifiedOtherCount);
+        var justifiedProducts = await query.SumAsync(c => (long)(c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount));
+        var unjustifiedProducts = await query.SumAsync(c => (long)(c.UnjustifiedHsa1Count + c.UnjustifiedHsa2Count + c.UnjustifiedOtherCount));
         
         var totalEvaluated = justifiedProducts + unjustifiedProducts;
         double ratio = totalEvaluated > 0 ? (double)justifiedProducts / totalEvaluated : 0;
 
-        System.Console.WriteLine($"[DashboardStats] Filtered Total: {total}, JustifiedProducts: {justifiedProducts}, Ratio: {ratio}");
+        System.Console.WriteLine($"[DashboardStats] Global - Justified: {globalJustified}, Production: {globalProductionCount}, Ratio: {globalRatio}");
 
         // Aylık İstatistikler
         DateTime effectiveStartDate = startDate ?? DateTime.UtcNow.AddMonths(-11).Date;
@@ -341,24 +353,32 @@ public class DashboardController : ControllerBase
             .Select(e => e.Trim().ToUpper())
             .Distinct().OrderBy(x => x).ToList();
 
-        return Ok(new DashboardStatsDto(
-            total,
-            open,
-            closed,
-            justifiedProducts,
-            unjustifiedProducts,
-            ratio,
-            stats,
-            chartData,
-            yearlyStats,
-            monthlyJustificationStats,
-            brandStats,
-            allBrands,
-            errorStatsDtos,
-            sourceStats,
-            customerErrorStats,
-            allCustomers,
-            allErrorLabels
-        ));
+        var result = new DashboardStatsDto(
+            TotalComplaints: total,
+            OpenComplaints: open,
+            ClosedComplaints: closed,
+            TotalJustifiedProducts: (int)justifiedProducts,
+            TotalUnjustifiedProducts: (int)unjustifiedProducts,
+            JustifiedRatio: ratio,
+            GlobalTotalComplaints: globalTotal,
+            GlobalOpenComplaints: globalOpen,
+            GlobalClosedComplaints: globalClosed,
+            GlobalTotalJustifiedProducts: (int)globalJustified,
+            GlobalTotalUnjustifiedProducts: (int)globalUnjustified,
+            GlobalJustifiedRatio: globalRatio,
+            MonthlyStats: stats,
+            JustificationChart: chartData,
+            YearlyStats: yearlyStats,
+            MonthlyJustificationStats: monthlyJustificationStats,
+            BrandStats: brandStats,
+            AllBrands: allBrands,
+            ErrorStats: errorStatsDtos,
+            SourceStats: sourceStats,
+            CustomerErrorStats: customerErrorStats,
+            AllCustomers: allCustomers,
+            AllErrorLabels: allErrorLabels
+        );
+
+        return Ok(result);
     }
 }

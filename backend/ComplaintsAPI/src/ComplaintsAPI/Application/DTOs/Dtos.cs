@@ -214,6 +214,15 @@ public record DashboardStatsDto(
     int TotalJustifiedProducts,
     int TotalUnjustifiedProducts,
     double JustifiedRatio,
+
+    // GLOBAL STATS (All time, ignoring filters)
+    int GlobalTotalComplaints,
+    int GlobalOpenComplaints,
+    int GlobalClosedComplaints,
+    int GlobalTotalJustifiedProducts,
+    int GlobalTotalUnjustifiedProducts,
+    double GlobalJustifiedRatio,
+
     IEnumerable<MonthlyStatDto> MonthlyStats,
     JustificationChartDto JustificationChart,
     IEnumerable<YearlyJustificationDto> YearlyStats,
