@@ -116,14 +116,18 @@ export default function Sidebar() {
                     Üretim Adetleri
                 </Link>
 
-                <div className="pt-3 pb-1.5 px-3">
-                    <span className="text-[10px] font-bold text-slate-500  tracking-widest">Yönetim</span>
-                </div>
+                {mounted && user?.role === 'Admin' && (
+                    <>
+                        <div className="pt-3 pb-1.5 px-3">
+                            <span className="text-[10px] font-bold text-slate-500 tracking-widest">Yönetim</span>
+                        </div>
 
-                <Link href="/complaints/admin" className={linkClass('/complaints/admin')}>
-                    <Settings size={18} />
-                    Admin Paneli
-                </Link>
+                        <Link href="/complaints/admin" className={linkClass('/complaints/admin')}>
+                            <Settings size={18} />
+                            Admin Paneli
+                        </Link>
+                    </>
+                )}
             </nav>
 
             {/* User Profile / Status */}

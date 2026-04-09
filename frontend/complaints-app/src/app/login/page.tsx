@@ -21,7 +21,13 @@ export default function LoginPage() {
         try {
             const res = await authService.login({ email, password });
             setToken(res.accessToken);
-            router.push('/dashboard');
+            
+            const currentUser = useAuthStore.getState().user;
+            if (currentUser?.role === 'Admin') {
+                router.push('/complaints/admin');
+            } else {
+                router.push('/dashboard');
+            }
         } catch (err: unknown) {
             console.error('Login error:', err);
             const errorObj = err as { code?: string, response?: { status?: number } };
