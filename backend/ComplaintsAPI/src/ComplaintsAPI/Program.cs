@@ -8,6 +8,7 @@ using ComplaintsAPI.Application.Interfaces;
 using ComplaintsAPI.Application.Services;
 using ComplaintsAPI.Infrastructure.Data;
 using ComplaintsAPI.Infrastructure.Repositories;
+using ComplaintsAPI.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +50,7 @@ builder.Services.AddAuthorization();
 // ── Dependency Injection ─────────────────────────────────────────────────────
 builder.Services.AddScoped<IComplaintRepository, ComplaintRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IEmailService, EmailSmtpService>();
 
 // ── Controllers ──────────────────────────────────────────────────────────────
 builder.Services.AddControllers();

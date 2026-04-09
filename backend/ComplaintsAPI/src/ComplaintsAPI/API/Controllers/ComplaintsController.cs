@@ -19,15 +19,18 @@ public class ComplaintsController : ControllerBase
 {
     private readonly IComplaintRepository _repo;
     private readonly AppDbContext _context;
+    private readonly IEmailService _emailService;
 
-    public ComplaintsController(IComplaintRepository repo, AppDbContext context)
+    public ComplaintsController(IComplaintRepository repo, AppDbContext context, IEmailService emailService)
     {
         _repo = repo;
         _context = context;
+        _emailService = emailService;
     }
 
     private int CurrentUserId => int.TryParse(User.FindFirstValue("userId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub"), out var id) ? id : 0;
     private string CurrentUserName => User.FindFirstValue("userName") ?? User.FindFirstValue(ClaimTypes.Name) ?? User.FindFirstValue("unique_name") ?? "Bilinmeyen Kullanıcı";
+    private string CurrentUserEmail => User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue("email") ?? "";
 
     private async Task LogActivityAsync(string action, string details)
     {
@@ -138,6 +141,27 @@ public class ComplaintsController : ControllerBase
         }
 
         await LogActivityAsync("Şikayet Oluşturuldu", $"Şikayet No: {created.ComplaintNumber}");
+
+        // Email Bildirimi Gönder
+        try
+        {
+            var subject = $"{created.ComplaintNumber} numaralı şikayet kaydı oluşturulmuştur.";
+            var body = $@"
+                <h3>Yeni Şikayet Kaydı</h3>
+                <p><strong>Şikayet No:</strong> {created.ComplaintNumber}</p>
+                <p><strong>Müşteri:</strong> {created.CustomerName}</p>
+                <p><strong>Proje:</strong> {created.ProjectName}</p>
+                <p><strong>Oluşturan:</strong> {CurrentUserName}</p>
+                <p>Sistem üzerinden detayları inceleyebilirsiniz.</p>";
+
+            var targetDepts = new[] { "Satış", "Kalite", "Kalite Güvence" };
+            await _emailService.SendToDepartmentsAsync(CurrentUserEmail, targetDepts, subject, body);
+        }
+        catch (Exception ex)
+        {
+            // Email hatası şikayet oluşturma işlemini bozmamalı
+            Console.WriteLine($"Email notification failed: {ex.Message}");
+        }
 
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created.Id);
     }

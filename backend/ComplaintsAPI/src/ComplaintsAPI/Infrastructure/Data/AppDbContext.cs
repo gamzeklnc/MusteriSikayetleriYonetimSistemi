@@ -46,6 +46,8 @@ public class AppDbContext : DbContext
              .WithMany(d => d.Users)
              .HasForeignKey(x => x.DepartmentId)
              .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasQueryFilter(x => !x.IsDeleted);
         });
 
         // Department

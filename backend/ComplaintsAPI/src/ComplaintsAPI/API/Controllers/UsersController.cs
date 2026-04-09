@@ -106,7 +106,7 @@ public class UsersController : ControllerBase
         if (user is null) return NotFound();
 
         var userName = user.Name;
-        _context.Users.Remove(user);
+        user.IsDeleted = true;
         await _context.SaveChangesAsync();
 
         await LogActivityAsync("Kullanıcı Silindi", $"Silinen: {userName}");
