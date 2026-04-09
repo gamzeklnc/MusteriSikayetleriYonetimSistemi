@@ -6,6 +6,7 @@ import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
 import { parseSingleBarcode } from '@/utils/barcodeParser';
 import DocumentSection, { DocumentSectionRef } from './DocumentSection';
 import { complaintService } from '@/services/complaintService';
+import { useAuthStore } from '@/store/authStore';
 
 const STAGES = [
     'Fabrikada İnceleme Bekliyor',
@@ -34,6 +35,10 @@ export default function ComplaintDetailModal({
     const [note, setNote] = useState('');
     const [has8DReport, setHas8DReport] = useState<boolean>(complaint.has8DReport || false);
     const docSectionRef = useRef<DocumentSectionRef>(null);
+
+    const { user } = useAuthStore();
+    const canEditActions = user !== null && (user.departmentId === 3 || user.role === 'Admin');
+    const canReopen = user !== null && user.role === 'Admin';
 
     const [hasTargetDate, setHasTargetDate] = useState<boolean | null>(complaint.hasTargetDate ?? null);
     const [targetDateInput, setTargetDateInput] = useState<string>(
@@ -380,7 +385,7 @@ export default function ComplaintDetailModal({
                                     <button 
                                         type="button"
                                         onClick={() => handleTargetDateToggle(true)}
-                                        disabled={updatingTargetDate || isClosed}
+                                        disabled={updatingTargetDate || isClosed || !canEditActions}
                                         className={`px-6 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${hasTargetDate === true ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
                                     >
                                         {hasTargetDate === true && <div className="w-1.5 h-1.5 rounded-full bg-white"></div>}
@@ -389,7 +394,7 @@ export default function ComplaintDetailModal({
                                     <button 
                                         type="button"
                                         onClick={() => handleTargetDateToggle(false)}
-                                        disabled={updatingTargetDate || isClosed}
+                                        disabled={updatingTargetDate || isClosed || !canEditActions}
                                         className={`px-6 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${hasTargetDate === false ? 'bg-red-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
                                     >
                                         {hasTargetDate === false && <div className="w-1.5 h-1.5 rounded-full bg-white"></div>}
@@ -402,12 +407,12 @@ export default function ComplaintDetailModal({
                                             type="date"
                                             value={targetDateInput}
                                             onChange={(e) => setTargetDateInput(e.target.value)}
-                                            disabled={updatingTargetDate || isClosed}
+                                            disabled={updatingTargetDate || isClosed || !canEditActions}
                                             className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium text-slate-700"
                                         />
                                         <button
                                             onClick={saveTargetDate}
-                                            disabled={updatingTargetDate || !targetDateInput || isClosed}
+                                            disabled={updatingTargetDate || !targetDateInput || isClosed || !canEditActions}
                                             className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm"
                                         >
                                             Kaydet
@@ -574,7 +579,7 @@ export default function ComplaintDetailModal({
                                                                 name={`just-${barcode}`}
                                                                 checked={currentJust === true}
                                                                 onChange={() => setBarcodeJusts(prev => ({ ...prev, [barcode]: true }))}
-                                                                disabled={isClosed}
+                                                                disabled={isClosed || !canEditActions}
                                                                 className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-slate-300 disabled:opacity-50"
                                                             />
                                                             <span className={`text-xs font-bold ${currentJust === true ? 'text-emerald-700' : 'text-slate-500 group-hover:text-slate-700'}`}>Haklı</span>
@@ -585,7 +590,7 @@ export default function ComplaintDetailModal({
                                                                 name={`just-${barcode}`}
                                                                 checked={currentJust === false}
                                                                 onChange={() => setBarcodeJusts(prev => ({ ...prev, [barcode]: false }))}
-                                                                disabled={isClosed}
+                                                                disabled={isClosed || !canEditActions}
                                                                 className="w-4 h-4 text-red-600 focus:ring-red-500 border-slate-300 disabled:opacity-50"
                                                             />
                                                             <span className={`text-xs font-bold ${currentJust === false ? 'text-red-700' : 'text-slate-500 group-hover:text-slate-700'}`}>Haksız</span>
@@ -596,7 +601,7 @@ export default function ComplaintDetailModal({
                                                                 delete next[barcode];
                                                                 return next;
                                                             })}
-                                                            disabled={isClosed}
+                                                            disabled={isClosed || !canEditActions}
                                                             className="p-1 text-slate-400 hover:text-slate-600 rounded transition-colors disabled:opacity-50"
                                                             title="Seçimi Temizle"
                                                         >
@@ -630,7 +635,7 @@ export default function ComplaintDetailModal({
                                             <button 
                                                 type="button"
                                                 onClick={() => handle8DToggle(true)}
-                                                disabled={updating || isClosed}
+                                                disabled={updating || isClosed || !canEditActions}
                                                 className={`px-6 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${has8DReport ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'} disabled:opacity-50`}
                                             >
                                                 {has8DReport && <div className="w-1.5 h-1.5 rounded-full bg-white"></div>}
@@ -639,7 +644,7 @@ export default function ComplaintDetailModal({
                                             <button 
                                                 type="button"
                                                 onClick={() => handle8DToggle(false)}
-                                                disabled={updating || isClosed}
+                                                disabled={updating || isClosed || !canEditActions}
                                                 className={`px-6 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${!has8DReport ? 'bg-red-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'} disabled:opacity-50`}
                                             >
                                                 {!has8DReport && <div className="w-1.5 h-1.5 rounded-full bg-white"></div>}
@@ -657,7 +662,7 @@ export default function ComplaintDetailModal({
                                             complaintId={complaint.id} 
                                             initialDocuments={complaint.documents} 
                                             onUpload={onUpload}
-                                            canUpload={!isClosed}
+                                            canUpload={!isClosed && canEditActions}
                                             is8DOnly={true}
                                             title='8D/DF Dokümanı ve Ekler'
                                         />
@@ -690,8 +695,8 @@ export default function ComplaintDetailModal({
                                                     value={justificationCounts.jhsa1}
                                                     onChange={(e) => setJustificationCounts(prev => ({ ...prev, jhsa1: parseInt(e.target.value) || 0 }))}
                                                     onFocus={(e) => e.target.select()}
-                                                    readOnly={isClosed}
-                                                    className={`w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none font-bold text-slate-900 ${isClosed ? 'bg-slate-50 opacity-70' : ''}`}
+                                                    readOnly={isClosed || !canEditActions}
+                                                    className={`w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none font-bold text-slate-900 ${(isClosed || !canEditActions) ? 'bg-slate-50 opacity-70' : ''}`}
                                                 />
                                             </td>
                                             <td className="px-4 py-3">
@@ -700,8 +705,8 @@ export default function ComplaintDetailModal({
                                                     value={justificationCounts.jhsa2}
                                                     onChange={(e) => setJustificationCounts(prev => ({ ...prev, jhsa2: parseInt(e.target.value) || 0 }))}
                                                     onFocus={(e) => e.target.select()}
-                                                    readOnly={isClosed}
-                                                    className={`w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none font-bold text-slate-900 ${isClosed ? 'bg-slate-50 opacity-70' : ''}`}
+                                                    readOnly={isClosed || !canEditActions}
+                                                    className={`w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none font-bold text-slate-900 ${(isClosed || !canEditActions) ? 'bg-slate-50 opacity-70' : ''}`}
                                                 />
                                             </td>
                                             <td className="px-4 py-3">
@@ -710,8 +715,8 @@ export default function ComplaintDetailModal({
                                                     value={justificationCounts.jother}
                                                     onChange={(e) => setJustificationCounts(prev => ({ ...prev, jother: parseInt(e.target.value) || 0 }))}
                                                     onFocus={(e) => e.target.select()}
-                                                    readOnly={isClosed}
-                                                    className={`w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none font-bold text-slate-900 ${isClosed ? 'bg-slate-50 opacity-70' : ''}`}
+                                                    readOnly={isClosed || !canEditActions}
+                                                    className={`w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none font-bold text-slate-900 ${(isClosed || !canEditActions) ? 'bg-slate-50 opacity-70' : ''}`}
                                                 />
                                             </td>
                                         </tr>
@@ -723,8 +728,8 @@ export default function ComplaintDetailModal({
                                                     value={justificationCounts.uhsa1}
                                                     onChange={(e) => setJustificationCounts(prev => ({ ...prev, uhsa1: parseInt(e.target.value) || 0 }))}
                                                     onFocus={(e) => e.target.select()}
-                                                    readOnly={isClosed}
-                                                    className={`w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none font-bold text-slate-900 ${isClosed ? 'bg-slate-50 opacity-70' : ''}`}
+                                                    readOnly={isClosed || !canEditActions}
+                                                    className={`w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none font-bold text-slate-900 ${(isClosed || !canEditActions) ? 'bg-slate-50 opacity-70' : ''}`}
                                                 />
                                             </td>
                                             <td className="px-4 py-3">
@@ -733,8 +738,8 @@ export default function ComplaintDetailModal({
                                                     value={justificationCounts.uhsa2}
                                                     onChange={(e) => setJustificationCounts(prev => ({ ...prev, uhsa2: parseInt(e.target.value) || 0 }))}
                                                     onFocus={(e) => e.target.select()}
-                                                    readOnly={isClosed}
-                                                    className={`w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none font-bold text-slate-900 ${isClosed ? 'bg-slate-50 opacity-70' : ''}`}
+                                                    readOnly={isClosed || !canEditActions}
+                                                    className={`w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none font-bold text-slate-900 ${(isClosed || !canEditActions) ? 'bg-slate-50 opacity-70' : ''}`}
                                                 />
                                             </td>
                                             <td className="px-4 py-3">
@@ -743,8 +748,8 @@ export default function ComplaintDetailModal({
                                                     value={justificationCounts.uother}
                                                     onChange={(e) => setJustificationCounts(prev => ({ ...prev, uother: parseInt(e.target.value) || 0 }))}
                                                     onFocus={(e) => e.target.select()}
-                                                    readOnly={isClosed}
-                                                    className={`w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none font-bold text-slate-900 ${isClosed ? 'bg-slate-50 opacity-70' : ''}`}
+                                                    readOnly={isClosed || !canEditActions}
+                                                    className={`w-full text-center py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none font-bold text-slate-900 ${(isClosed || !canEditActions) ? 'bg-slate-50 opacity-70' : ''}`}
                                                 />
                                             </td>
                                         </tr>
@@ -767,7 +772,7 @@ export default function ComplaintDetailModal({
                                             <button
                                                 key={stage}
                                                 onClick={() => handleUpdateStage(stage)}
-                                                disabled={updating || isClosed}
+                                                disabled={updating || isClosed || !canEditActions}
                                                 className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all border-2 flex items-center justify-between group disabled:opacity-50 disabled:cursor-not-allowed
                                                     ${complaint.operationalStage === stage 
                                                         ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20' 
@@ -791,13 +796,13 @@ export default function ComplaintDetailModal({
                                         value={note}
                                         onChange={(e) => setNote(e.target.value)}
                                         placeholder="Operasyonel aşama değişikliği için not ekleyin..."
-                                        disabled={isClosed}
+                                        disabled={isClosed || !canEditActions}
                                         className="flex-1 w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none min-h-[120px] text-slate-900 font-medium disabled:opacity-70"
                                     />
                                     
                                     <button
                                         onClick={handleSave}
-                                        disabled={updating || isClosed}
+                                        disabled={updating || isClosed || !canEditActions}
                                         className="mt-4 w-full py-3 bg-emerald-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 hover:bg-emerald-700 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                                     >
                                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -831,27 +836,31 @@ export default function ComplaintDetailModal({
                                     </div>
                                     
                                     {isClosed ? (
-                                        <button
-                                            onClick={() => handleUpdateStatus('Acik')}
-                                            disabled={closing}
-                                            className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98] flex items-center gap-2"
-                                        >
-                                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
-                                            </svg>
-                                            Şikayeti Yeniden Aç
-                                        </button>
+                                        canReopen && (
+                                            <button
+                                                onClick={() => handleUpdateStatus('Acik')}
+                                                disabled={closing}
+                                                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98] flex items-center gap-2"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                                                </svg>
+                                                Şikayeti Yeniden Aç
+                                            </button>
+                                        )
                                     ) : (
-                                        <button
-                                            onClick={() => handleUpdateStatus('Kapali')}
-                                            disabled={closing}
-                                            className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-red-500/20 transition-all active:scale-[0.98] flex items-center gap-2"
-                                        >
-                                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                            </svg>
-                                            Şikayeti Kapat
-                                        </button>
+                                        canEditActions && (
+                                            <button
+                                                onClick={() => handleUpdateStatus('Kapali')}
+                                                disabled={closing}
+                                                className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-red-500/20 transition-all active:scale-[0.98] flex items-center gap-2"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                </svg>
+                                                Şikayeti Kapat
+                                            </button>
+                                        )
                                     )}
                                 </div>
                             </div>
@@ -864,7 +873,7 @@ export default function ComplaintDetailModal({
                             complaintId={complaint.id} 
                             initialDocuments={complaint.documents} 
                             onUpload={onUpload}
-                            canUpload={!isClosed}
+                            canUpload={!isClosed && canEditActions}
                             is8DOnly={false}
                             title='İlgili Dokümanlar'
                         />

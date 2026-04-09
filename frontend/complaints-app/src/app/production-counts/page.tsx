@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { productionCountService, ProductionCountDto, CreateProductionCountDto } from '@/services/productionCountService';
 import { Factory, Plus, Trash2, Save, CalendarDays, TrendingUp, BarChart3 } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
 
 const MONTH_NAMES = [
     'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
@@ -11,6 +12,11 @@ const MONTH_NAMES = [
 ];
 
 export default function ProductionCountsPage() {
+    const { user } = useAuthStore();
+    const isKG = user?.departmentId === 3;
+    const isAdmin = user?.role === 'Admin';
+    const canSubmitAny = isKG || isAdmin;
+
     const [records, setRecords] = useState<ProductionCountDto[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -285,26 +291,38 @@ export default function ProductionCountsPage() {
                                     if (!existing) return null;
                                     
                                     return (
-                                        <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl animate-fade-in">
-                                            <svg className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                                            </svg>
-                                            <div>
-                                                <p className="text-xs font-semibold text-amber-700">Bu ay için zaten kayıt mevcut</p>
-                                                <p className="text-[10px] text-amber-600 mt-0.5">
-                                                    Mevcut değer: <strong>{existing.count.toLocaleString('tr-TR')}</strong> — Kaydettiğinizde güncellenecektir.
-                                                </p>
+                                        <div className="flex flex-col gap-2">
+                                            <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl animate-fade-in">
+                                                <svg className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                                </svg>
+                                                <div>
+                                                    <p className="text-xs font-semibold text-amber-700">Bu ay için zaten kayıt mevcut</p>
+                                                    <p className="text-[10px] text-amber-600 mt-0.5">
+                                                        Mevcut değer: <strong>{existing.count.toLocaleString('tr-TR')}</strong> {isAdmin ? '— Kaydettiğinizde güncellenecektir.' : ''}
+                                                    </p>
+                                                </div>
                                             </div>
+                                            {!isAdmin && (
+                                                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-[10px] font-bold text-red-700">
+                                                    Daha önceden girilmiş geçmiş ay kayıtlarını güncellemeyi yalnızca IT/Admin yapabilir.
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })()}
 
                                 {/* Submit */}
-                                <button
-                                    type="submit"
-                                    disabled={saving || !productionCount}
-                                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white text-sm font-bold rounded-xl hover:from-violet-700 hover:to-purple-700 transition-all shadow-lg shadow-violet-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
+                                {(() => {
+                                    const existing = records.find(r => Number(r.year) === Number(selectedYear) && Number(r.month) === Number(selectedMonth));
+                                    const disabled = saving || !productionCount || !canSubmitAny || (!!existing && !isAdmin);
+                                    
+                                    return (
+                                        <button
+                                            type="submit"
+                                            disabled={disabled}
+                                            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white text-sm font-bold rounded-xl hover:from-violet-700 hover:to-purple-700 transition-all shadow-lg shadow-violet-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
                                     {saving ? (
                                         <>
                                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -316,7 +334,9 @@ export default function ProductionCountsPage() {
                                             Kaydet
                                         </>
                                     )}
-                                </button>
+                                        </button>
+                                    );
+                                })()}
                             </form>
                         </div>
                     </div>
@@ -405,29 +425,33 @@ export default function ProductionCountsPage() {
                                                         })}
                                                     </td>
                                                     <td className="px-6 py-3.5 text-right">
-                                                        {deleteConfirmId === record.id ? (
-                                                            <div className="flex items-center justify-end gap-2">
+                                                        {isAdmin ? (
+                                                            deleteConfirmId === record.id ? (
+                                                                <div className="flex items-center justify-end gap-2">
+                                                                    <button
+                                                                        onClick={() => handleDelete(record.id)}
+                                                                        className="px-3 py-1.5 bg-red-600 text-white text-[10px] font-bold rounded-lg hover:bg-red-700 transition-colors"
+                                                                    >
+                                                                        Evet, Sil
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => setDeleteConfirmId(null)}
+                                                                        className="px-3 py-1.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-slate-200 transition-colors"
+                                                                    >
+                                                                        İptal
+                                                                    </button>
+                                                                </div>
+                                                            ) : (
                                                                 <button
-                                                                    onClick={() => handleDelete(record.id)}
-                                                                    className="px-3 py-1.5 bg-red-600 text-white text-[10px] font-bold rounded-lg hover:bg-red-700 transition-colors"
+                                                                    onClick={() => setDeleteConfirmId(record.id)}
+                                                                    className="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                                                    title="Sil"
                                                                 >
-                                                                    Evet, Sil
+                                                                    <Trash2 size={14} />
                                                                 </button>
-                                                                <button
-                                                                    onClick={() => setDeleteConfirmId(null)}
-                                                                    className="px-3 py-1.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-slate-200 transition-colors"
-                                                                >
-                                                                    İptal
-                                                                </button>
-                                                            </div>
+                                                            )
                                                         ) : (
-                                                            <button
-                                                                onClick={() => setDeleteConfirmId(record.id)}
-                                                                className="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                                                title="Sil"
-                                                            >
-                                                                <Trash2 size={14} />
-                                                            </button>
+                                                            <span className="text-slate-300">-</span>
                                                         )}
                                                     </td>
                                                 </tr>

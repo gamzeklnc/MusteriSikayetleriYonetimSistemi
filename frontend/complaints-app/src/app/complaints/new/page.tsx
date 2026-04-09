@@ -8,9 +8,11 @@ import { userService } from '@/services/userService';
 import { CreateComplaintRequest } from '@/types/complaint';
 import { User } from '@/types/user';
 import { aggregateBarcodes } from '@/utils/barcodeParser';
+import { useAuthStore } from '@/store/authStore';
 
 export default function NewComplaintPage() {
     const router = useRouter();
+    const { user } = useAuthStore();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [users, setUsers] = useState<User[]>([]);
@@ -135,6 +137,8 @@ export default function NewComplaintPage() {
         }
     };
 
+    const canCreate = user !== null && (user.departmentId === 1 || user.departmentId === 3 || user.role === 'Admin');
+
     return (
         <AppLayout>
             <div className="max-w-7xl mx-auto px-2">
@@ -152,10 +156,18 @@ export default function NewComplaintPage() {
                 )}
 
                 <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+                    {!canCreate && (
+                        <div className="m-6 p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl flex items-center gap-3 shadow-sm">
+                            <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                            </svg>
+                            <span className="font-bold text-sm">Sadece "Satış" ve "Kalite Güvence" departmanları yeni şikayet kaydı oluşturabilir. Görüntüleme modundasınız.</span>
+                        </div>
+                    )}
                     <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
 
                         {/* Bilgiler Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
+                        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 ${!canCreate ? 'opacity-50 pointer-events-none' : ''}`}>
                             {/* Müşteri Bilgileri */}
                             <div className="space-y-1">
                                 <label className="block text-[11px] font-bold text-slate-500  tracking-wider">Müşteri İsmi</label>
@@ -231,7 +243,7 @@ export default function NewComplaintPage() {
                         </div>
 
                         {/* Alt Bölüm: Barkod ve Notlar */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-2 border-t border-slate-100">
+                        <div className={`grid grid-cols-1 lg:grid-cols-2 gap-8 pt-2 border-t border-slate-100 ${!canCreate ? 'opacity-50 pointer-events-none' : ''}`}>
                             <div className="space-y-2">
                                 <label className="block text-[11px] font-bold text-slate-500  tracking-wider">Barkodlar</label>
                                 <textarea
@@ -290,7 +302,7 @@ export default function NewComplaintPage() {
                             </button>
                             <button
                                 type="submit"
-                                disabled={loading}
+                                disabled={loading || !canCreate}
                                 className="px-10 py-3 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.98] rounded-xl transition-all shadow-lg shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2  tracking-wide"
                             >
                                 {loading ? 'KAYDEDİLİYOR...' : 'ŞİKAYETİ KAYDET'}

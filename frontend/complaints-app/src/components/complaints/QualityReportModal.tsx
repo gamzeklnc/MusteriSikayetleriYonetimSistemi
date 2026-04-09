@@ -7,6 +7,7 @@ import { errorOptionService } from '@/services/errorOptionService';
 import { ErrorDefinitionOption } from '@/types/errorOption';
 import { parseSingleBarcode } from '@/utils/barcodeParser';
 import DocumentSection from './DocumentSection';
+import { useAuthStore } from '@/store/authStore';
 
 interface Props {
     complaint: ComplaintDto;
@@ -16,6 +17,9 @@ interface Props {
 }
 
 export default function QualityReportModal({ complaint, onClose, onSuccess, onUpload }: Props) {
+    const { user } = useAuthStore();
+    const isAdmin = user?.role === 'Admin';
+
     const [note, setNote] = useState(complaint.qualityReportNote || '');
     const [errorDefinition, setErrorDefinition] = useState(complaint.errorDefinition || '');
     const [isUpdating, setIsUpdating] = useState(false);
@@ -216,6 +220,7 @@ export default function QualityReportModal({ complaint, onClose, onSuccess, onUp
                             complaintId={complaint.id} 
                             initialDocuments={complaint.documents} 
                             onUpload={onUpload}
+                            canUpload={!isLocked || isAdmin}
                         />
                     </div>
 

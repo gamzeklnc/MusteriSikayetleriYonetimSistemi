@@ -5,6 +5,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
 import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
 import DocumentSection from '@/components/complaints/DocumentSection';
+import { useAuthStore } from '@/store/authStore';
 
 function CustomerFeedbackModal({
     complaint,
@@ -17,6 +18,9 @@ function CustomerFeedbackModal({
     onSuccess: () => void;
     onUpload?: (newDoc: ComplaintDocument) => void;
 }) {
+    const { user } = useAuthStore();
+    const isAdmin = user?.role === 'Admin';
+
     const [note, setNote] = useState(complaint.customerFeedbackNote || '');
     const [isSaving, setIsSaving] = useState(false);
 
@@ -133,6 +137,7 @@ function CustomerFeedbackModal({
                             complaintId={complaint.id} 
                             initialDocuments={complaint.documents} 
                             onUpload={onUpload}
+                            canUpload={!isLocked || isAdmin}
                         />
                     </div>
 

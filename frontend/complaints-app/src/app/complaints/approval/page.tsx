@@ -5,12 +5,16 @@ import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
 import { ComplaintDto } from '@/types/complaint';
 import ManagementApprovalModal from '@/components/complaints/ManagementApprovalModal';
+import { useAuthStore } from '@/store/authStore';
 
 export default function ApprovalPage() {
+    const { user } = useAuthStore();
     const [complaints, setComplaints] = useState<ComplaintDto[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedComplaint, setSelectedComplaint] = useState<ComplaintDto | null>(null);
+
+    const canEdit = user !== null && (user.departmentId === 4 || user.role === 'Admin');
 
     const [filters, setFilters] = useState({
         complaintNumber: '',
@@ -221,15 +225,19 @@ export default function ApprovalPage() {
                                                     )}
                                                 </td>
                                                 <td className="px-1.5 py-1.5 text-right">
-                                                    <button
-                                                        onClick={() => setSelectedComplaint(c)}
-                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"
-                                                    >
-                                                        <svg className="w-4 h-4"fill="none"viewBox="0 0 24 24"stroke="currentColor">
-                                                            <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                        </svg>
-                                                        İşlem
-                                                    </button>
+                                                    {canEdit ? (
+                                                        <button
+                                                            onClick={() => setSelectedComplaint(c)}
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"
+                                                        >
+                                                            <svg className="w-4 h-4"fill="none"viewBox="0 0 24 24"stroke="currentColor">
+                                                                <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                            </svg>
+                                                            İşlem
+                                                        </button>
+                                                    ) : (
+                                                        <span className="text-[10px] text-slate-400 font-medium italic">Yetkisiz</span>
+                                                    )}
                                                 </td>
                                             </tr>
                                         );

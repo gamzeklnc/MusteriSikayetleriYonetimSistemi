@@ -5,6 +5,7 @@ import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
 import { complaintService } from '@/services/complaintService';
 import { parseSingleBarcode } from '@/utils/barcodeParser';
 import DocumentSection from './DocumentSection';
+import { useAuthStore } from '@/store/authStore';
 
 interface Props {
     complaint: ComplaintDto;
@@ -14,6 +15,9 @@ interface Props {
 }
 
 export default function ManagementApprovalModal({ complaint, onClose, onSuccess, onUpload }: Props) {
+    const { user } = useAuthStore();
+    const isAdmin = user?.role === 'Admin';
+
     const [note, setNote] = useState(complaint.managementApprovalNote || '');
     const [isUpdating, setIsUpdating] = useState(false);
     const [barcodeFilter, setBarcodeFilter] = useState<'ALL' | 'HSA1' | 'HSA2'>('ALL');
@@ -176,6 +180,7 @@ export default function ManagementApprovalModal({ complaint, onClose, onSuccess,
                             complaintId={complaint.id} 
                             initialDocuments={complaint.documents} 
                             onUpload={onUpload}
+                            canUpload={complaint.isManagementApproved === null || isAdmin}
                         />
                     </div>
 
