@@ -42,17 +42,17 @@ export default function Sidebar() {
 
     return (
         <aside className="flex flex-col w-64 h-full bg-[#002A3A] border-r border-slate-700/50">
-            {/* Logo */}
-            <div className="px-6 py-6 mb-2">
-                <div className="flex items-center gap-3">
-                    <div className="bg-white p-1.5 rounded-lg flex items-center justify-center">
-                        <img src="/hsa-logo.png" alt="HSA Enerji" className="h-6 w-auto object-contain" />
+            {/* Logo Section */}
+            <div className="px-6 pt-8 pb-6 mb-4 border-b border-white/5 bg-gradient-to-b from-white/5 to-transparent">
+                <div className="flex flex-col items-center gap-5">
+                    <div className="bg-white p-4 rounded-xl w-full flex items-center justify-center shadow-2xl shadow-black/40 transform hover:scale-[1.02] transition-transform duration-300">
+                        <img src="/hsa-logo.png" alt="HSA Enerji" className="h-10 w-auto object-contain" />
                     </div>
-                    <div>
-                        <h1 className="text-white font-bold text-sm leading-tight">
-                            Şikayet Yönetim
+                    <div className="text-center">
+                        <h1 className="text-white font-extrabold text-sm tracking-tight leading-snug drop-shadow-[0_2px_3px_rgba(0,0,0,1)] uppercase">
+                            Müşteri Şikayetleri <br /> 
+                            <span className="text-blue-400">Yönetim Sistemi</span>
                         </h1>
-                        <span className="text-slate-400 text-[10px]  tracking-wider font-semibold">Kurumsal Sistem</span>
                     </div>
                 </div>
             </div>

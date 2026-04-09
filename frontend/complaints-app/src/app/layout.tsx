@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Şikayet Yönetim Sistemi",
+  title: "Müşteri Şikayetleri Yönetim Sistemi",
   description: "Kurumsal Müşteri Şikayetleri Yönetim Portalı",
 };
 
