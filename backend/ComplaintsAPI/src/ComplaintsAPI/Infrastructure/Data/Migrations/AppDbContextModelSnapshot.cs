@@ -206,7 +206,7 @@ namespace ComplaintsAPI.Infrastructure.Data.Migrations
 
                     b.HasIndex("QualityReportedById");
 
-                    b.ToTable("Complaints");
+                    b.ToTable("Complaints", (string)null);
                 });
 
             modelBuilder.Entity("ComplaintsAPI.Domain.Entities.ComplaintBarcodeResult", b =>
@@ -231,7 +231,7 @@ namespace ComplaintsAPI.Infrastructure.Data.Migrations
 
                     b.HasIndex("ComplaintId");
 
-                    b.ToTable("ComplaintBarcodeResults");
+                    b.ToTable("ComplaintBarcodeResults", (string)null);
                 });
 
             modelBuilder.Entity("ComplaintsAPI.Domain.Entities.ComplaintDocument", b =>
@@ -278,7 +278,7 @@ namespace ComplaintsAPI.Infrastructure.Data.Migrations
 
                     b.HasIndex("UploadedById");
 
-                    b.ToTable("ComplaintDocuments");
+                    b.ToTable("ComplaintDocuments", (string)null);
                 });
 
             modelBuilder.Entity("ComplaintsAPI.Domain.Entities.ComplaintHistory", b =>
@@ -318,7 +318,7 @@ namespace ComplaintsAPI.Infrastructure.Data.Migrations
 
                     b.HasIndex("DepartmentId");
 
-                    b.ToTable("ComplaintHistories");
+                    b.ToTable("ComplaintHistories", (string)null);
                 });
 
             modelBuilder.Entity("ComplaintsAPI.Domain.Entities.Department", b =>
@@ -336,7 +336,7 @@ namespace ComplaintsAPI.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Departments");
+                    b.ToTable("Departments", (string)null);
 
                     b.HasData(
                         new
@@ -380,7 +380,7 @@ namespace ComplaintsAPI.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ErrorDefinitionOptions");
+                    b.ToTable("ErrorDefinitionOptions", (string)null);
 
                     b.HasData(
                         new
@@ -468,7 +468,7 @@ namespace ComplaintsAPI.Infrastructure.Data.Migrations
                     b.HasIndex("Year", "Month")
                         .IsUnique();
 
-                    b.ToTable("ProductionCounts");
+                    b.ToTable("ProductionCounts", (string)null);
                 });
 
             modelBuilder.Entity("ComplaintsAPI.Domain.Entities.User", b =>
@@ -511,7 +511,7 @@ namespace ComplaintsAPI.Infrastructure.Data.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
 
                     b.HasData(
                         new
@@ -558,7 +558,7 @@ namespace ComplaintsAPI.Infrastructure.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserActivityLogs");
+                    b.ToTable("UserActivityLogs", (string)null);
                 });
 
             modelBuilder.Entity("ComplaintsAPI.Domain.Entities.Complaint", b =>

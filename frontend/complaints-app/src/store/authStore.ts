@@ -8,7 +8,8 @@ interface DecodedToken {
     userName?: string;
     unique_name?: string;
     name?: string;
-    role: string;
+    role?: string;
+    'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'?: string;
     departmentId: string;
     exp: number;
 }
@@ -36,7 +37,7 @@ const decodeToken = (token: string): UserInfo | null => {
             id: parseInt(decoded.sub),
             name: decoded.userName || decoded.unique_name || decoded.name || decoded.email.split('@')[0],
             email: decoded.email,
-            role: decoded.role,
+            role: decoded.role || decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'Kullanici',
             departmentId: parseInt(decoded.departmentId)
         };
     } catch {

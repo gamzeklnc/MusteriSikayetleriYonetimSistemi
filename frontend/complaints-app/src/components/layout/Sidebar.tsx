@@ -43,13 +43,13 @@ export default function Sidebar() {
     return (
         <aside className="flex flex-col w-64 h-full bg-[#002A3A] border-r border-slate-700/50">
             {/* Logo Section */}
-            <div className="px-6 pt-8 pb-6 mb-4 border-b border-white/5 bg-gradient-to-b from-white/5 to-transparent">
-                <div className="flex flex-col items-center gap-5">
-                    <div className="bg-white p-4 rounded-xl w-full flex items-center justify-center shadow-2xl shadow-black/40 transform hover:scale-[1.02] transition-transform duration-300">
-                        <img src="/hsa-logo.png" alt="HSA Enerji" className="h-10 w-auto object-contain" />
+            <div className="px-6 pt-5 pb-4 mb-2 border-b border-white/5 bg-gradient-to-b from-white/5 to-transparent">
+                <div className="flex flex-col items-center gap-3">
+                    <div className="bg-white p-3 rounded-xl w-full flex items-center justify-center shadow-2xl shadow-black/40 transform hover:scale-[1.02] transition-transform duration-300">
+                        <img src="/hsa-logo.png" alt="HSA Enerji" className="h-8 w-auto object-contain" />
                     </div>
                     <div className="text-center">
-                        <h1 className="text-white font-extrabold text-sm tracking-tight leading-snug drop-shadow-[0_2px_3px_rgba(0,0,0,1)] uppercase">
+                        <h1 className="text-white font-extrabold text-xs tracking-tight leading-snug drop-shadow-[0_2px_3px_rgba(0,0,0,1)] uppercase">
                             Müşteri Şikayetleri <br /> 
                             <span className="text-blue-400">Yönetim Sistemi</span>
                         </h1>
@@ -58,8 +58,8 @@ export default function Sidebar() {
             </div>
 
             {/* Nav */}
-            <nav className="flex-1 px-3 space-y-0.5 overflow-hidden">
-                <div className="pb-1.5 px-3">
+            <nav className="flex-1 px-3 space-y-0 overflow-hidden">
+                <div className="pb-1 px-3">
                     <span className="text-[10px] font-bold text-slate-500  tracking-widest">Genel</span>
                 </div>
 
@@ -75,7 +75,7 @@ export default function Sidebar() {
                     Şikayetler
                 </Link>
 
-                <div className="pt-3 pb-1.5 px-3">
+                <div className="pt-2 pb-1 px-3">
                     <span className="text-[10px] font-bold text-slate-500  tracking-widest">İş Akış Adımları</span>
                 </div>
 
@@ -100,7 +100,7 @@ export default function Sidebar() {
                     Müşteriye Geri Dönüş
                 </Link>
 
-                <div className="pt-3 pb-1.5 px-3">
+                <div className="pt-2 pb-1 px-3">
                     <span className="text-[10px] font-bold text-slate-500  tracking-widest">Operasyon</span>
                 </div>
 
@@ -118,7 +118,7 @@ export default function Sidebar() {
 
                 {mounted && user?.role === 'Admin' && (
                     <>
-                        <div className="pt-3 pb-1.5 px-3">
+                        <div className="pt-2 pb-1 px-3">
                             <span className="text-[10px] font-bold text-slate-500 tracking-widest">Yönetim</span>
                         </div>
 
@@ -132,7 +132,7 @@ export default function Sidebar() {
 
             {/* User Profile / Status */}
             {mounted && user && (
-                <div className="px-4 py-3 mx-3 mb-2 bg-white/5 rounded-xl border border-white/5">
+                <div className="px-3 py-2 mx-3 mb-2 bg-white/5 rounded-xl border border-white/5">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-xs ">
                             {user.name[0]}
