@@ -5,6 +5,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
 import { ComplaintDto } from '@/types/complaint';
 import ManagementApprovalModal from '@/components/complaints/ManagementApprovalModal';
+import StatusBadge from '@/components/complaints/StatusBadge';
 import { useAuthStore } from '@/store/authStore';
 
 export default function ApprovalPage() {
@@ -167,16 +168,7 @@ export default function ApprovalPage() {
                                                 <td className="px-1.5 py-1.5 text-center text-slate-800">{c.defectiveQuantity}</td>
                                                 <td className="px-1.5 py-1.5 text-slate-600 text-[10px] leading-snug truncate max-w-[150px]">{c.errorDefinition || '-'}</td>
                                                 <td className="px-1.5 py-1.5 text-center">
-                                                    <div className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold border ${c.status.includes('Gecikti') ? 'bg-red-100/80 text-red-600 border-red-200' :
-                                                            c.status.includes('Kapalı') || c.status.includes('Kapali') ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
-                                                                'bg-amber-50 text-amber-600 border-amber-200'
-                                                        }`}>
-                                                        <span className={`w-1 h-1 rounded-full mr-1 ${c.status.includes('Gecikti') ? 'bg-red-500' :
-                                                                c.status.includes('Kapalı') || c.status.includes('Kapali') ? 'bg-emerald-500' :
-                                                                    'bg-amber-500'
-                                                            }`}></span>
-                                                        {c.status}
-                                                    </div>
+                                                    <StatusBadge status={c.status} />
                                                 </td>
                                                 <td className="px-1.5 py-1.5">
                                                     <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-bold border ${c.isQualityReported ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-100'}`}>

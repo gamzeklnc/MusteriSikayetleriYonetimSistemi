@@ -46,15 +46,15 @@ public class EmailSmtpService : IEmailService
         var host = _config["EmailSettings:Host"];
         var port = int.Parse(_config["EmailSettings:Port"] ?? "587");
 
+        Console.WriteLine($"[EMAIL] Şifre durumu: {(string.IsNullOrEmpty(password) ? "BOŞ" : "DOLU ✓")}");
+        
         if (string.IsNullOrEmpty(password))
         {
-            // Fallback for development: Log the email instead of sending
             Console.WriteLine("--------------------------------------------------");
-            Console.WriteLine($"SENDING EMAIL (SIMULATED - No Password)");
+            Console.WriteLine($"EMAIL SİMÜLASYON (Şifre yok)");
             Console.WriteLine($"From: {from}");
             Console.WriteLine($"To: {to}");
             Console.WriteLine($"Subject: {subject}");
-            Console.WriteLine($"Body: {body}");
             Console.WriteLine("--------------------------------------------------");
             return;
         }
@@ -68,22 +68,42 @@ public class EmailSmtpService : IEmailService
 
     public async Task SendToDepartmentsAsync(string from, string[] departmentNames, string subject, string body)
     {
+        Console.WriteLine($"[EMAIL] Hedef departmanlar: {string.Join(", ", departmentNames)}");
+        
         var targetEmails = await _context.Users
             .Where(u => !u.IsDeleted && departmentNames.Contains(u.Department.Name))
             .Select(u => u.Email)
             .Distinct()
             .ToListAsync();
 
+        Console.WriteLine($"[EMAIL] Bulunan alıcı sayısı: {targetEmails.Count}");
+        foreach (var e in targetEmails) Console.WriteLine($"[EMAIL]   → {e}");
+
+        if (targetEmails.Count == 0)
+        {
+            Console.WriteLine("[EMAIL] UYARI: Hedef departmanlarda kullanıcı bulunamadı!");
+            
+            // Veritabanındaki tüm departman adlarını göster
+            var allDepts = await _context.Users
+                .Where(u => !u.IsDeleted)
+                .Select(u => u.Department.Name)
+                .Distinct()
+                .ToListAsync();
+            Console.WriteLine($"[EMAIL] Mevcut departmanlar: {string.Join(", ", allDepts)}");
+            return;
+        }
+
         foreach (var email in targetEmails)
         {
             try 
             {
+                Console.WriteLine($"[EMAIL] Gönderiliyor: {email}");
                 await SendEmailAsync(from, email, subject, body);
+                Console.WriteLine($"[EMAIL] ✓ Başarıyla gönderildi: {email}");
             }
             catch (Exception ex)
             {
-                // In a real app, use a logger here
-                Console.WriteLine($"Error sending email to {email}: {ex.Message}");
+                Console.WriteLine($"[EMAIL] ✗ HATA ({email}): {ex.Message}");
             }
         }
     }

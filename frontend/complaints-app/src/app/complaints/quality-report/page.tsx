@@ -5,6 +5,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
 import { ComplaintDto } from '@/types/complaint';
 import QualityReportModal from '@/components/complaints/QualityReportModal';
+import StatusBadge from '@/components/complaints/StatusBadge';
 import { useAuthStore } from '@/store/authStore';
 
 export default function QualityReportPage() {
@@ -208,16 +209,7 @@ export default function QualityReportPage() {
                                                 <td className="px-1.5 py-1.5 text-center font-bold text-emerald-600">{c.hsa1 || 0}</td>
                                                 <td className="px-1.5 py-1.5 text-center font-bold text-indigo-600">{c.hsa2 || 0}</td>
                                                 <td className="px-1.5 py-1.5 text-center">
-                                                    <div className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold border ${c.status.includes('Gecikti') ? 'bg-red-50 text-red-600 border-red-200' :
-                                                            c.status.includes('Kapalı') || c.status.includes('Kapali') ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
-                                                                'bg-amber-50 text-amber-600 border-amber-200'
-                                                        }`}>
-                                                        <span className={`w-1 h-1 rounded-full mr-1 ${c.status.includes('Gecikti') ? 'bg-red-500' :
-                                                                c.status.includes('Kapalı') || c.status.includes('Kapali') ? 'bg-emerald-500' :
-                                                                    'bg-amber-500'
-                                                            }`}></span>
-                                                        {c.status}
-                                                    </div>
+                                                    <StatusBadge status={c.status} />
                                                 </td>
                                                 <td className="px-1.5 py-1.5 text-center">
                                                     {c.isCustomerFeedbackDone ? (

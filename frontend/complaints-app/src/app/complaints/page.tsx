@@ -6,6 +6,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
 import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
 import ComplaintDetailModal from '@/components/complaints/ComplaintDetailModal';
+import StatusBadge from '@/components/complaints/StatusBadge';
 import * as XLSX from 'xlsx-js-style';
 
 export default function ComplaintsPage() {
@@ -182,6 +183,30 @@ export default function ComplaintsPage() {
                     </div>
                 </div>
 
+                {/* Durum Açıklama Paneli */}
+                <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-x-6 gap-y-2 text-[10px] font-bold tracking-wide">
+                    <div className="flex items-center gap-1.5">
+                        <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-100">Açık/ZD</span>
+                        <span className="text-slate-500 font-medium">: Zamanında Devam Ediyor</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <span className="px-1.5 py-0.5 rounded bg-red-50 text-red-600 border border-red-100">Açık/YG</span>
+                        <span className="text-slate-500 font-medium">: Yanıt Gecikti</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <span className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 border border-amber-100">Açık/GD</span>
+                        <span className="text-slate-500 font-medium">: Gecikerek Devam Ediyor</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <span className="px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 border border-rose-100">Kapalı/GT</span>
+                        <span className="text-slate-500 font-medium">: Gecikerek Tamamlandı</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-100">Kapalı/ZT</span>
+                        <span className="text-slate-500 font-medium">: Zamanında Tamamlandı</span>
+                    </div>
+                </div>
+
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     {error && (
                         <div className="p-4 bg-red-50 text-red-600 text-sm border-b border-red-100 flex items-center gap-2">
@@ -329,16 +354,7 @@ export default function ComplaintsPage() {
                                                 {complaint.justifiedHsa2Count || '-'}
                                             </td>
                                             <td className="px-1.5 py-1.5">
-                                                <div className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold border ${complaint.status.includes('Gecikti') ? 'bg-red-100/80 text-red-600 border-red-200' :
-                                                        complaint.status.includes('Kapalı') || complaint.status.includes('Kapali') ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
-                                                            'bg-amber-50 text-amber-600 border-amber-200'
-                                                    }`}>
-                                                    <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${complaint.status.includes('Gecikti') ? 'bg-red-500' :
-                                                            complaint.status.includes('Kapalı') || complaint.status.includes('Kapali') ? 'bg-emerald-500' :
-                                                                'bg-amber-500'
-                                                        }`}></span>
-                                                    {complaint.status}
-                                                </div>
+                                                <StatusBadge status={complaint.status} />
                                             </td>
                                             <td className="px-1.5 py-1.5 whitespace-nowrap">
                                                 {complaint.isCustomerFeedbackDone ? (

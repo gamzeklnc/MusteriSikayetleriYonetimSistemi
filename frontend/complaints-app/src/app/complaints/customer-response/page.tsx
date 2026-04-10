@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
 import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
+import StatusBadge from '@/components/complaints/StatusBadge';
 import DocumentSection from '@/components/complaints/DocumentSection';
 import { useAuthStore } from '@/store/authStore';
 
@@ -350,16 +351,7 @@ export default function CustomerResponsePage() {
                                                 <td className="px-2 py-2 text-center text-slate-800">{c.defectiveQuantity}</td>
                                                 <td className="px-2 py-2 text-slate-600 text-[10px] truncate max-w-[120px]">{c.errorDefinition || '-'}</td>
                                                 <td className="px-2 py-2 text-center">
-                                                    <div className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold border ${c.status.includes('Gecikti') ? 'bg-red-50 text-red-600 border-red-200' :
-                                                            c.status.includes('Kapalı') || c.status.includes('Kapali') ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
-                                                                'bg-amber-50 text-amber-600 border-amber-200'
-                                                        }`}>
-                                                        <span className={`w-1 h-1 rounded-full mr-1 ${c.status.includes('Gecikti') ? 'bg-red-500' :
-                                                                c.status.includes('Kapalı') || c.status.includes('Kapali') ? 'bg-emerald-500' :
-                                                                    'bg-amber-500'
-                                                            }`} />
-                                                        {c.status}
-                                                    </div>
+                                                    <StatusBadge status={c.status} />
                                                 </td>
                                                 <td className="px-2 py-2">
                                                     <div className="flex flex-col gap-0.5">

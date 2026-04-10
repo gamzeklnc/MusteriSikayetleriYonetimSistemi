@@ -670,31 +670,36 @@ public class ComplaintsController : ControllerBase
     // ── Yardımcı Mapper ───────────────────────────────────────────────────────
     private static string GetDescriptiveStatus(Domain.Entities.Complaint c)
     {
-        if (c.Status == "Kapali") return "Kapalı";
-        
         var now = DateTime.UtcNow;
         var deadline48h = c.RegistrationDate.AddHours(48);
-        
-        // Hedef tarih kontrolü (varsa ve geçmişse)
         bool isTargetOverdue = c.HasTargetDate == true && c.TargetDate.HasValue && now > c.TargetDate.Value;
-        
-        // 48 saat kontrolü
-        bool is48hOverdue = false;
-        if (!c.IsCustomerFeedbackDone)
+        bool is48hOverdue = now > deadline48h;
+
+        if (c.Status == "Kapali")
         {
-            is48hOverdue = now > deadline48h;
-        }
-        else if (c.CustomerFeedbackAt.HasValue)
-        {
-            is48hOverdue = c.CustomerFeedbackAt.Value > deadline48h;
+            // Kapalı/GT: hedef tarihi varsa ve geçtiyse, geçtikten sonra kapandıysa
+            // UpdatedAt field is set in Repository.UpdateAsync
+            bool wasTargetOverdueAtClose = c.HasTargetDate == true && c.TargetDate.HasValue && c.UpdatedAt > c.TargetDate.Value;
+            
+            if (wasTargetOverdueAtClose) return "Kapalı/GT";
+            return "Kapalı/ZT";
         }
 
+        // Açık durumlar
+        // Açık/YG: Yanıt gecikti (İlk 48 saat yanıt verilmediyse)
+        if (!c.IsCustomerFeedbackDone && is48hOverdue)
+        {
+            return "Açık/YG";
+        }
+        
+        // Açık/GD: Gecikerek devam ediyor (48 saat gecikmiş ama yanıt verilmişse VEYA hedef tarih geçmişse)
         if (is48hOverdue || isTargetOverdue)
         {
-            return c.IsCustomerFeedbackDone ? "Açık: Gecikerek devam ediyor" : "Açık: Gecikti";
+            return "Açık/GD";
         }
 
-        return "Açık: Devam ediyor";
+        // Açık/ZD: Zamanında Devam Ediyor
+        return "Açık/ZD";
     }
 
     private static ComplaintDto MapToDto(Domain.Entities.Complaint c) => new(

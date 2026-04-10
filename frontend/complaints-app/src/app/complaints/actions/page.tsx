@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
 import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
+import StatusBadge from '@/components/complaints/StatusBadge';
 import ComplaintDetailModal from '@/components/complaints/ComplaintDetailModal';
 
 export default function ActionsPage() {
@@ -16,6 +17,7 @@ export default function ActionsPage() {
         complaintNumber: '',
         customerName: '',
         projectName: '',
+        status: '',
         operationalStage: '',
     });
 
@@ -48,6 +50,7 @@ export default function ActionsPage() {
             safeMatch(c.complaintNumber, filters.complaintNumber) &&
             safeMatch(c.customerName, filters.customerName) &&
             safeMatch(c.projectName, filters.projectName) &&
+            safeMatch(c.status, filters.status) &&
             safeMatch(c.operationalStage || 'Aşama Belirlenmedi', filters.operationalStage)
         );
     });
@@ -80,6 +83,10 @@ export default function ActionsPage() {
                                         <input type="text" placeholder="Ara..." value={filters.projectName} onChange={e => handleFilterChange('projectName', e.target.value)} className="w-full px-1.5 py-1 border border-slate-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all normal-case" />
                                     </th>
                                     <th className="px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider align-bottom">
+                                        <div className="mb-1.5 text-center">Durum</div>
+                                        <input type="text" placeholder="Ara..." value={filters.status} onChange={e => handleFilterChange('status', e.target.value)} className="w-full px-1.5 py-1 border border-slate-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all normal-case" />
+                                    </th>
+                                    <th className="px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider align-bottom">
                                         <div className="mb-1.5">Operasyonel Aşama</div>
                                         <input type="text" placeholder="Ara..." value={filters.operationalStage} onChange={e => handleFilterChange('operationalStage', e.target.value)} className="w-full px-1.5 py-1 border border-slate-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all normal-case" />
                                     </th>
@@ -105,6 +112,9 @@ export default function ActionsPage() {
                                             <td className="px-4 py-4 font-mono text-xs font-bold text-blue-600">{c.complaintNumber}</td>
                                             <td className="px-4 py-4 text-sm font-medium text-slate-700">{c.customerName}</td>
                                             <td className="px-4 py-4 text-sm text-slate-600">{c.projectName}</td>
+                                            <td className="px-4 py-4 text-center">
+                                                <StatusBadge status={c.status} />
+                                            </td>
                                             <td className="px-4 py-4">
                                                 <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[9px] font-bold border ${
                                                     c.operationalStage 

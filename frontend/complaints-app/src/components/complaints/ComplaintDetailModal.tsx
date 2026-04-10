@@ -7,6 +7,7 @@ import { parseSingleBarcode } from '@/utils/barcodeParser';
 import DocumentSection, { DocumentSectionRef } from './DocumentSection';
 import { complaintService } from '@/services/complaintService';
 import { useAuthStore } from '@/store/authStore';
+import StatusBadge from './StatusBadge';
 
 const STAGES = [
     'Fabrikada İnceleme Bekliyor',
@@ -457,12 +458,7 @@ export default function ComplaintDetailModal({
                                 <div className="bg-slate-50 rounded-xl p-4 space-y-3 border border-slate-100">
                                     <div className="flex justify-between items-center">
                                         <div className="text-[10px] text-slate-900  font-black">Durum</div>
-                                        <div className={`px-2 py-1 rounded-md text-xs font-bold ${complaint.status.includes('Gecikti') ? 'bg-red-100 text-red-700' :
-                                                complaint.status.includes('Kapalı') || complaint.status.includes('Kapali') ? 'bg-emerald-100 text-emerald-700' :
-                                                    'bg-amber-100 text-amber-700'
-                                            }`}>
-                                            {complaint.status}
-                                        </div>
+                                         <StatusBadge status={complaint.status} />
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <div className="text-[10px] text-slate-900  font-black">Mevcut Aşama</div>
