@@ -158,10 +158,11 @@ export default function ApprovalPage() {
                                     </tr>
                                 ) : (
                                     filteredComplaints.map((c) => {
+                                        const isTargetOverdue = c.status.startsWith('Açık') && c.targetDate && new Date(c.targetDate) < new Date();
                                         const stageLabel = getStageLabel(c);
                                         const isOverdue = c.status.includes('Gecikti');
                                         return (
-                                            <tr key={c.id} className="hover:bg-blue-50/30 transition-colors group text-[11px]">
+                                            <tr key={c.id} className={`${isTargetOverdue ? 'bg-red-50/80 hover:bg-red-100/80' : 'hover:bg-blue-50/30'} transition-colors group text-[11px]`}>
                                                 <td className="px-1.5 py-1.5 font-semibold text-slate-900">{c.complaintNumber}</td>
                                                 <td className="px-1.5 py-1.5 font-medium text-slate-800">{c.customerName}</td>
                                                 <td className="px-1.5 py-1.5 text-slate-600">{c.sellerName}</td>

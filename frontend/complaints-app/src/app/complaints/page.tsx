@@ -307,9 +307,10 @@ export default function ComplaintsPage() {
                                     </tr>
                                 ) : (
                                     filteredComplaints.map((complaint) => {
+                                        const isTargetOverdue = complaint.status.startsWith('Açık') && complaint.targetDate && new Date(complaint.targetDate) < new Date();
                                         const isOverdue = complaint.status.includes('Gecikti');
                                         return (
-                                            <tr key={complaint.id} className="hover:bg-blue-50/30 transition-colors group text-[11px] text-slate-700">
+                                            <tr key={complaint.id} className={`${isTargetOverdue ? 'bg-red-50/80 hover:bg-red-100/80' : 'hover:bg-blue-50/30'} transition-colors group text-[11px] text-slate-700`}>
                                             <td className="px-1.5 py-1.5 font-semibold text-slate-900">
                                                 {complaint.complaintNumber}
                                             </td>

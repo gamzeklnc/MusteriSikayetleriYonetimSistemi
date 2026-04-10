@@ -178,8 +178,7 @@ function CustomerFeedbackModal({
                             <button
                                 onClick={() => handleSave(true)}
                                 disabled={isSaving}
-                                className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all shadow-lg bg-purple-600 hover:bg-purple-700 text-white shadow-purple-500/20 ${isSaving ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.98]'}`}
-                            >
+                                className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all shadow-lg bg-purple-600 hover:bg-purple-700 text-white shadow-purple-500/20 ${isSaving ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.98]'}`}>
                                 {isSaving ? (
                                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                 ) : (
@@ -339,10 +338,11 @@ export default function CustomerResponsePage() {
                                     </tr>
                                 ) : (
                                     filteredComplaints.map((c) => {
+                                        const isTargetOverdue = c.status.startsWith('Açık') && c.targetDate && new Date(c.targetDate) < new Date();
                                         const stageLabel = getStageLabel(c);
                                         const isOverdue = c.status.includes('Gecikti');
                                         return (
-                                            <tr key={c.id} className={`${c.isCustomerFeedbackDone ? 'bg-orange-50/20 hover:bg-orange-50/40' : 'hover:bg-purple-50/30'} transition-colors text-[11px]`}>
+                                            <tr key={c.id} className={`${isTargetOverdue ? 'bg-red-50/80 hover:bg-red-100/80' : c.isCustomerFeedbackDone ? 'bg-orange-50/20 hover:bg-orange-50/40' : 'hover:bg-purple-50/30'} transition-colors text-[11px]`}>
                                                 <td className="px-2 py-2 font-semibold text-slate-900 whitespace-nowrap">
                                                     {c.complaintNumber}
                                                 </td>

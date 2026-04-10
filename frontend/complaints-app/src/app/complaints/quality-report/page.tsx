@@ -180,13 +180,14 @@ export default function QualityReportPage() {
                                     </tr>
                                 ) : (
                                     filteredComplaints.map((c) => {
-                                        const isOverdue = c.status.includes('Gecikti');
                                         const isRejected = c.isManagementApproved === false;
                                         const stageLabel = getStageLabel(c);
+                                        const isTargetOverdue = c.status.startsWith('Açık') && c.targetDate && new Date(c.targetDate) < new Date();
                                         return (
                                             <tr 
                                                 key={c.id} 
                                                 className={`${
+                                                    isTargetOverdue ? 'bg-red-50/70' :
                                                     isRejected ? 'bg-yellow-50/70' : 
                                                     'hover:bg-blue-50/30'
                                                 } transition-colors group text-[11px]`}

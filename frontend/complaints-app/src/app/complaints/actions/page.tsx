@@ -106,9 +106,10 @@ export default function ActionsPage() {
                                     </tr>
                                 ) : (
                                     filteredComplaints.map((c) => {
+                                        const isTargetOverdue = c.status.startsWith('Açık') && c.targetDate && new Date(c.targetDate) < new Date();
                                         const isOverdue = c.status.includes('Gecikti');
                                         return (
-                                            <tr key={c.id} className="hover:bg-blue-50/30 transition-colors group text-[11px] text-slate-700 font-medium">
+                                            <tr key={c.id} className={`${isTargetOverdue ? 'bg-red-50/80 hover:bg-red-100/80' : 'hover:bg-blue-50/30'} transition-colors group text-[11px] text-slate-700 font-medium`}>
                                             <td className="px-4 py-4 font-mono text-xs font-bold text-blue-600">{c.complaintNumber}</td>
                                             <td className="px-4 py-4 text-sm font-medium text-slate-700">{c.customerName}</td>
                                             <td className="px-4 py-4 text-sm text-slate-600">{c.projectName}</td>

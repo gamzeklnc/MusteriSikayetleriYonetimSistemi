@@ -219,8 +219,10 @@ export default function AdminPage() {
                                 <tbody className="divide-y divide-slate-100">
                                     {loading ? (
                                         <tr><td colSpan={7} className="px-6 py-20 text-center text-slate-400">Yükleniyor...</td></tr>
-                                    ) : filteredComplaints.map((c) => (
-                                        <tr key={c.id} className="hover:bg-slate-50/50 transition-colors group">
+                                     ) : filteredComplaints.map((c) => {
+                                        const isTargetOverdue = c.status.startsWith('Açık') && c.targetDate && new Date(c.targetDate) < new Date();
+                                        return (
+                                            <tr key={c.id} className={`${isTargetOverdue ? 'bg-red-50/80 hover:bg-red-100/80' : 'hover:bg-slate-50/50'} transition-colors group`}>
                                             <td className="px-1.5 py-1.5 font-bold text-slate-900">{c.complaintNumber}</td>
                                             <td className="px-1.5 py-1.5 font-medium text-slate-700">{c.customerName}</td>
                                             <td className="px-1.5 py-1.5 text-[11px] font-bold text-blue-600  tracking-widest">{c.currentDepartmentName}</td>
@@ -240,7 +242,8 @@ export default function AdminPage() {
                                                 </div>
                                             </td>
                                         </tr>
-                                    ))}
+                                    );
+                                })}
                                 </tbody>
                             </table>
                         </div>
