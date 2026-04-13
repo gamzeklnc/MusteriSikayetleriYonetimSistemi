@@ -33,8 +33,8 @@ export default function ActionsPage() {
             // Sadece müşteri geri dönüşü yapılmış (Aksiyon aşaması) olanları filtrele
             const filtered = data.filter(c => c.isCustomerFeedbackDone === true);
             setComplaints(filtered);
-        } catch (error) {
-            console.error('Şikayetler yüklenemedi:', error);
+        } catch {
+            console.error('Şikayetler yüklenemedi.');
         } finally {
             setLoading(false);
         }
@@ -113,7 +113,6 @@ export default function ActionsPage() {
                                 ) : (
                                     filteredComplaints.map((c) => {
                                         const isTargetOverdue = c.status.startsWith('Açık') && c.targetDate && new Date(c.targetDate) < new Date();
-                                        const isOverdue = c.status.includes('Gecikti');
                                         return (
                                             <tr key={c.id} className={`${isTargetOverdue ? 'bg-red-50/80 hover:bg-red-100/80' : 'hover:bg-blue-50/30'} transition-colors group text-[11px] text-slate-700 font-medium`}>
                                             <td className="px-4 py-4 font-mono text-xs font-bold text-blue-600">{c.complaintNumber}</td>
@@ -179,6 +178,16 @@ export default function ActionsPage() {
                         const updated = {
                             ...selectedComplaint,
                             documents: [...(selectedComplaint.documents || []), newDoc]
+                        };
+                        setSelectedComplaint(updated);
+                        setComplaints(prev => prev.map(c => 
+                            c.id === updated.id ? updated : c
+                        ));
+                    }}
+                    onDelete={(docId: number) => {
+                        const updated = {
+                            ...selectedComplaint,
+                            documents: selectedComplaint.documents?.filter(d => d.id !== docId) || []
                         };
                         setSelectedComplaint(updated);
                         setComplaints(prev => prev.map(c => 

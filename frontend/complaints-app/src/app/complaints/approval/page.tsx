@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
-import { ComplaintDto } from '@/types/complaint';
+import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
 import ManagementApprovalModal from '@/components/complaints/ManagementApprovalModal';
 import StatusBadge from '@/components/complaints/StatusBadge';
 import { useAuthStore } from '@/store/authStore';
@@ -160,7 +160,6 @@ export default function ApprovalPage() {
                                     filteredComplaints.map((c) => {
                                         const isTargetOverdue = c.status.startsWith('Açık') && c.targetDate && new Date(c.targetDate) < new Date();
                                         const stageLabel = getStageLabel(c);
-                                        const isOverdue = c.status.includes('Gecikti');
                                         return (
                                             <tr key={c.id} className={`${isTargetOverdue ? 'bg-red-50/80 hover:bg-red-100/80' : 'hover:bg-blue-50/30'} transition-colors group text-[11px]`}>
                                                 <td className="px-1.5 py-1.5 font-semibold text-slate-900">{c.complaintNumber}</td>
@@ -247,7 +246,7 @@ export default function ApprovalPage() {
                     complaint={selectedComplaint}
                     onClose={() => setSelectedComplaint(null)}
                     onSuccess={fetchComplaints}
-                    onUpload={(newDoc) => {
+                    onUpload={(newDoc: ComplaintDocument) => {
                         setSelectedComplaint({
                             ...selectedComplaint,
                             documents: [...(selectedComplaint.documents || []), newDoc]
@@ -255,6 +254,17 @@ export default function ApprovalPage() {
                         setComplaints(prev => prev.map(c => 
                             c.id === selectedComplaint.id 
                             ? { ...c, documents: [...(c.documents || []), newDoc] } 
+                            : c
+                        ));
+                    }}
+                    onDelete={(docId: number) => {
+                        setSelectedComplaint({
+                            ...selectedComplaint,
+                            documents: selectedComplaint.documents?.filter(d => d.id !== docId) || []
+                        });
+                        setComplaints(prev => prev.map(c => 
+                            c.id === selectedComplaint.id 
+                            ? { ...c, documents: c.documents?.filter(d => d.id !== docId) || [] } 
                             : c
                         ));
                     }}

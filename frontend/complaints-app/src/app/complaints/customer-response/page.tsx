@@ -13,11 +13,13 @@ function CustomerFeedbackModal({
     onClose,
     onSuccess,
     onUpload,
+    onDelete,
 }: {
     complaint: ComplaintDto;
     onClose: () => void;
     onSuccess: () => void;
     onUpload?: (newDoc: ComplaintDocument) => void;
+    onDelete?: (docId: number) => void;
 }) {
     const { user } = useAuthStore();
     const isAdmin = user?.role === 'Admin';
@@ -137,7 +139,9 @@ function CustomerFeedbackModal({
                         <DocumentSection 
                             complaintId={complaint.id} 
                             initialDocuments={complaint.documents} 
+                            currentStage={complaint.currentDepartmentName}
                             onUpload={onUpload}
+                            onDelete={onDelete}
                             canUpload={!isLocked || isAdmin}
                         />
                     </div>
@@ -340,7 +344,6 @@ export default function CustomerResponsePage() {
                                     filteredComplaints.map((c) => {
                                         const isTargetOverdue = c.status.startsWith('Açık') && c.targetDate && new Date(c.targetDate) < new Date();
                                         const stageLabel = getStageLabel(c);
-                                        const isOverdue = c.status.includes('Gecikti');
                                         return (
                                             <tr key={c.id} className={`${isTargetOverdue ? 'bg-red-50/80 hover:bg-red-100/80' : c.isCustomerFeedbackDone ? 'bg-orange-50/20 hover:bg-orange-50/40' : 'hover:bg-purple-50/30'} transition-colors text-[11px]`}>
                                                 <td className="px-2 py-2 font-semibold text-slate-900 whitespace-nowrap">
@@ -428,14 +431,27 @@ export default function CustomerResponsePage() {
                     onSuccess={() => { fetchComplaints(); setSelectedComplaint(null); }}
                     onUpload={(newDoc) => {
                         setSelectedComplaint({
-                            ...selectedComplaint,
-                            documents: [...(selectedComplaint.documents || []), newDoc]
+                            ...selectedComplaint!,
+                            documents: [...(selectedComplaint!.documents || []), newDoc]
                         });
                         setComplaints(prev => prev.map(c => 
                             c.id === selectedComplaint.id 
                             ? { ...c, documents: [...(c.documents || []), newDoc] } 
                             : c
                         ));
+                    }}
+                    onDelete={(docId) => {
+                        if (selectedComplaint) {
+                            setSelectedComplaint({
+                                ...selectedComplaint,
+                                documents: selectedComplaint.documents?.filter(d => d.id !== docId) || []
+                            });
+                            setComplaints(prev => prev.map(c => 
+                                c.id === selectedComplaint.id 
+                                ? { ...c, documents: c.documents?.filter(d => d.id !== docId) || [] } 
+                                : c
+                            ));
+                        }
                     }}
                 />
             )}

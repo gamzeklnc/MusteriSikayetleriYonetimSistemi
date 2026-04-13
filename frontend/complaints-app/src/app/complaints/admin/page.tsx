@@ -7,12 +7,12 @@ import { departmentService } from '@/services/departmentService';
 import { userService } from '@/services/userService';
 import { errorOptionService } from '@/services/errorOptionService';
 import { userActivityLogService } from '@/services/userActivityLogService';
-import { ComplaintDto, CreateComplaintRequest, UpdateComplaintRequest } from '@/types/complaint';
+import { ComplaintDto, ComplaintStatus } from '@/types/complaint';
 import { Department } from '@/types/department';
 import { User, CreateUserRequest, UpdateUserRequest } from '@/types/user';
 import { ErrorDefinitionOption } from '@/types/errorOption';
 import { UserActivityLogDto } from '@/types/userActivityLog';
-import { ClipboardList, Users, Settings, Plus, Edit2, Trash2, ShieldAlert, CheckCircle2, XCircle, RotateCcw, ChevronDown, ChevronUp, UserPlus, History } from 'lucide-react';
+import { ClipboardList, Settings, Plus, Edit2, Trash2, ShieldAlert, CheckCircle2, XCircle, RotateCcw, ChevronDown, ChevronUp, UserPlus, History } from 'lucide-react';
 import DocumentSection from '@/components/complaints/DocumentSection';
 import StatusBadge from '@/components/complaints/StatusBadge';
 import { ComplaintDocument } from '@/types/complaint';
@@ -26,7 +26,6 @@ export default function AdminPage() {
     const [errorOptions, setErrorOptions] = useState<ErrorDefinitionOption[]>([]);
     const [activityLogs, setActivityLogs] = useState<UserActivityLogDto[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState<number | null>(null);
     const [editingComplaint, setEditingComplaint] = useState<ComplaintDto | null>(null);
 
@@ -53,7 +52,7 @@ export default function AdminPage() {
     const [editingErrorOption, setEditingErrorOption] = useState<ErrorDefinitionOption | null>(null);
     const [errorForm, setErrorForm] = useState({ label: '' });
 
-    const [complaintFilters, setComplaintFilters] = useState({
+    const [complaintFilters] = useState({
         complaintNumber: '', customerName: '', status: '', currentDepartmentName: ''
     });
 
@@ -72,9 +71,8 @@ export default function AdminPage() {
             setUsers(userData);
             setErrorOptions(errorData);
             setActivityLogs(logData);
-        } catch (err) {
-            console.error('Veriler yüklenemedi:', err);
-            setError('Veriler yüklenirken bir hata oluştu.');
+        } catch {
+            console.error('Veriler yüklenemedi.');
         } finally {
             setLoading(false);
         }
@@ -192,7 +190,7 @@ export default function AdminPage() {
                     ].map(tab => (
                         <button
                             key={tab.id}
-                            onClick={() => setActiveTab(tab.id as any)}
+                            onClick={() => setActiveTab(tab.id as 'complaints' | 'history' | 'settings')}
                             className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === tab.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-slate-500 hover:text-slate-800'}`}
                         >
                             <tab.icon size={18} />
@@ -409,18 +407,18 @@ export default function AdminPage() {
                                     <div className="p-4 grid grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-200">
                                         <div className="col-span-2 space-y-1">
                                             <label className="text-[10px] font-black text-slate-900  tracking-wider">Müşteri İsmi</label>
-                                            <input type="text"value={editingComplaint.customerName} onChange={e => setEditingComplaint({ ...editingComplaint, customerName: e.target.value })} className="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-900 bg-white focus:border-blue-500 outline-none" />
+                                            <input type="text"value={editingComplaint.customerName} onChange={e => setEditingComplaint(prev => prev ? { ...prev, customerName: e.target.value } : null)} className="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-900 bg-white focus:border-blue-500 outline-none" />
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[10px] font-black text-slate-900  tracking-wider">Durum</label>
-                                            <select value={editingComplaint.status} onChange={e => setEditingComplaint({ ...editingComplaint, status: e.target.value as any })} className="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-900 bg-white focus:border-blue-500 outline-none">
+                                            <select value={editingComplaint.status} onChange={e => setEditingComplaint(prev => prev ? { ...prev, status: e.target.value as ComplaintStatus } : null)} className="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-900 bg-white focus:border-blue-500 outline-none">
                                                 <option value="Acik">Açık</option>
                                                 <option value="Kapali">Kapalı</option>
                                             </select>
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[10px] font-black text-slate-900  tracking-wider">Mevcut Aşama</label>
-                                            <select value={editingComplaint.currentDepartmentName} onChange={e => setEditingComplaint({ ...editingComplaint, currentDepartmentName: e.target.value })} className="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-900 bg-white focus:border-blue-500 outline-none">
+                                            <select value={editingComplaint.currentDepartmentName} onChange={e => setEditingComplaint(prev => prev ? { ...prev, currentDepartmentName: e.target.value } : null)} className="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-900 bg-white focus:border-blue-500 outline-none">
                                                 {departments.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
                                             </select>
                                         </div>
@@ -473,14 +471,14 @@ export default function AdminPage() {
                                     <div className="p-4 space-y-4 animate-in slide-in-from-top-2 duration-200">
                                         <div className="flex items-center gap-8">
                                             <label className="flex items-center gap-3 cursor-pointer group">
-                                                <input type="checkbox"checked={editingComplaint.isQualityReported} onChange={e => setEditingComplaint({ ...editingComplaint, isQualityReported: e.target.checked })} className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                                                <input type="checkbox"checked={editingComplaint.isQualityReported} onChange={e => setEditingComplaint(prev => prev ? { ...prev, isQualityReported: e.target.checked } : null)} className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
                                                 <div className="flex flex-col">
                                                     <span className="text-sm font-black text-slate-900  tracking-tight">Kalite Raporu</span>
                                                     <span className="text-[10px] text-slate-900 font-black  tracking-widest">{editingComplaint.isQualityReported ? 'YAPILDI' : 'BEKLİYOR'}</span>
                                                 </div>
                                             </label>
                                             <label className="flex items-center gap-3 cursor-pointer group">
-                                                <input type="checkbox"checked={editingComplaint.isManagementApproved === true} onChange={e => setEditingComplaint({ ...editingComplaint, isManagementApproved: e.target.checked ? true : null })} className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                                                <input type="checkbox"checked={editingComplaint.isManagementApproved === true} onChange={e => setEditingComplaint(prev => prev ? { ...prev, isManagementApproved: e.target.checked } : null)} className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
                                                 <div className="flex flex-col">
                                                     <span className="text-sm font-black text-slate-900  tracking-tight">Yönetim Onayı</span>
                                                     <span className="text-[10px] text-slate-900 font-black  tracking-widest">{editingComplaint.isManagementApproved === true ? 'ONAYLANDI' : 'BEKLİYOR'}</span>
@@ -496,14 +494,26 @@ export default function AdminPage() {
                                 <DocumentSection 
                                     complaintId={editingComplaint.id} 
                                     initialDocuments={editingComplaint.documents} 
+                                    currentStage={editingComplaint.currentDepartmentName}
                                     onUpload={(newDoc: ComplaintDocument) => {
-                                        setEditingComplaint({
-                                            ...editingComplaint,
-                                            documents: [...(editingComplaint.documents || []), newDoc]
-                                        });
+                                        setEditingComplaint(prev => prev ? {
+                                            ...prev,
+                                            documents: [...(prev.documents || []), newDoc]
+                                        } : null);
                                         setComplaints(prev => prev.map(c => 
                                             c.id === editingComplaint.id 
                                             ? { ...c, documents: [...(c.documents || []), newDoc] } 
+                                            : c
+                                        ));
+                                    }}
+                                    onDelete={(docId: number) => {
+                                        setEditingComplaint(prev => prev ? {
+                                            ...prev,
+                                            documents: prev.documents?.filter(d => d.id !== docId) || []
+                                        } : null);
+                                        setComplaints(prev => prev.map(c => 
+                                            c.id === editingComplaint.id 
+                                            ? { ...c, documents: c.documents?.filter(d => d.id !== docId) || [] } 
                                             : c
                                         ));
                                     }}

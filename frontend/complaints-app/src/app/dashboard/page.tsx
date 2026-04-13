@@ -1,13 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
-import { productionCountService } from '@/services/productionCountService';
 import { DashboardStats, ErrorStat } from '@/types/complaint';
 import { 
     BarChart3, FileText, CheckCircle2, Clock, AlertCircle, 
-    TrendingUp, Activity, Users
+    TrendingUp, Activity
 } from 'lucide-react';
 
 interface ChartItem {
@@ -16,7 +15,7 @@ interface ChartItem {
     color?: string;
 }
 
-function GenericBarChart({ title, subtitle, data, rotateLabels = false, children, paddingBottom = 40, barColor, isRate = true }: { 
+function GenericBarChart({ title, subtitle, data, children, paddingBottom = 40, barColor, isRate = true }: { 
     title: string, 
     subtitle?: string, 
     data: ChartItem[], 
@@ -36,7 +35,7 @@ function GenericBarChart({ title, subtitle, data, rotateLabels = false, children
     ];
 
     const maxVal = Math.max(...data.map(i => i.value), 0);
-    let chartMax = maxVal > 0 ? maxVal * 1.15 : 1; 
+    const chartMax = maxVal > 0 ? maxVal * 1.15 : 1; 
 
     const formatValue = (val: number) => {
         if (!isRate) return val.toLocaleString(); // Just the number for counts
@@ -455,68 +454,74 @@ export default function DashboardPage() {
 
     const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 
-    const fetchStats = async (start?: string, end?: string, brnd?: string) => {
+    const fetchStats = useCallback(async (start?: string, end?: string, brnd?: string) => {
         try {
             setLoading(true);
             const data = await complaintService.getDashboardStats(start || undefined, end || undefined, brnd || undefined);
             setStats(data);
-            if (!summaryStats && !start && !end) setSummaryStats(data);
+            setSummaryStats(prev => (!prev && !start && !end) ? data : prev);
         } catch (error) { console.error(error); } finally { setLoading(false); }
-    };
+    }, []);
 
-    const fetchSummaryStats = async (start?: string, end?: string) => {
+    const fetchSummaryStats = useCallback(async (start?: string, end?: string) => {
         try {
             const data = await complaintService.getDashboardStats(start || undefined, end || undefined);
             setSummaryStats(data);
         } catch (error) { console.error(error); }
-    };
+    }, []);
 
-    useEffect(() => { fetchStats(startDate, endDate); }, [startDate, endDate]);
-    useEffect(() => { if (summaryStartDate || summaryEndDate) fetchSummaryStats(summaryStartDate, summaryEndDate); else if (stats) setSummaryStats(stats); }, [summaryStartDate, summaryEndDate]);
+    useEffect(() => { fetchStats(startDate, endDate); }, [startDate, endDate, fetchStats]);
+    useEffect(() => { 
+        if (summaryStartDate || summaryEndDate) {
+            fetchSummaryStats(summaryStartDate, summaryEndDate); 
+        } else {
+            setSummaryStats(prev => prev || stats);
+        }
+    }, [summaryStartDate, summaryEndDate, fetchSummaryStats, stats]);
 
-    const fetchBrandStats = async () => {
+    const fetchBrandStats = useCallback(async () => {
         try {
             let sDate = undefined, eDate = undefined;
             if (brandYear !== 'Hepsi') { sDate = `${brandYear}-01-01`; eDate = `${brandYear}-12-31`; }
             const brnd = brandFilter === 'Hepsi' ? undefined : brandFilter;
             const data = await complaintService.getDashboardStats(sDate, eDate, brnd);
-            if (stats) setStats({ ...stats, brandStats: data.brandStats });
+            setStats(prev => prev ? { ...prev, brandStats: data.brandStats } : data);
         } catch (error) { console.error(error); }
-    };
+    }, [brandYear, brandFilter]);
 
-    const fetchErrorStats = async () => {
+    const fetchErrorStats = useCallback(async () => {
         try {
             let sDate = undefined, eDate = undefined;
             if (errorYear !== 'Hepsi') { sDate = `${errorYear}-01-01`; eDate = `${errorYear}-12-31`; }
             const data = await complaintService.getDashboardStats(sDate, eDate);
-            if (stats) setStats({ ...stats, errorStats: data.errorStats });
+            setStats(prev => prev ? { ...prev, errorStats: data.errorStats } : data);
         } catch (error) { console.error(error); }
-    };
+    }, [errorYear]);
 
-    const fetchSourceStats = async () => {
+    const fetchSourceStats = useCallback(async () => {
         try {
             let sDate = undefined, eDate = undefined;
             if (sourceYear !== 'Hepsi') { sDate = `${sourceYear}-01-01`; eDate = `${sourceYear}-12-31`; }
             const data = await complaintService.getDashboardStats(sDate, eDate);
-            if (stats) setStats({ ...stats, sourceStats: data.sourceStats });
+            setStats(prev => prev ? { ...prev, sourceStats: data.sourceStats } : data);
         } catch (error) { console.error(error); }
-    };
+    }, [sourceYear]);
 
-    const fetchC8Stats = async () => {
+    const fetchC8Stats = useCallback(async () => {
         try {
             let sDate = undefined, eDate = undefined;
             if (c8Year !== 'Hepsi') { sDate = `${c8Year}-01-01`; eDate = `${c8Year}-12-31`; }
             const cust = c8Customer === 'Hepsi' ? undefined : c8Customer;
             const err = c8Error === 'Hepsi' ? undefined : c8Error;
             const data = await complaintService.getDashboardStats(sDate, eDate, undefined, cust, err);
-            if (stats) setStats({ ...stats, customerErrorStats: data.customerErrorStats });
+            setStats(prev => prev ? { ...prev, customerErrorStats: data.customerErrorStats } : data);
         } catch (error) { console.error(error); }
-    };
+    }, [c8Year, c8Customer, c8Error]);
 
-    useEffect(() => { if (stats) fetchBrandStats(); }, [brandYear, brandFilter]);
-    useEffect(() => { if (stats) fetchErrorStats(); }, [errorYear]);
-    useEffect(() => { if (stats) fetchSourceStats(); }, [sourceYear]);
-    useEffect(() => { if (stats) fetchC8Stats(); }, [c8Year, c8Customer, c8Error]);
+    useEffect(() => { if (stats) fetchBrandStats(); }, [brandYear, brandFilter, fetchBrandStats]); // eslint-disable-line react-hooks/exhaustive-deps
+    useEffect(() => { if (stats) fetchErrorStats(); }, [errorYear, fetchErrorStats]); // eslint-disable-line react-hooks/exhaustive-deps
+    useEffect(() => { if (stats) fetchSourceStats(); }, [sourceYear, fetchSourceStats]); // eslint-disable-line react-hooks/exhaustive-deps
+    useEffect(() => { if (stats) fetchC8Stats(); }, [c8Year, c8Customer, c8Error, fetchC8Stats]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
     const topMetrics = [

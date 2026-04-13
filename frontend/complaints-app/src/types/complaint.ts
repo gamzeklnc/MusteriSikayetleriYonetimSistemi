@@ -9,6 +9,7 @@ export interface ComplaintDocument {
     fileType: string;
     uploadedByName: string;
     uploadedAt: string;
+    uploadedAtStage: string;
     is8DReport: boolean;
 }
 
@@ -49,7 +50,7 @@ export interface ComplaintDto {
   isQualityReported: boolean;
   qualityReportNote?: string;
   qualityReportedByName?: string;
-  isManagementApproved?: boolean;
+  isManagementApproved?: boolean | null;
   managementApprovalNote?: string;
   managementApprovedByName?: string;
   isCustomerFeedbackDone: boolean;
@@ -101,6 +102,11 @@ export interface CreateComplaintRequest {
   hsa1?: number;
   hsa2?: number;
   note?: string;
+  brand?: string;
+  modulePower?: string;
+  productionDate?: string;
+  errorDefinition?: string;
+  isValidComplaint?: boolean;
 }
 
 export interface UpdateComplaintRequest {

@@ -36,7 +36,7 @@ public class ComplaintsController : ControllerBase
     {
         _context.UserActivityLogs.Add(new UserActivityLog
         {
-            UserId = CurrentUserId,
+            UserId = CurrentUserId == 0 ? null : CurrentUserId,
             UserFullName = CurrentUserName,
             Action = action,
             Details = details,
@@ -693,7 +693,8 @@ public class ComplaintsController : ControllerBase
             FileType = file.ContentType,
             Is8DReport = is8DReport,
             UploadedById = CurrentUserId,
-            UploadedAt = DateTime.UtcNow
+            UploadedAt = DateTime.UtcNow,
+            UploadedAtStage = GetCurrentStage(complaint)
         };
 
         complaint.Documents.Add(doc);
@@ -702,7 +703,46 @@ public class ComplaintsController : ControllerBase
         await LogActivityAsync("Dosya Yüklendi", $"Şikayet No: {complaint.ComplaintNumber}, Dosya: {file.FileName}");
 
         return Ok(new ComplaintDocumentDto(
-            doc.Id, doc.FileName, doc.FileSize, doc.FileType, CurrentUserName, doc.UploadedAt, doc.Is8DReport));
+            doc.Id, doc.FileName, doc.FileSize, doc.FileType, CurrentUserName, doc.UploadedAt, doc.UploadedAtStage, doc.Is8DReport));
+    }
+
+    [HttpDelete("documents/{documentId}")]
+    public async Task<IActionResult> DeleteDocument(int documentId)
+    {
+        var doc = await _context.ComplaintDocuments
+            .Include(d => d.Complaint)
+            .FirstOrDefaultAsync(x => x.Id == documentId);
+            
+        if (doc == null) return NotFound("Dosya bulunamadı.");
+
+        bool isAdmin = User.IsInRole("Admin");
+        
+        // Kural 1: Sadece yükleyen kişi silebilir (Admin hariç)
+        if (!isAdmin && doc.UploadedById != CurrentUserId)
+        {
+            return BadRequest("Sadece kendi yüklediğiniz dokümanları silebilirsiniz.");
+        }
+
+        // Kural 2: Sadece yüklendiği aşamada silinebilir (Admin hariç)
+        var currentStage = GetCurrentStage(doc.Complaint);
+        if (!isAdmin && doc.UploadedAtStage != currentStage)
+        {
+            return BadRequest($"Bu doküman '{doc.UploadedAtStage}' aşamasında yüklenmiş. Şu anki aşama '{currentStage}' olduğu için silemezsiniz.");
+        }
+
+        // Dosyayı fiziksel olarak sil
+        var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", doc.FilePath.TrimStart('/'));
+        if (System.IO.File.Exists(fullPath))
+        {
+            System.IO.File.Delete(fullPath);
+        }
+
+        _context.ComplaintDocuments.Remove(doc);
+        await _context.SaveChangesAsync();
+
+        await LogActivityAsync("Dosya Silindi", $"Şikayet No: {doc.Complaint.ComplaintNumber}, Dosya: {doc.FileName}");
+
+        return NoContent();
     }
 
     [HttpGet("documents/{documentId}/download")]
@@ -753,13 +793,18 @@ public class ComplaintsController : ControllerBase
         return "Açık/ZD";
     }
 
+    private static string GetCurrentStage(Domain.Entities.Complaint c)
+    {
+        return c.IsCustomerFeedbackDone ? "Aksiyon Planı" :
+               (c.IsManagementApproved == true ? "Müşteri Geri Dönüşü" :
+               (c.IsQualityReported ? "Yönetim Onayı" : "Kalite Raporlaması"));
+    }
+
     private static ComplaintDto MapToDto(Domain.Entities.Complaint c) => new(
         c.Id,
         c.ComplaintNumber,
         GetDescriptiveStatus(c),
-        c.IsCustomerFeedbackDone ? "Aksiyon Planı" :
-        (c.IsManagementApproved == true ? "Müşteri Geri Dönüşü" :
-        (c.IsQualityReported ? "Yönetim Onayı" : "Kalite Raporlaması")),
+        GetCurrentStage(c),
         c.CustomerName,
         c.ProjectName,
         c.ProjectLocation,
@@ -808,6 +853,7 @@ public class ComplaintsController : ControllerBase
             d.FileType,
             d.UploadedBy?.Name ?? "Bilinmiyor",
             d.UploadedAt,
+            d.UploadedAtStage,
             d.Is8DReport
         )),
         c.HasTargetDate,

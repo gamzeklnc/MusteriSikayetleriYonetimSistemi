@@ -14,9 +14,10 @@ interface Props {
     onClose: () => void;
     onSuccess: () => void;
     onUpload?: (newDoc: ComplaintDocument) => void;
+    onDelete?: (docId: number) => void;
 }
 
-export default function QualityReportModal({ complaint, onClose, onSuccess, onUpload }: Props) {
+export default function QualityReportModal({ complaint, onClose, onSuccess, onUpload, onDelete }: Props) {
     const { user } = useAuthStore();
     const isAdmin = user?.role === 'Admin';
 
@@ -219,7 +220,9 @@ export default function QualityReportModal({ complaint, onClose, onSuccess, onUp
                         <DocumentSection 
                             complaintId={complaint.id} 
                             initialDocuments={complaint.documents} 
+                            currentStage={complaint.currentDepartmentName}
                             onUpload={onUpload}
+                            onDelete={onDelete}
                             canUpload={!isLocked || isAdmin}
                         />
                     </div>

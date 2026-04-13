@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export default function Sidebar() {
     const pathname = usePathname();
@@ -46,7 +47,7 @@ export default function Sidebar() {
             <div className="px-6 pt-5 pb-4 mb-2 border-b border-white/5 bg-gradient-to-b from-white/5 to-transparent">
                 <div className="flex flex-col items-center gap-3">
                     <div className="bg-white p-3 rounded-xl w-full flex items-center justify-center shadow-2xl shadow-black/40 transform hover:scale-[1.02] transition-transform duration-300">
-                        <img src="/hsa-logo.png" alt="HSA Enerji" className="h-8 w-auto object-contain" />
+                        <Image src="/hsa-logo.png" alt="HSA Enerji" width={40} height={32} className="h-8 w-auto object-contain" />
                     </div>
                     <div className="text-center">
                         <h1 className="text-white font-extrabold text-xs tracking-tight leading-snug drop-shadow-[0_2px_3px_rgba(0,0,0,1)] uppercase">

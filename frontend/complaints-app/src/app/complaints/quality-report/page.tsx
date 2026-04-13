@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
-import { ComplaintDto } from '@/types/complaint';
+import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
 import QualityReportModal from '@/components/complaints/QualityReportModal';
 import StatusBadge from '@/components/complaints/StatusBadge';
 import { useAuthStore } from '@/store/authStore';
@@ -279,7 +279,7 @@ export default function QualityReportPage() {
                     complaint={selectedComplaint}
                     onClose={() => setSelectedComplaint(null)}
                     onSuccess={fetchComplaints}
-                    onUpload={(newDoc: any) => {
+                    onUpload={(newDoc: ComplaintDocument) => {
                         setSelectedComplaint({
                             ...selectedComplaint,
                             documents: [...(selectedComplaint.documents || []), newDoc]
@@ -289,6 +289,19 @@ export default function QualityReportPage() {
                             ? { ...c, documents: [...(c.documents || []), newDoc] } 
                             : c
                         ));
+                    }}
+                    onDelete={(docId: number) => {
+                        if (selectedComplaint) {
+                            setSelectedComplaint({
+                                ...selectedComplaint,
+                                documents: selectedComplaint.documents?.filter(d => d.id !== docId) || []
+                            });
+                            setComplaints(prev => prev.map(c => 
+                                c.id === selectedComplaint.id 
+                                ? { ...c, documents: c.documents?.filter(d => d.id !== docId) || [] } 
+                                : c
+                            ));
+                        }
                     }}
                 />
             )}

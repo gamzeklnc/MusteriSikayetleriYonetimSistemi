@@ -20,6 +20,7 @@ interface Props {
     complaint: ComplaintDto;
     onClose: () => void;
     onUpload?: (newDoc: ComplaintDocument) => void;
+    onDelete?: (id: number) => void;
     showOperationalStageUpdate?: boolean;
     onOperationalStageUpdate?: (newComplaint: ComplaintDto) => void;
 }
@@ -60,10 +61,10 @@ export default function ComplaintDetailModal({
     });
 
     const [barcodeJusts, setBarcodeJusts] = useState<Record<string, boolean | null>>(
-        complaint.barcodeResults?.reduce((acc: any, br) => {
+        complaint.barcodeResults?.reduce((acc: Record<string, boolean | null>, br) => {
             acc[br.barcode] = br.isJustified;
             return acc;
-        }, {}) || {}
+        }, {} as Record<string, boolean | null>) || {}
     );
 
     const formatDate = (dateString: string) => {
@@ -199,7 +200,7 @@ export default function ComplaintDetailModal({
                 unjustifiedOtherCount: justificationCounts.uother,
                 has8DReport: has8DReport,
                 barcodeResults: Object.entries(barcodeJusts)
-                    .filter(([_, val]) => val !== null)
+                    .filter(([, val]) => val !== null)
                     .map(([bc, val]) => ({ id: 0, barcode: bc, isJustified: !!val }))
             });
             if (onOperationalStageUpdate) {
@@ -228,7 +229,7 @@ export default function ComplaintDetailModal({
                 unjustifiedOtherCount: justificationCounts.uother,
                 has8DReport: has8DReport,
                 barcodeResults: Object.entries(barcodeJusts)
-                    .filter(([_, val]) => val !== null)
+                    .filter(([, val]) => val !== null)
                     .map(([bc, val]) => ({ id: 0, barcode: bc, isJustified: !!val }))
             });
             setNote('');
@@ -355,12 +356,12 @@ export default function ComplaintDetailModal({
                     <div className="flex items-center gap-3">
                         <button
                             onClick={handleExportExcel}
-                            className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 text-sm font-bold rounded-lg transition-colors border border-emerald-200" title="Excel'e Aktar"
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 text-sm font-bold rounded-lg transition-colors border border-emerald-200" title="Excel&apos;e Aktar"
                         >
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            Excel'e Aktar
+                            Excel&apos;e Aktar
                         </button>
                         <button
                             onClick={onClose}
@@ -660,7 +661,9 @@ export default function ComplaintDetailModal({
                                             ref={docSectionRef}
                                             complaintId={complaint.id} 
                                             initialDocuments={complaint.documents} 
+                                            currentStage={complaint.currentDepartmentName}
                                             onUpload={onUpload}
+                                            onDelete={onDelete}
                                             canUpload={!isClosed && canEditActions}
                                             is8DOnly={true}
                                             title='8D/DF Dokümanı ve Ekler'
@@ -871,7 +874,9 @@ export default function ComplaintDetailModal({
                         <DocumentSection 
                             complaintId={complaint.id} 
                             initialDocuments={complaint.documents} 
+                            currentStage={complaint.currentDepartmentName}
                             onUpload={onUpload}
+                            onDelete={onDelete}
                             canUpload={!isClosed && canEditActions}
                             is8DOnly={false}
                             title='İlgili Dokümanlar'

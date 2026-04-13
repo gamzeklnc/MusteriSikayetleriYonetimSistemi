@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
-import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
+import { ComplaintDto } from '@/types/complaint';
 import ComplaintDetailModal from '@/components/complaints/ComplaintDetailModal';
 import StatusBadge from '@/components/complaints/StatusBadge';
 import * as XLSX from 'xlsx-js-style';
@@ -165,12 +165,12 @@ export default function ComplaintsPage() {
                     <div className="flex items-center gap-3">
                         <button
                             onClick={handleExportExcel}
-                            className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2  tracking-wider"title="Excel'e Aktar"
+                            className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2  tracking-wider"title="Excel&apos;e Aktar"
                         >
                             <svg className="w-4 h-4"fill="none"viewBox="0 0 24 24"stroke="currentColor">
                                 <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>
-                            EXCEL'E AKTAR
+                            EXCEL&apos;E AKTAR
                         </button>
                         <Link
                             href="/complaints/new"className="px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2  tracking-wider"
@@ -308,7 +308,6 @@ export default function ComplaintsPage() {
                                 ) : (
                                     filteredComplaints.map((complaint) => {
                                         const isTargetOverdue = complaint.status.startsWith('Açık') && complaint.targetDate && new Date(complaint.targetDate) < new Date();
-                                        const isOverdue = complaint.status.includes('Gecikti');
                                         return (
                                             <tr key={complaint.id} className={`${isTargetOverdue ? 'bg-red-50/80 hover:bg-red-100/80' : 'hover:bg-blue-50/30'} transition-colors group text-[11px] text-slate-700`}>
                                             <td className="px-1.5 py-1.5 font-semibold text-slate-900">
@@ -388,7 +387,7 @@ export default function ComplaintsPage() {
                                             <td className="px-1.5 py-1.5 text-right">
                                                 <button
                                                     onClick={() => setSelectedComplaint(complaint)}
-                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"title="Detayları Görüntüle"
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"title="Detaylar&apos;ı Görüntüle"
                                                 >
                                                     <svg className="w-4 h-4"fill="none"viewBox="0 0 24 24"stroke="currentColor">
                                                         <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -419,6 +418,17 @@ export default function ComplaintsPage() {
                         setComplaints(prev => prev.map(c => 
                             c.id === selectedComplaint.id 
                             ? { ...c, documents: [...(c.documents || []), newDoc] } 
+                            : c
+                        ));
+                    }}
+                    onDelete={(docId: number) => {
+                        setSelectedComplaint({
+                            ...selectedComplaint,
+                            documents: selectedComplaint.documents?.filter(d => d.id !== docId) || []
+                        });
+                        setComplaints(prev => prev.map(c => 
+                            c.id === selectedComplaint.id 
+                            ? { ...c, documents: c.documents?.filter(d => d.id !== docId) || [] } 
                             : c
                         ));
                     }}

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { authService } from '@/services/authService';
 import { useAuthStore } from '@/store/authStore';
 import { Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
+import Image from 'next/image';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -56,8 +57,8 @@ export default function LoginPage() {
                     <div className="mb-12 flex justify-center">
                         <div className="inline-flex items-center justify-center bg-white p-6 rounded-3xl shadow-xl border border-white/20">
                             {/* Logo Image */}
-                            <img 
-                                src="/hsa-logo.png"alt="HSA Enerji Logo"className="h-24 md:h-32 w-auto object-contain"
+                            <Image 
+                                src="/hsa-logo.png"alt="HSA Enerji Logo"width={128} height={128} className="h-24 md:h-32 w-auto object-contain"
                             />
                         </div>
                     </div>

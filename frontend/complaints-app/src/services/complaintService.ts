@@ -11,6 +11,7 @@ import type {
     CustomerFeedbackRequest,
     OperationalStageRequest,
     UpdateTargetDateRequest,
+    UpdateComplaintRequest,
     ComplaintDocument,
     DashboardStats
 } from '@/types/complaint';
@@ -74,7 +75,7 @@ export const complaintService = {
         return res.data;
     },
 
-    update: async (id: number, data: any): Promise<void> => {
+    update: async (id: number, data: UpdateComplaintRequest): Promise<void> => {
         await apiClient.put(`/api/complaints/${id}`, data);
     },
 
@@ -116,5 +117,9 @@ export const complaintService = {
         const blob = new Blob([response.data], { type: response.headers['content-type'] });
         const url = window.URL.createObjectURL(blob);
         return { blob, url };
+    },
+    
+    deleteDocument: async (documentId: number): Promise<void> => {
+        await apiClient.delete(`/api/complaints/documents/${documentId}`);
     }
 };

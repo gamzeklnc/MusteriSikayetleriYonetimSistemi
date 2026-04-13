@@ -22,6 +22,7 @@ public class ComplaintDocument
     
     public int UploadedById { get; set; }
     public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
+    public string UploadedAtStage { get; set; } = string.Empty;
     public bool Is8DReport { get; set; } = false;
 
     // Navigation

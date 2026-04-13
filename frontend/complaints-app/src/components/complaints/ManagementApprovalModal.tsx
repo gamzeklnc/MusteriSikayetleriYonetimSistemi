@@ -12,9 +12,10 @@ interface Props {
     onClose: () => void;
     onSuccess: () => void;
     onUpload?: (newDoc: ComplaintDocument) => void;
+    onDelete?: (docId: number) => void;
 }
 
-export default function ManagementApprovalModal({ complaint, onClose, onSuccess, onUpload }: Props) {
+export default function ManagementApprovalModal({ complaint, onClose, onSuccess, onUpload, onDelete }: Props) {
     const { user } = useAuthStore();
     const isAdmin = user?.role === 'Admin';
 
@@ -179,7 +180,9 @@ export default function ManagementApprovalModal({ complaint, onClose, onSuccess,
                         <DocumentSection 
                             complaintId={complaint.id} 
                             initialDocuments={complaint.documents} 
+                            currentStage={complaint.currentDepartmentName}
                             onUpload={onUpload}
+                            onDelete={onDelete}
                             canUpload={complaint.isManagementApproved === null || isAdmin}
                         />
                     </div>

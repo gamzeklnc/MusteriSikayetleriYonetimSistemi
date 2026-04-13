@@ -120,6 +120,7 @@ public record ComplaintDocumentDto(
     string FileType,
     string UploadedByName,
     DateTime UploadedAt,
+    string UploadedAtStage,
     bool Is8DReport
 );
 
