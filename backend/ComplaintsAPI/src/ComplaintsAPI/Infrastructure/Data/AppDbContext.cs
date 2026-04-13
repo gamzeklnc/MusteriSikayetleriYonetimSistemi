@@ -63,6 +63,14 @@ public class AppDbContext : DbContext
             e.HasKey(x => x.Id);
             e.Property(x => x.ComplaintNumber).IsRequired().HasMaxLength(50);
             e.HasIndex(x => x.ComplaintNumber).IsUnique();
+            e.HasIndex(x => x.CreatedAt);
+            e.HasIndex(x => x.RegistrationDate);
+            e.HasIndex(x => x.ComplaintDate);
+            e.HasIndex(x => x.Status);
+            e.HasIndex(x => x.CurrentDepartmentId);
+            e.HasIndex(x => x.Brand);
+            e.HasIndex(x => new { x.CurrentDepartmentId, x.Status });
+            e.HasIndex(x => new { x.ComplaintDate, x.Brand });
 
             e.Property(x => x.Status).IsRequired().HasMaxLength(20).HasDefaultValue("Acik");
             e.Property(x => x.CustomerName).IsRequired().HasMaxLength(200);
@@ -190,9 +198,10 @@ public class AppDbContext : DbContext
                 Id = 1, 
                 Name = "Sistem Yöneticisi", 
                 Email = "admin@sirket.com", 
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"), 
+                PasswordHash = "$2a$11$P3kNTepbQzw8ZluWSL4GyuF44YonfQkVEGdBdpjL7IQoS9EUwuzBa", 
                 Role = UserRole.Admin, 
-                DepartmentId = 5 
+                DepartmentId = 5,
+                CreatedAt = new DateTime(2026, 4, 13, 6, 54, 53, 504, DateTimeKind.Utc).AddTicks(1966)
             }
         );
     }

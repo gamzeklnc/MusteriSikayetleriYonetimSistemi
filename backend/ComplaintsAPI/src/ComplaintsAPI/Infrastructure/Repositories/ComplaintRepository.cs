@@ -17,13 +17,7 @@ public class ComplaintRepository : IComplaintRepository
     public async Task<IEnumerable<Complaint>> GetAllAsync(int? departmentId = null, string? status = null)
     {
         var query = _context.Complaints
-            .Include(c => c.CurrentDepartment)
-            .Include(c => c.CreatedBy)
-            .Include(c => c.QualityReportedBy)
-            .Include(c => c.ManagementApprovedBy)
-            .Include(c => c.Documents)
-                .ThenInclude(d => d.UploadedBy)
-            .Include(c => c.BarcodeResults)
+            .AsNoTracking()
             .AsQueryable();
 
         if (departmentId.HasValue)
@@ -32,7 +26,17 @@ public class ComplaintRepository : IComplaintRepository
         if (!string.IsNullOrEmpty(status))
             query = query.Where(c => c.Status.ToString() == status);
 
-        return await query.OrderByDescending(c => c.CreatedAt).ToListAsync();
+        return await query
+            .Include(c => c.CurrentDepartment)
+            .Include(c => c.CreatedBy)
+            .Include(c => c.QualityReportedBy)
+            .Include(c => c.ManagementApprovedBy)
+            .Include(c => c.Documents)
+                .ThenInclude(d => d.UploadedBy)
+            .Include(c => c.BarcodeResults)
+            .AsSplitQuery()
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync();
     }
 
     public async Task<Complaint?> GetByIdAsync(int id)
@@ -48,6 +52,17 @@ public class ComplaintRepository : IComplaintRepository
                 .ThenInclude(h => h.ChangedBy)
             .Include(c => c.BarcodeResults)
             .FirstOrDefaultAsync(c => c.Id == id);
+    }
+
+    public async Task<string?> GetLatestComplaintNumberForYearAsync(int year)
+    {
+        return await _context.Complaints
+            .AsNoTracking()
+            .Where(c => c.RegistrationDate.Year == year)
+            .OrderByDescending(c => c.RegistrationDate)
+            .ThenByDescending(c => c.Id)
+            .Select(c => c.ComplaintNumber)
+            .FirstOrDefaultAsync();
     }
 
     public async Task<Complaint> CreateAsync(Complaint complaint)

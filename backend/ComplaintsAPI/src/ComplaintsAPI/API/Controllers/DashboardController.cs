@@ -30,7 +30,13 @@ public class DashboardController : ControllerBase
         [FromQuery] string? targetCustomer = null,
         [FromQuery] string? targetError = null)
     {
-        var query = _context.Complaints.AsQueryable();
+        var query = _context.Complaints
+            .AsNoTracking()
+            .AsQueryable();
+
+        var normalizedBrand = brand?.Trim().ToUpper();
+        var normalizedCustomer = targetCustomer?.Trim().ToUpper();
+        var normalizedError = targetError?.Trim().ToUpper();
 
         if (startDate.HasValue)
             query = query.Where(c => c.ComplaintDate >= startDate.Value);
@@ -38,34 +44,60 @@ public class DashboardController : ControllerBase
         if (endDate.HasValue)
             query = query.Where(c => c.ComplaintDate <= endDate.Value);
 
-        if (!string.IsNullOrWhiteSpace(brand)) 
-            query = query.Where(c => c.Brand != null && c.Brand.ToUpper() == brand.ToUpper());
+        if (!string.IsNullOrWhiteSpace(normalizedBrand)) 
+            query = query.Where(c => c.Brand != null && c.Brand.ToUpper() == normalizedBrand);
 
-        if (!string.IsNullOrWhiteSpace(targetCustomer)) 
-            query = query.Where(c => c.CustomerName != null && c.CustomerName.ToUpper() == targetCustomer.ToUpper());
+        if (!string.IsNullOrWhiteSpace(normalizedCustomer)) 
+            query = query.Where(c => c.CustomerName != null && c.CustomerName.ToUpper() == normalizedCustomer);
 
-        if (!string.IsNullOrWhiteSpace(targetError)) 
-            query = query.Where(c => c.ErrorDefinition != null && c.ErrorDefinition.ToUpper().Contains(targetError.ToUpper()));
+        if (!string.IsNullOrWhiteSpace(normalizedError)) 
+            query = query.Where(c => c.ErrorDefinition != null && c.ErrorDefinition.ToUpper().Contains(normalizedError));
 
         // Global Stats (No filters)
-        var globalQuery = _context.Complaints.AsQueryable();
-        var globalTotal = await globalQuery.CountAsync();
-        var globalOpen = await globalQuery.CountAsync(c => c.Status != "Kapali");
-        var globalClosed = await globalQuery.CountAsync(c => c.Status == "Kapali");
-        var globalJustified = await globalQuery.SumAsync(c => (long)(c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount));
-        var globalUnjustified = await globalQuery.SumAsync(c => (long)(c.UnjustifiedHsa1Count + c.UnjustifiedHsa2Count + c.UnjustifiedOtherCount));
-        
-        var globalProductionCount = await _context.ProductionCounts.SumAsync(p => (long)p.Count);
+        var globalQuery = _context.Complaints
+            .AsNoTracking()
+            .AsQueryable();
+        var globalAggregates = await globalQuery
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                Total = g.Count(),
+                Open = g.Count(c => c.Status != "Kapali"),
+                Closed = g.Count(c => c.Status == "Kapali"),
+                Justified = g.Sum(c => (long)(c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount)),
+                Unjustified = g.Sum(c => (long)(c.UnjustifiedHsa1Count + c.UnjustifiedHsa2Count + c.UnjustifiedOtherCount))
+            })
+            .FirstOrDefaultAsync();
+        var globalTotal = globalAggregates?.Total ?? 0;
+        var globalOpen = globalAggregates?.Open ?? 0;
+        var globalClosed = globalAggregates?.Closed ?? 0;
+        var globalJustified = globalAggregates?.Justified ?? 0;
+        var globalUnjustified = globalAggregates?.Unjustified ?? 0;
+
+        var globalProductionCount = await _context.ProductionCounts
+            .AsNoTracking()
+            .SumAsync(p => (long)p.Count);
         double globalRatio = globalProductionCount > 0 ? (double)globalJustified * 100 / globalProductionCount : 0;
 
         // Filtered Stats
-        var total = await query.CountAsync();
-        var open = await query.CountAsync(c => c.Status != "Kapali");
-        var closed = await query.CountAsync(c => c.Status == "Kapali");
+        var filteredAggregates = await query
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                Total = g.Count(),
+                Open = g.Count(c => c.Status != "Kapali"),
+                Closed = g.Count(c => c.Status == "Kapali"),
+                Justified = g.Sum(c => (long)(c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount)),
+                Unjustified = g.Sum(c => (long)(c.UnjustifiedHsa1Count + c.UnjustifiedHsa2Count + c.UnjustifiedOtherCount))
+            })
+            .FirstOrDefaultAsync();
+        var total = filteredAggregates?.Total ?? 0;
+        var open = filteredAggregates?.Open ?? 0;
+        var closed = filteredAggregates?.Closed ?? 0;
         
         // Ürün bazlı haklılık hesaplaması
-        var justifiedProducts = await query.SumAsync(c => (long)(c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount));
-        var unjustifiedProducts = await query.SumAsync(c => (long)(c.UnjustifiedHsa1Count + c.UnjustifiedHsa2Count + c.UnjustifiedOtherCount));
+        var justifiedProducts = filteredAggregates?.Justified ?? 0;
+        var unjustifiedProducts = filteredAggregates?.Unjustified ?? 0;
         
         var totalEvaluated = justifiedProducts + unjustifiedProducts;
         double ratio = totalEvaluated > 0 ? (double)justifiedProducts / totalEvaluated : 0;
@@ -91,6 +123,7 @@ public class DashboardController : ControllerBase
 
         var stats = new List<MonthlyStatDto>();
         int runningTotal = await _context.Complaints
+            .AsNoTracking()
             .Where(c => c.ComplaintDate < effectiveStartDate)
             .CountAsync();
 
@@ -121,27 +154,33 @@ public class DashboardController : ControllerBase
 
         // 1. Half (Jan-Jun)
         var firstHalfJustified = await _context.Complaints
+            .AsNoTracking()
             .Where(c => c.ComplaintDate.Year == currentYear && c.ComplaintDate.Month >= 1 && c.ComplaintDate.Month <= 6)
             .SumAsync(c => c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount);
 
         var firstHalfProduction = await _context.ProductionCounts
+            .AsNoTracking()
             .Where(p => p.Year == currentYear && p.Month >= 1 && p.Month <= 6)
             .SumAsync(p => (long)p.Count); // Long for safety
 
         // 2. Half (Jul-Dec)
         var secondHalfJustified = await _context.Complaints
+            .AsNoTracking()
             .Where(c => c.ComplaintDate.Year == currentYear && c.ComplaintDate.Month >= 7 && c.ComplaintDate.Month <= 12)
             .SumAsync(c => c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount);
 
         var secondHalfProduction = await _context.ProductionCounts
+            .AsNoTracking()
             .Where(p => p.Year == currentYear && p.Month >= 7 && p.Month <= 12)
             .SumAsync(p => (long)p.Count);
 
         // Cumulative (All time)
         var cumulativeJustified = await _context.Complaints
+            .AsNoTracking()
             .SumAsync(c => c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount);
 
         var cumulativeProduction = await _context.ProductionCounts
+            .AsNoTracking()
             .SumAsync(p => (long)p.Count);
 
         var chartData = new JustificationChartDto(
@@ -152,11 +191,13 @@ public class DashboardController : ControllerBase
 
         // Yearly Justification Stats
         var productionByYear = await _context.ProductionCounts
+            .AsNoTracking()
             .GroupBy(p => p.Year)
             .Select(g => new { Year = g.Key, TotalProduction = g.Sum(p => (long)p.Count) })
             .ToListAsync();
 
         var justifiedByYear = await _context.Complaints
+            .AsNoTracking()
             .GroupBy(c => c.ComplaintDate.Year)
             .Select(g => new { Year = g.Key, TotalJustified = g.Sum(c => c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount) })
             .ToListAsync();
@@ -175,10 +216,12 @@ public class DashboardController : ControllerBase
         var monthlyJustificationStats = new List<MonthlyJustificationRateDto>();
 
         var productionByMonthThisYear = await _context.ProductionCounts
+            .AsNoTracking()
             .Where(p => p.Year == targetYear)
             .ToListAsync();
 
         var justifiedByMonthThisYear = await _context.Complaints
+            .AsNoTracking()
             .Where(c => c.ComplaintDate.Year == targetYear)
             .GroupBy(c => c.ComplaintDate.Month)
             .Select(g => new { Month = g.Key, TotalJustified = g.Sum(c => c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount) })
@@ -219,13 +262,14 @@ public class DashboardController : ControllerBase
             .OrderByDescending(b => b.ComplaintCount)
             .ToList();
 
-        if (!string.IsNullOrWhiteSpace(brand))
+        if (!string.IsNullOrWhiteSpace(normalizedBrand))
         {
             if (!startDate.HasValue && !endDate.HasValue)
             {
                 // Special case: Single Brand across All Years
-                var bUpper = brand.Trim().ToUpper();
+                var bUpper = normalizedBrand;
                 var yearlyBrandRaw = await _context.Complaints
+                    .AsNoTracking()
                     .Where(c => !string.IsNullOrWhiteSpace(c.Brand) && c.Brand.Trim().ToUpper() == bUpper)
                     .GroupBy(c => c.ComplaintYear)
                     .Select(g => new { 
@@ -237,6 +281,7 @@ public class DashboardController : ControllerBase
 
                 var yearListForProduction = yearlyBrandRaw.Select(y => y.Year).ToList();
                 var productionsForYears = await _context.ProductionCounts
+                    .AsNoTracking()
                     .Where(p => yearListForProduction.Contains(p.Year))
                     .GroupBy(p => p.Year)
                     .Select(g => new { Year = g.Key, Total = g.Sum(p => (long)p.Count) })
@@ -252,11 +297,12 @@ public class DashboardController : ControllerBase
             }
             else
             {
-                brandStats = brandStats.Where(b => b.BrandName == brand.Trim().ToUpper()).ToList();
+                brandStats = brandStats.Where(b => b.BrandName == normalizedBrand).ToList();
             }
         }
 
         var allBrands = await _context.Complaints
+            .AsNoTracking()
             .Where(c => !string.IsNullOrWhiteSpace(c.Brand))
             .Select(c => c.Brand!.Trim().ToUpper())
             .Distinct()
@@ -324,10 +370,10 @@ public class DashboardController : ControllerBase
             foreach (var err in errors)
             {
                 // If targetError label is specified in query, we can filter further
-                if (!string.IsNullOrWhiteSpace(targetError) && err.ToUpper() != targetError.ToUpper()) continue;
+                if (!string.IsNullOrWhiteSpace(normalizedError) && err.ToUpper() != normalizedError) continue;
 
                 // Label logic: If a single customer is selected, show error breakdown. Otherwise show customer distribution.
-                string label = string.IsNullOrWhiteSpace(targetCustomer) ? cust : err;
+                string label = string.IsNullOrWhiteSpace(normalizedCustomer) ? cust : err;
                 
                 if (!customerErrorCounts.ContainsKey(label)) customerErrorCounts[label] = 0;
                 customerErrorCounts[label]++;
@@ -341,11 +387,13 @@ public class DashboardController : ControllerBase
             .ToList();
 
         var allCustomers = await _context.Complaints
+            .AsNoTracking()
             .Where(c => !string.IsNullOrWhiteSpace(c.CustomerName))
             .Select(c => c.CustomerName.Trim().ToUpper())
             .Distinct().OrderBy(x => x).ToListAsync();
 
         var allErrorList = await _context.Complaints
+            .AsNoTracking()
             .Where(c => !string.IsNullOrWhiteSpace(c.ErrorDefinition))
             .Select(c => c.ErrorDefinition)
             .ToListAsync();

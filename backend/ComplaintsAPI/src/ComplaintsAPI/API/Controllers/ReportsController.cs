@@ -20,18 +20,27 @@ public class ReportsController : ControllerBase
     [HttpGet("statistics")]
     public async Task<IActionResult> GetStatistics()
     {
-        var complaints = await _context.Complaints
-            .Include(c => c.CurrentDepartment)
+        var totals = await _context.Complaints
+            .AsNoTracking()
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                Total = g.Count(),
+                Open = g.Count(c => c.Status == "Acik"),
+                Closed = g.Count(c => c.Status == "Kapali")
+            })
+            .FirstOrDefaultAsync();
+
+        var byDepartment = await _context.Complaints
+            .AsNoTracking()
+            .GroupBy(c => c.CurrentDepartment.Name)
+            .Select(g => new DepartmentStatDto(g.Key, g.Count()))
             .ToListAsync();
 
-        var byDepartment = complaints
-            .GroupBy(c => c.CurrentDepartment.Name)
-            .Select(g => new DepartmentStatDto(g.Key, g.Count()));
-
         var result = new ComplaintStatisticsDto(
-            TotalComplaints: complaints.Count,
-            OpenComplaints: complaints.Count(c => c.Status == "Acik"),
-            ClosedComplaints: complaints.Count(c => c.Status == "Kapali"),
+            TotalComplaints: totals?.Total ?? 0,
+            OpenComplaints: totals?.Open ?? 0,
+            ClosedComplaints: totals?.Closed ?? 0,
             ByDepartment: byDepartment
         );
 
@@ -43,7 +52,7 @@ public class ReportsController : ControllerBase
     public async Task<IActionResult> GetByDepartment()
     {
         var result = await _context.Complaints
-            .Include(c => c.CurrentDepartment)
+            .AsNoTracking()
             .GroupBy(c => c.CurrentDepartment.Name)
             .Select(g => new DepartmentStatDto(g.Key, g.Count()))
             .ToListAsync();

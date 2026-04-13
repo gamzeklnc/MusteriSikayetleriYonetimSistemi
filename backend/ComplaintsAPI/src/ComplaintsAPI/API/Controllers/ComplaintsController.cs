@@ -105,21 +105,15 @@ public class ComplaintsController : ControllerBase
         var today = DateTime.Now;
         var yearPart = today.ToString("yy"); // Son iki hane (Örn: 26)
         
-        var complaintsThisYear = (await _repo.GetAllAsync(null, null))
-            .Where(x => x.RegistrationDate.Year == today.Year)
-            .ToList();
-            
         int nextId = 1;
-        if (complaintsThisYear.Any())
+        var latestComplaintNumber = await _repo.GetLatestComplaintNumberForYearAsync(today.Year);
+        if (!string.IsNullOrWhiteSpace(latestComplaintNumber))
         {
-            var maxIdStr = complaintsThisYear
-                .Select(x => x.ComplaintNumber.Split('-').LastOrDefault())
-                .Where(x => int.TryParse(x, out _))
-                .Select(x => int.Parse(x!))
-                .DefaultIfEmpty(0)
-                .Max();
-                
-            nextId = maxIdStr + 1;
+            var maxIdStr = latestComplaintNumber.Split('-').LastOrDefault();
+            if (int.TryParse(maxIdStr, out var parsedId))
+            {
+                nextId = parsedId + 1;
+            }
         }
         
         complaint.ComplaintNumber = $"{yearPart}-{nextId:D2}";
@@ -754,8 +748,8 @@ public class ComplaintsController : ControllerBase
         var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", doc.FilePath.TrimStart('/'));
         if (!System.IO.File.Exists(fullPath)) return NotFound("Dosya sunucuda bulunamadı.");
 
-        var content = await System.IO.File.ReadAllBytesAsync(fullPath);
-        return File(content, doc.FileType, doc.FileName);
+        var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+        return File(stream, doc.FileType, doc.FileName);
     }
 
     // ── Yardımcı Mapper ───────────────────────────────────────────────────────

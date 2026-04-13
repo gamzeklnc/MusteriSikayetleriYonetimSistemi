@@ -481,6 +481,7 @@ export default function DashboardPage() {
 
     const fetchBrandStats = useCallback(async () => {
         try {
+            if (brandYear === 'Hepsi' && brandFilter === 'Hepsi') return;
             let sDate = undefined, eDate = undefined;
             if (brandYear !== 'Hepsi') { sDate = `${brandYear}-01-01`; eDate = `${brandYear}-12-31`; }
             const brnd = brandFilter === 'Hepsi' ? undefined : brandFilter;
@@ -491,6 +492,7 @@ export default function DashboardPage() {
 
     const fetchErrorStats = useCallback(async () => {
         try {
+            if (errorYear === 'Hepsi') return;
             let sDate = undefined, eDate = undefined;
             if (errorYear !== 'Hepsi') { sDate = `${errorYear}-01-01`; eDate = `${errorYear}-12-31`; }
             const data = await complaintService.getDashboardStats(sDate, eDate);
@@ -500,6 +502,7 @@ export default function DashboardPage() {
 
     const fetchSourceStats = useCallback(async () => {
         try {
+            if (sourceYear === 'Hepsi') return;
             let sDate = undefined, eDate = undefined;
             if (sourceYear !== 'Hepsi') { sDate = `${sourceYear}-01-01`; eDate = `${sourceYear}-12-31`; }
             const data = await complaintService.getDashboardStats(sDate, eDate);
@@ -509,6 +512,7 @@ export default function DashboardPage() {
 
     const fetchC8Stats = useCallback(async () => {
         try {
+            if (c8Year === 'Hepsi' && c8Customer === 'Hepsi' && c8Error === 'Hepsi') return;
             let sDate = undefined, eDate = undefined;
             if (c8Year !== 'Hepsi') { sDate = `${c8Year}-01-01`; eDate = `${c8Year}-12-31`; }
             const cust = c8Customer === 'Hepsi' ? undefined : c8Customer;

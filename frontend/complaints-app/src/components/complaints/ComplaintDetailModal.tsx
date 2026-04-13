@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import * as XLSX from 'xlsx-js-style';
 import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
 import { parseSingleBarcode } from '@/utils/barcodeParser';
 import DocumentSection, { DocumentSectionRef } from './DocumentSection';
@@ -29,6 +28,7 @@ export default function ComplaintDetailModal({
     complaint, 
     onClose, 
     onUpload,
+    onDelete,
     showOperationalStageUpdate = false,
     onOperationalStageUpdate 
 }: Props) {
@@ -81,7 +81,8 @@ export default function ComplaintDetailModal({
         return parsed.factory === barcodeFilter;
     }) || [];
 
-    const handleExportExcel = () => {
+    const handleExportExcel = async () => {
+        const XLSX = await import('xlsx-js-style');
         // Prepare headers matching the main table + Barcode info
         const headers = [
             'Şikayet No',

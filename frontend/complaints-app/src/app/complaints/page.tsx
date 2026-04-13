@@ -7,7 +7,6 @@ import { complaintService } from '@/services/complaintService';
 import { ComplaintDto } from '@/types/complaint';
 import ComplaintDetailModal from '@/components/complaints/ComplaintDetailModal';
 import StatusBadge from '@/components/complaints/StatusBadge';
-import * as XLSX from 'xlsx-js-style';
 
 export default function ComplaintsPage() {
     const [complaints, setComplaints] = useState<ComplaintDto[]>([]);
@@ -89,7 +88,8 @@ export default function ComplaintsPage() {
         );
     });
 
-    const handleExportExcel = () => {
+    const handleExportExcel = async () => {
+        const XLSX = await import('xlsx-js-style');
         const exportData = filteredComplaints.map(c => ({
             'Şikayet No': c.complaintNumber,
             'Kayıt Tarihi': formatDate(c.registrationDate),
