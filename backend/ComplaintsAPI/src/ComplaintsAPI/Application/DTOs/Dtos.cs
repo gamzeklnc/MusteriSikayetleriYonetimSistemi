@@ -236,7 +236,7 @@ public record DashboardStatsDto(
     IEnumerable<string> AllErrorLabels
 );
 
-public record MonthlyJustificationRateDto(int Month, double Rate);
+public record MonthlyJustificationRateDto(int Month, double Rate, long ProductionCount);
 
 public record BrandStatDto(string BrandName, int ComplaintCount, double JustificationRate);
 
@@ -248,7 +248,7 @@ public record SourceStatDto(string SourceLabel, int TotalCount, int JustifiedCou
 
 public record CustomerErrorStatDto(string Label, int Count);
 
-public record YearlyJustificationDto(int Year, double Rate);
+public record YearlyJustificationDto(int Year, double Rate, long ProductionCount);
 
 public record JustificationChartDto(
     double FirstHalfRate,

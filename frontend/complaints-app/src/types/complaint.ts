@@ -196,11 +196,13 @@ export interface JustificationChartData {
 export interface YearlyJustificationStat {
     year: number;
     rate: number;
+    productionCount: number;
 }
 
 export interface MonthlyJustificationRateStat {
     month: number;
     rate: number;
+    productionCount: number;
 }
 
 export interface BrandStat {

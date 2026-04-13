@@ -164,7 +164,8 @@ public class DashboardController : ControllerBase
         var yearlyStats = productionByYear
             .Select(p => new YearlyJustificationDto(
                 p.Year,
-                p.TotalProduction > 0 ? (double)(justifiedByYear.FirstOrDefault(j => j.Year == p.Year)?.TotalJustified ?? 0) * 100 / p.TotalProduction : 0
+                p.TotalProduction > 0 ? (double)(justifiedByYear.FirstOrDefault(j => j.Year == p.Year)?.TotalJustified ?? 0) * 100 / p.TotalProduction : 0,
+                p.TotalProduction
             ))
             .OrderBy(y => y.Year)
             .ToList();
@@ -190,7 +191,8 @@ public class DashboardController : ControllerBase
             
             monthlyJustificationStats.Add(new MonthlyJustificationRateDto(
                 m,
-                prod > 0 ? (double)just * 100 / prod : 0
+                prod > 0 ? (double)just * 100 / prod : 0,
+                prod
             ));
         }
 

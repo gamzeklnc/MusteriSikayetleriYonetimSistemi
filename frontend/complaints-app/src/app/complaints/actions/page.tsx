@@ -17,6 +17,7 @@ export default function ActionsPage() {
         complaintNumber: '',
         customerName: '',
         projectName: '',
+        currentDepartmentName: '',
         status: '',
         operationalStage: '',
     });
@@ -50,6 +51,7 @@ export default function ActionsPage() {
             safeMatch(c.complaintNumber, filters.complaintNumber) &&
             safeMatch(c.customerName, filters.customerName) &&
             safeMatch(c.projectName, filters.projectName) &&
+            safeMatch(c.currentDepartmentName, filters.currentDepartmentName) &&
             safeMatch(c.status, filters.status) &&
             safeMatch(c.operationalStage || 'Aşama Belirlenmedi', filters.operationalStage)
         );
@@ -83,6 +85,10 @@ export default function ActionsPage() {
                                         <input type="text" placeholder="Ara..." value={filters.projectName} onChange={e => handleFilterChange('projectName', e.target.value)} className="w-full px-1.5 py-1 border border-slate-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all normal-case" />
                                     </th>
                                     <th className="px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider align-bottom">
+                                        <div className="mb-1.5 text-center">Depertman</div>
+                                        <input type="text" placeholder="Ara..." value={filters.currentDepartmentName} onChange={e => handleFilterChange('currentDepartmentName', e.target.value)} className="w-full px-1.5 py-1 border border-slate-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all normal-case" />
+                                    </th>
+                                    <th className="px-4 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider align-bottom">
                                         <div className="mb-1.5 text-center">Durum</div>
                                         <input type="text" placeholder="Ara..." value={filters.status} onChange={e => handleFilterChange('status', e.target.value)} className="w-full px-1.5 py-1 border border-slate-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all normal-case" />
                                     </th>
@@ -96,11 +102,11 @@ export default function ActionsPage() {
                             <tbody className="divide-y divide-slate-100">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={5} className="px-6 py-12 text-center text-slate-400">Yükleniyor...</td>
+                                        <td colSpan={7} className="px-6 py-12 text-center text-slate-400">Yükleniyor...</td>
                                     </tr>
                                 ) : filteredComplaints.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
+                                        <td colSpan={7} className="px-6 py-12 text-center text-slate-400">
                                             {complaints.length === 0 ? 'Bekleyen operasyonel aksiyon bulunmuyor.' : 'Arama kriterlerine uygun kayıt bulunamadı.'}
                                         </td>
                                     </tr>
@@ -113,6 +119,7 @@ export default function ActionsPage() {
                                             <td className="px-4 py-4 font-mono text-xs font-bold text-blue-600">{c.complaintNumber}</td>
                                             <td className="px-4 py-4 text-sm font-medium text-slate-700">{c.customerName}</td>
                                             <td className="px-4 py-4 text-sm text-slate-600">{c.projectName}</td>
+                                            <td className="px-4 py-4 text-sm text-slate-600 text-center font-semibold">Kalite Güvence</td>
                                             <td className="px-4 py-4 text-center">
                                                 <StatusBadge status={c.status} />
                                             </td>
