@@ -38,7 +38,7 @@ public class AppDbContext : DbContext
             e.HasKey(x => x.Id);
             e.Property(x => x.Name).IsRequired().HasMaxLength(150);
             e.Property(x => x.Email).IsRequired().HasMaxLength(200);
-            e.HasIndex(x => x.Email).IsUnique();
+            e.HasIndex(x => x.Email).IsUnique().HasFilter("[IsDeleted] = 0");
             e.Property(x => x.PasswordHash).IsRequired().HasMaxLength(500);
             e.Property(x => x.Role).HasConversion<string>();
 

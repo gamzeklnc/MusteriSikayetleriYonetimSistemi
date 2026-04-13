@@ -58,6 +58,15 @@ public class UsersController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateUserRequest request)
     {
+        // Aynı e-posta ile aktif bir kullanıcı var mı kontrol et
+        var existingActiveUser = await _context.Users
+            .AnyAsync(u => u.Email == request.Email);
+
+        if (existingActiveUser)
+        {
+            return BadRequest(new { message = "Bu e-posta adresi zaten aktif bir kullanıcı tarafından kullanılmaktadır." });
+        }
+
         var user = new User
         {
             Name = request.Name,

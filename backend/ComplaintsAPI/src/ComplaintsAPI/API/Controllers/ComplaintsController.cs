@@ -426,6 +426,32 @@ public class ComplaintsController : ControllerBase
 
         await _repo.UpdateAsync(complaint);
         await LogActivityAsync("Kalite Raporu Güncellendi", $"Şikayet No: {complaint.ComplaintNumber}, Durum: {(req.IsQualityReported ? "Yapıldı" : "Bekliyor")}");
+
+        // Kalite raporlaması tamamlandıysa bildirim gönder
+        if (req.IsQualityReported)
+        {
+            try
+            {
+                var subject = $"{complaint.ComplaintNumber} numaralı şikayet için kalite raporlaması tamamlanmıştır.";
+                var body = $@"
+                    <h3>Kalite Raporlaması Tamamlandı</h3>
+                    <p><strong>Şikayet No:</strong> {complaint.ComplaintNumber}</p>
+                    <p><strong>Müşteri:</strong> {complaint.CustomerName}</p>
+                    <p><strong>Proje:</strong> {complaint.ProjectName}</p>
+                    <p><strong>Raporlayan:</strong> {CurrentUserName}</p>
+                    {(!string.IsNullOrWhiteSpace(req.ErrorDefinition) ? $"<p><strong>Hata Tanımı:</strong> {req.ErrorDefinition}</p>" : "")}
+                    {(!string.IsNullOrWhiteSpace(req.Note) ? $"<p><strong>Rapor Notu:</strong> {req.Note}</p>" : "")}
+                    <p>Kalite raporlaması tamamlanmıştır. Sistem üzerinden detayları inceleyebilirsiniz.</p>";
+
+                var targetDepts = new[] { "Kalite", "Kalite Güvence", "Yönetim" };
+                await _emailService.SendToDepartmentsAsync(CurrentUserEmail, targetDepts, subject, body);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Email notification failed (quality report): {ex.Message}");
+            }
+        }
+
         return Ok(MapToDto(complaint));
     }
 
@@ -461,6 +487,31 @@ public class ComplaintsController : ControllerBase
         });
 
         await LogActivityAsync("Yönetim Onayı Güncellendi", $"Şikayet No: {complaint.ComplaintNumber}, Durum: {(req.IsApproved == true ? "Onaylandı" : req.IsApproved == false ? "Reddedildi" : "Bekliyor")}");
+
+        // Yönetim onayladıysa IT hariç herkese bildirim gönder
+        if (req.IsApproved == true)
+        {
+            try
+            {
+                var subject = $"{complaint.ComplaintNumber} numaralı şikayet yönetim tarafından onaylanmıştır.";
+                var body = $@"
+                    <h3>Yönetim Onayı Tamamlandı</h3>
+                    <p><strong>Şikayet No:</strong> {complaint.ComplaintNumber}</p>
+                    <p><strong>Müşteri:</strong> {complaint.CustomerName}</p>
+                    <p><strong>Proje:</strong> {complaint.ProjectName}</p>
+                    <p><strong>Onaylayan:</strong> {CurrentUserName}</p>
+                    {(!string.IsNullOrWhiteSpace(req.Note) ? $"<p><strong>Onay Notu:</strong> {req.Note}</p>" : "")}
+                    <p>Şikayet süreci yönetim tarafından onaylanmıştır. Sistem üzerinden detayları inceleyebilirsiniz.</p>";
+
+                // IT departmanı hariç tüm departmanlara gönder
+                var targetDepts = new[] { "Satış", "Kalite", "Kalite Güvence", "Yönetim" };
+                await _emailService.SendToDepartmentsAsync(CurrentUserEmail, targetDepts, subject, body);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Email notification failed (management approval): {ex.Message}");
+            }
+        }
 
         return Ok(MapToDto(complaint));
     }
