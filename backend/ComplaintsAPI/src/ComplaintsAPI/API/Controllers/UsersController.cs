@@ -47,7 +47,8 @@ public class UsersController : ControllerBase
             .Select(u => new UserDto(
                 u.Id, u.Name, u.Email,
                 u.Role.ToString(), u.DepartmentId,
-                u.Department.Name, u.CreatedAt
+                u.Department != null ? u.Department.Name : "Bilinmiyor", 
+                u.CreatedAt
             ))
             .ToListAsync();
 

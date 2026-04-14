@@ -199,12 +199,12 @@ public record CreateUserRequest(
 );
 
 public record UpdateUserRequest(
-    string Name, string Email, string? Password, string Role, int DepartmentId
+    string Name, string Email, string? Password, string Role, int? DepartmentId
 );
 
 public record UserDto(
     int Id, string Name, string Email, string Role,
-    int DepartmentId, string DepartmentName, DateTime CreatedAt
+    int? DepartmentId, string? DepartmentName, DateTime CreatedAt
 );
 
 // ── Reports ───────────────────────────────────────────────────────────────────

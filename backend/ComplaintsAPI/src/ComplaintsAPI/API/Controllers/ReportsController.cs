@@ -33,7 +33,7 @@ public class ReportsController : ControllerBase
 
         var byDepartment = await _context.Complaints
             .AsNoTracking()
-            .GroupBy(c => c.CurrentDepartment.Name)
+            .GroupBy(c => c.CurrentDepartment != null ? c.CurrentDepartment.Name : "Bilinmiyor")
             .Select(g => new DepartmentStatDto(g.Key, g.Count()))
             .ToListAsync();
 
@@ -53,7 +53,7 @@ public class ReportsController : ControllerBase
     {
         var result = await _context.Complaints
             .AsNoTracking()
-            .GroupBy(c => c.CurrentDepartment.Name)
+            .GroupBy(c => c.CurrentDepartment != null ? c.CurrentDepartment.Name : "Bilinmiyor")
             .Select(g => new DepartmentStatDto(g.Key, g.Count()))
             .ToListAsync();
 

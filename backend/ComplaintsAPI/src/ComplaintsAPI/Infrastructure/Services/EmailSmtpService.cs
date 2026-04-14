@@ -71,7 +71,7 @@ public class EmailSmtpService : IEmailService
         Console.WriteLine($"[EMAIL] Hedef departmanlar: {string.Join(", ", departmentNames)}");
         
         var targetEmails = await _context.Users
-            .Where(u => !u.IsDeleted && departmentNames.Contains(u.Department.Name))
+            .Where(u => !u.IsDeleted && u.Department != null && departmentNames.Contains(u.Department.Name))
             .Select(u => u.Email)
             .Distinct()
             .ToListAsync();
@@ -86,7 +86,7 @@ public class EmailSmtpService : IEmailService
             // Veritabanındaki tüm departman adlarını göster
             var allDepts = await _context.Users
                 .Where(u => !u.IsDeleted)
-                .Select(u => u.Department.Name)
+                .Select(u => u.Department != null ? u.Department.Name : "Bilinmiyor")
                 .Distinct()
                 .ToListAsync();
             Console.WriteLine($"[EMAIL] Mevcut departmanlar: {string.Join(", ", allDepts)}");

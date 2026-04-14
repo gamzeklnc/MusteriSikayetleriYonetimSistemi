@@ -12,7 +12,7 @@ public class Complaint
     public string Status { get; set; } = "Acik";
 
     /// <summary>Bekleyen Departman — aşamaya göre otomatik atanır</summary>
-    public int CurrentDepartmentId { get; set; }
+    public int? CurrentDepartmentId { get; set; }
 
     // ── Müşteri & Proje Bilgileri ────────────────────────────────────────────
     public string CustomerName { get; set; } = string.Empty;
@@ -106,12 +106,12 @@ public class Complaint
     public virtual ICollection<ComplaintBarcodeResult> BarcodeResults { get; set; } = new List<ComplaintBarcodeResult>();
 
     // ── Sistem Alanları ──────────────────────────────────────────────────────
-    public int CreatedById { get; set; }
+    public int? CreatedById { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     // ── Navigation ───────────────────────────────────────────────────────────
-    public Department CurrentDepartment { get; set; } = null!;
+    public Department? CurrentDepartment { get; set; }
     public User CreatedBy { get; set; } = null!;
     public User? QualityReportedBy { get; set; }
     public User? ManagementApprovedBy { get; set; }

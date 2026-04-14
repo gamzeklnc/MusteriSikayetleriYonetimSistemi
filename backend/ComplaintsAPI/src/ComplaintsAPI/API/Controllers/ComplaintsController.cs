@@ -149,7 +149,7 @@ public class ComplaintsController : ControllerBase
                 <p>Sistem üzerinden detayları inceleyebilirsiniz.</p>";
 
             var targetDepts = new[] { "Satış", "Kalite", "Kalite Güvence" };
-            await _emailService.SendToDepartmentsAsync(CurrentUserEmail, targetDepts, subject, body);
+            var senderEmail = CurrentUserEmail; _ = Task.Run(async () => { try { await _emailService.SendToDepartmentsAsync(senderEmail, targetDepts, subject, body); } catch (Exception ex) { Console.WriteLine($"Background email failure: {ex.Message}"); } });
         }
         catch (Exception ex)
         {
@@ -438,7 +438,7 @@ public class ComplaintsController : ControllerBase
                     <p>Kalite raporlaması tamamlanmıştır. Sistem üzerinden detayları inceleyebilirsiniz.</p>";
 
                 var targetDepts = new[] { "Kalite", "Kalite Güvence", "Yönetim" };
-                await _emailService.SendToDepartmentsAsync(CurrentUserEmail, targetDepts, subject, body);
+                var senderEmail = CurrentUserEmail; _ = Task.Run(async () => { try { await _emailService.SendToDepartmentsAsync(senderEmail, targetDepts, subject, body); } catch (Exception ex) { Console.WriteLine($"Background email failure: {ex.Message}"); } });
             }
             catch (Exception ex)
             {
@@ -499,7 +499,7 @@ public class ComplaintsController : ControllerBase
 
                 // IT departmanı hariç tüm departmanlara gönder
                 var targetDepts = new[] { "Satış", "Kalite", "Kalite Güvence", "Yönetim" };
-                await _emailService.SendToDepartmentsAsync(CurrentUserEmail, targetDepts, subject, body);
+                var senderEmail = CurrentUserEmail; _ = Task.Run(async () => { try { await _emailService.SendToDepartmentsAsync(senderEmail, targetDepts, subject, body); } catch (Exception ex) { Console.WriteLine($"Background email failure: {ex.Message}"); } });
             }
             catch (Exception ex)
             {

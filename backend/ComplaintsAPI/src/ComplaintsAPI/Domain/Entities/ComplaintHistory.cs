@@ -10,12 +10,12 @@ public class ComplaintHistory
 
     public string? FromStatus { get; set; }
     public string? ToStatus { get; set; }
-    public int ChangedById { get; set; }
+    public int? ChangedById { get; set; }
     public string? Note { get; set; }
     public DateTime ChangedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation
     public Complaint Complaint { get; set; } = null!;
-    public User ChangedBy { get; set; } = null!;
+    public User? ChangedBy { get; set; }
     public Department? Department { get; set; }
 }

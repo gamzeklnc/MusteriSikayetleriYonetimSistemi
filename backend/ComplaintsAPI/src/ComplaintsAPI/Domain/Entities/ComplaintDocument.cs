@@ -20,12 +20,12 @@ public class ComplaintDocument
     [MaxLength(100)]
     public string FileType { get; set; } = string.Empty;
     
-    public int UploadedById { get; set; }
+    public int? UploadedById { get; set; }
     public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
     public string UploadedAtStage { get; set; } = string.Empty;
     public bool Is8DReport { get; set; } = false;
 
     // Navigation
     public virtual Complaint Complaint { get; set; } = null!;
-    public virtual User UploadedBy { get; set; } = null!;
+    public virtual User? UploadedBy { get; set; }
 }

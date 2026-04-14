@@ -9,12 +9,12 @@ public class User
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public UserRole Role { get; set; }
-    public int DepartmentId { get; set; }
+    public int? DepartmentId { get; set; }
     public bool IsDeleted { get; set; } = false;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation
-    public Department Department { get; set; } = null!;
+    public Department? Department { get; set; }
     public ICollection<Complaint> CreatedComplaints { get; set; } = new List<Complaint>();
     public ICollection<ComplaintHistory> ComplaintHistories { get; set; } = new List<ComplaintHistory>();
 }

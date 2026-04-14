@@ -264,7 +264,7 @@ function ComboChart({ title, subtitle, data, targetLineValue, children, paddingB
 
                 <div className="flex-1 relative" style={{ paddingBottom: `${paddingBottom}px` }}>
                     {/* SVG Katmanı */}
-                    <div className="absolute inset-0 z-10" style={{ paddingBottom: `${paddingBottom}px` }}>
+                    <div className="absolute top-0 left-0 right-0 z-10" style={{ bottom: `0px` }}>
                         <svg className="w-full h-full overflow-visible" preserveAspectRatio="none">
                             {data.map((item, idx) => {
                                 const x = `${(idx + 0.5) * (100 / data.length)}%`;
@@ -289,18 +289,18 @@ function ComboChart({ title, subtitle, data, targetLineValue, children, paddingB
                     </div>
 
                     {/* Hedef Çizgisi Etiketi */}
-                    <div className="absolute z-20 right-0 pointer-events-none translate-x-[45px] sm:translate-x-0" style={{ bottom: `calc(${(targetLineValue / chartMaxLine) * 100}% + 2px)`, paddingBottom: `${paddingBottom}px` }}>
+                    <div className="absolute z-20 right-0 pointer-events-none translate-x-[45px] sm:translate-x-0" style={{ bottom: `calc(${(targetLineValue / chartMaxLine) * 100}% + 2px)` }}>
                         <span className="text-[8px] font-bold text-red-500 bg-white/90 backdrop-blur-sm px-1 py-0.5 rounded shadow-sm border border-red-100 whitespace-nowrap">
                             Hedef: %{targetLineValue}
                         </span>
                     </div>
 
                     {/* Çizgi Nokta Etiketleri (Hata Oranı) */}
-                    <div className="absolute inset-0 z-20 pointer-events-none" style={{ paddingBottom: `${paddingBottom}px` }}>
+                    <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none" style={{ bottom: `0px` }}>
                         {data.map((item, idx) => {
                             const lineH = chartMaxLine > 0 ? (item.lineValue / chartMaxLine) * 100 : 0;
                             return (
-                                <div key={`linelabel-${idx}`} className="absolute flex flex-col items-center justify-center transform -translate-x-1/2" style={{ bottom: `calc(${lineH}% + 6px)`, left: `calc(${(idx + 0.5) * (100 / data.length)}%)` }}>
+                                <div key={`linelabel-${idx}`} className="absolute flex flex-col items-center justify-center transform -translate-x-1/2" style={{ bottom: `calc(${lineH}% + 8px)`, left: `calc(${(idx + 0.5) * (100 / data.length)}%)` }}>
                                     <span className="text-[9px] font-black text-orange-600 bg-white/95 backdrop-blur-sm px-1 py-0.5 rounded border border-orange-100 shadow-sm whitespace-nowrap z-20">
                                         %{formatRate(item.lineValue)}
                                     </span>
@@ -310,7 +310,7 @@ function ComboChart({ title, subtitle, data, targetLineValue, children, paddingB
                     </div>
 
                     {/* Sütunlar (Modül Sayısı) */}
-                    <div className="absolute inset-0 flex items-end justify-around" style={{ paddingBottom: `${paddingBottom}px` }}>
+                    <div className="absolute top-0 left-0 right-0 flex items-end justify-around" style={{ bottom: `0px` }}>
                         {data.map((item, idx) => {
                             const barH = chartMaxBar > 0 ? (item.barValue / chartMaxBar) * 100 : 0;
                             return (
@@ -334,7 +334,7 @@ function ComboChart({ title, subtitle, data, targetLineValue, children, paddingB
                                 </div>
                             );
                         })}
-                        <div className="absolute left-0 right-0 h-[1.5px] bg-slate-400 bottom-0" style={{ marginBottom: `${paddingBottom}px` }} />
+                        <div className="absolute left-0 right-0 h-[1.5px] bg-slate-400 bottom-0" />
                     </div>
                 </div>
 

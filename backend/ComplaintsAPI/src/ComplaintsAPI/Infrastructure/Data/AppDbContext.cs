@@ -45,7 +45,7 @@ public class AppDbContext : DbContext
             e.HasOne(x => x.Department)
              .WithMany(d => d.Users)
              .HasForeignKey(x => x.DepartmentId)
-             .OnDelete(DeleteBehavior.Restrict);
+             .IsRequired(false).OnDelete(DeleteBehavior.SetNull);
 
             e.HasQueryFilter(x => !x.IsDeleted);
         });
@@ -87,22 +87,22 @@ public class AppDbContext : DbContext
             e.HasOne(x => x.CurrentDepartment)
              .WithMany(d => d.Complaints)
              .HasForeignKey(x => x.CurrentDepartmentId)
-             .OnDelete(DeleteBehavior.Restrict);
+             .IsRequired(false).OnDelete(DeleteBehavior.SetNull);
 
             e.HasOne(x => x.CreatedBy)
              .WithMany(u => u.CreatedComplaints)
              .HasForeignKey(x => x.CreatedById)
-             .OnDelete(DeleteBehavior.Restrict);
+             .IsRequired(false).OnDelete(DeleteBehavior.SetNull);
 
             e.HasOne(x => x.QualityReportedBy)
              .WithMany()
              .HasForeignKey(x => x.QualityReportedById)
-             .OnDelete(DeleteBehavior.Restrict);
+             .IsRequired(false).OnDelete(DeleteBehavior.SetNull);
 
             e.HasOne(x => x.ManagementApprovedBy)
              .WithMany()
              .HasForeignKey(x => x.ManagementApprovedById)
-             .OnDelete(DeleteBehavior.Restrict);
+             .IsRequired(false).OnDelete(DeleteBehavior.SetNull);
         });
 
         // ComplaintDocument
@@ -120,7 +120,7 @@ public class AppDbContext : DbContext
             e.HasOne(x => x.UploadedBy)
              .WithMany()
              .HasForeignKey(x => x.UploadedById)
-             .OnDelete(DeleteBehavior.Restrict);
+             .IsRequired(false).OnDelete(DeleteBehavior.SetNull);
         });
 
         // ComplaintHistory
@@ -137,7 +137,7 @@ public class AppDbContext : DbContext
             e.HasOne(x => x.ChangedBy)
              .WithMany(u => u.ComplaintHistories)
              .HasForeignKey(x => x.ChangedById)
-             .OnDelete(DeleteBehavior.Restrict);
+             .IsRequired(false).OnDelete(DeleteBehavior.SetNull);
 
             e.HasOne(x => x.Department)
              .WithMany()
