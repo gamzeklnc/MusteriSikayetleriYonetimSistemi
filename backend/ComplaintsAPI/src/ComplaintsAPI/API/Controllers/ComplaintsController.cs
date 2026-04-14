@@ -20,12 +20,14 @@ public class ComplaintsController : ControllerBase
     private readonly IComplaintRepository _repo;
     private readonly AppDbContext _context;
     private readonly IEmailService _emailService;
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    public ComplaintsController(IComplaintRepository repo, AppDbContext context, IEmailService emailService)
+    public ComplaintsController(IComplaintRepository repo, AppDbContext context, IEmailService emailService, IServiceScopeFactory scopeFactory)
     {
         _repo = repo;
         _context = context;
         _emailService = emailService;
+        _scopeFactory = scopeFactory;
     }
 
     private int CurrentUserId => int.TryParse(User.FindFirstValue("userId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub"), out var id) ? id : 0;
@@ -63,7 +65,7 @@ public class ComplaintsController : ControllerBase
 
         var history = c.History.Select(h => new ComplaintHistoryDto(
             h.Id, h.FromStatus, h.ToStatus,
-            h.ChangedBy.Name,
+            h.ChangedBy?.Name ?? "Bilinmeyen Kullanıcı",
             h.Department?.Name,
             h.Note, h.ChangedAt
         ));
@@ -149,7 +151,16 @@ public class ComplaintsController : ControllerBase
                 <p>Sistem üzerinden detayları inceleyebilirsiniz.</p>";
 
             var targetDepts = new[] { "Satış", "Kalite", "Kalite Güvence" };
-            var senderEmail = CurrentUserEmail; _ = Task.Run(async () => { try { await _emailService.SendToDepartmentsAsync(senderEmail, targetDepts, subject, body); } catch (Exception ex) { Console.WriteLine($"Background email failure: {ex.Message}"); } });
+            var senderEmail = CurrentUserEmail; 
+            _ = Task.Run(async () => { 
+                try { 
+                    using var scope = _scopeFactory.CreateScope();
+                    var emailSvc = scope.ServiceProvider.GetRequiredService<IEmailService>();
+                    await emailSvc.SendToDepartmentsAsync(senderEmail, targetDepts, subject, body); 
+                } catch (Exception ex) { 
+                    Console.WriteLine($"Background email failure: {ex.Message}"); 
+                } 
+            });
         }
         catch (Exception ex)
         {
@@ -438,7 +449,16 @@ public class ComplaintsController : ControllerBase
                     <p>Kalite raporlaması tamamlanmıştır. Sistem üzerinden detayları inceleyebilirsiniz.</p>";
 
                 var targetDepts = new[] { "Kalite", "Kalite Güvence", "Yönetim" };
-                var senderEmail = CurrentUserEmail; _ = Task.Run(async () => { try { await _emailService.SendToDepartmentsAsync(senderEmail, targetDepts, subject, body); } catch (Exception ex) { Console.WriteLine($"Background email failure: {ex.Message}"); } });
+                var senderEmail = CurrentUserEmail; 
+                _ = Task.Run(async () => { 
+                    try { 
+                        using var scope = _scopeFactory.CreateScope();
+                        var emailSvc = scope.ServiceProvider.GetRequiredService<IEmailService>();
+                        await emailSvc.SendToDepartmentsAsync(senderEmail, targetDepts, subject, body); 
+                    } catch (Exception ex) { 
+                        Console.WriteLine($"Background email failure: {ex.Message}"); 
+                    } 
+                });
             }
             catch (Exception ex)
             {
@@ -499,7 +519,16 @@ public class ComplaintsController : ControllerBase
 
                 // IT departmanı hariç tüm departmanlara gönder
                 var targetDepts = new[] { "Satış", "Kalite", "Kalite Güvence", "Yönetim" };
-                var senderEmail = CurrentUserEmail; _ = Task.Run(async () => { try { await _emailService.SendToDepartmentsAsync(senderEmail, targetDepts, subject, body); } catch (Exception ex) { Console.WriteLine($"Background email failure: {ex.Message}"); } });
+                var senderEmail = CurrentUserEmail; 
+                _ = Task.Run(async () => { 
+                    try { 
+                        using var scope = _scopeFactory.CreateScope();
+                        var emailSvc = scope.ServiceProvider.GetRequiredService<IEmailService>();
+                        await emailSvc.SendToDepartmentsAsync(senderEmail, targetDepts, subject, body); 
+                    } catch (Exception ex) { 
+                        Console.WriteLine($"Background email failure: {ex.Message}"); 
+                    } 
+                });
             }
             catch (Exception ex)
             {
@@ -535,6 +564,40 @@ public class ComplaintsController : ControllerBase
 
         await _repo.UpdateAsync(complaint);
         await LogActivityAsync("Müşteri Geri Dönüşü Güncellendi", $"Şikayet No: {complaint.ComplaintNumber}, Durum: {(req.IsDone ? "Yapıldı" : "Bekliyor")}");
+
+        // Müşteri geri dönüşü tamamlandıysa Kalite Güvence'ye bildirim gönder
+        if (req.IsDone)
+        {
+            try
+            {
+                var subject = $"{complaint.ComplaintNumber} numaralı şikayet için müşteri geri dönüşü tamamlanmıştır.";
+                var body = $@"
+                    <h3>Müşteri Geri Dönüşü Tamamlandı</h3>
+                    <p><strong>Şikayet No:</strong> {complaint.ComplaintNumber}</p>
+                    <p><strong>Müşteri:</strong> {complaint.CustomerName}</p>
+                    <p><strong>Proje:</strong> {complaint.ProjectName}</p>
+                    <p><strong>Geri Dönüşü Yapan:</strong> {CurrentUserName}</p>
+                    {(!string.IsNullOrWhiteSpace(req.Note) ? $"<p><strong>Geri Dönüş Notu:</strong> {req.Note}</p>" : "")}
+                    <p>Müşteri ile görüşülmüş ve geri dönüş süreci tamamlanmıştır. Operasyonel aksiyon aşamasına geçilebilir.</p>";
+
+                var targetDepts = new[] { "Kalite Güvence" };
+                var senderEmail = CurrentUserEmail; 
+                _ = Task.Run(async () => { 
+                    try { 
+                        using var scope = _scopeFactory.CreateScope();
+                        var emailSvc = scope.ServiceProvider.GetRequiredService<IEmailService>();
+                        await emailSvc.SendToDepartmentsAsync(senderEmail, targetDepts, subject, body); 
+                    } catch (Exception ex) { 
+                        Console.WriteLine($"Background email failure (customer feedback): {ex.Message}"); 
+                    } 
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Email notification failed (customer feedback): {ex.Message}");
+            }
+        }
+
         return Ok(MapToDto(complaint));
     }
 

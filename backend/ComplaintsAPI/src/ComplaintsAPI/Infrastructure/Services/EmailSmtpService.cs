@@ -24,7 +24,7 @@ public class EmailSmtpService : IEmailService
 
     public async Task SendEmailAsync(string from, string to, string subject, string body)
     {
-        var username = _config["EmailSettings:Username"];
+        var username = _config["EmailSettings:Username"] ?? "";
         var password = _config["EmailSettings:Password"];
         
         var message = new MimeMessage();
@@ -43,7 +43,7 @@ public class EmailSmtpService : IEmailService
 
         using var client = new SmtpClient();
         
-        var host = _config["EmailSettings:Host"];
+        var host = _config["EmailSettings:Host"] ?? "localhost";
         var port = int.Parse(_config["EmailSettings:Port"] ?? "587");
 
         Console.WriteLine($"[EMAIL] Şifre durumu: {(string.IsNullOrEmpty(password) ? "BOŞ" : "DOLU ✓")}");

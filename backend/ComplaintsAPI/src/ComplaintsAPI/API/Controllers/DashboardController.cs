@@ -67,6 +67,7 @@ public class DashboardController : ControllerBase
                 Justified = g.Sum(c => (long)(c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount)),
                 Unjustified = g.Sum(c => (long)(c.UnjustifiedHsa1Count + c.UnjustifiedHsa2Count + c.UnjustifiedOtherCount))
             })
+            .OrderBy(n => 1)
             .FirstOrDefaultAsync();
         var globalTotal = globalAggregates?.Total ?? 0;
         var globalOpen = globalAggregates?.Open ?? 0;
@@ -90,6 +91,7 @@ public class DashboardController : ControllerBase
                 Justified = g.Sum(c => (long)(c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount)),
                 Unjustified = g.Sum(c => (long)(c.UnjustifiedHsa1Count + c.UnjustifiedHsa2Count + c.UnjustifiedOtherCount))
             })
+            .OrderBy(n => 1)
             .FirstOrDefaultAsync();
         var total = filteredAggregates?.Total ?? 0;
         var open = filteredAggregates?.Open ?? 0;
@@ -346,6 +348,7 @@ public class DashboardController : ControllerBase
                 OTotal = g.Sum(c => c.JustifiedOtherCount + c.UnjustifiedOtherCount),
                 OJust = g.Sum(c => c.JustifiedOtherCount)
             })
+            .OrderBy(n => 1)
             .FirstOrDefaultAsync();
 
         var sourceStats = new List<SourceStatDto>

@@ -28,7 +28,7 @@ public class AuthService : IAuthService
         if (user is null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
             return null;
 
-        return GenerateToken(user.Id, user.Name, user.Email, user.Role.ToString(), user.DepartmentId.ToString());
+        return GenerateToken(user.Id, user.Name, user.Email, user.Role.ToString(), user.DepartmentId?.ToString() ?? "0");
     }
 
     public Task<string?> RefreshTokenAsync(string token)
