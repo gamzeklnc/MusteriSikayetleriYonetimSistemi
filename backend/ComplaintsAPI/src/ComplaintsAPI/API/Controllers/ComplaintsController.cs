@@ -33,6 +33,8 @@ public class ComplaintsController : ControllerBase
     private int CurrentUserId => int.TryParse(User.FindFirstValue("userId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub"), out var id) ? id : 0;
     private string CurrentUserName => User.FindFirstValue("userName") ?? User.FindFirstValue(ClaimTypes.Name) ?? User.FindFirstValue("unique_name") ?? "Bilinmeyen Kullanıcı";
     private string CurrentUserEmail => User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue("email") ?? "";
+    private int? CurrentUserDepartmentId => int.TryParse(User.FindFirstValue("departmentId"), out var id) ? id : null;
+    private bool CurrentUserCanEditHistoricalNotes => User.IsInRole("Admin") || CurrentUserDepartmentId == 5;
 
     private async Task LogActivityAsync(string action, string details)
     {
@@ -63,7 +65,7 @@ public class ComplaintsController : ControllerBase
         var c = await _repo.GetByIdAsync(id);
         if (c is null) return NotFound();
 
-        var history = c.History.Select(h => new ComplaintHistoryDto(
+        var history = c.History.OrderBy(h => h.ChangedAt).Select(h => new ComplaintHistoryDto(
             h.Id, h.FromStatus, h.ToStatus,
             h.ChangedBy?.Name ?? "Bilinmeyen Kullanıcı",
             h.Department?.Name,
@@ -398,6 +400,34 @@ public class ComplaintsController : ControllerBase
     }
 
     /// <summary>Kalite Raporu Güncelle</summary>
+    [HttpPatch("{id}/notes/{noteId}")]
+    public async Task<IActionResult> UpdateNote(int id, int noteId, [FromBody] UpdateNoteRequest req)
+    {
+        if (!CurrentUserCanEditHistoricalNotes)
+            return Forbid();
+
+        var historyItem = await _context.ComplaintHistories
+            .FirstOrDefaultAsync(h => h.Id == noteId && h.ComplaintId == id);
+
+        if (historyItem is null)
+            return NotFound();
+
+        historyItem.Note = string.IsNullOrWhiteSpace(req.Note) ? null : req.Note.Trim();
+        await _context.SaveChangesAsync();
+
+        await _repo.AddHistoryAsync(new ComplaintHistory
+        {
+            ComplaintId = id,
+            Note = $"IT not gÃ¼ncellemesi yapÄ±ldÄ±. DÃ¼zenlenen not kaydÄ±: #{noteId}",
+            DepartmentId = CurrentUserDepartmentId,
+            ChangedById = CurrentUserId
+        });
+
+        await LogActivityAsync("Åikayet Notu GÃ¼ncellendi", $"Åikayet Id: {id}, Not Id: {noteId}");
+
+        return NoContent();
+    }
+
     [HttpPatch("{id}/quality-report")]
     public async Task<IActionResult> UpdateQualityReport(int id, [FromBody] QualityReportUpdateRequest req)
     {
@@ -414,6 +444,7 @@ public class ComplaintsController : ControllerBase
 
         complaint.IsQualityReported = req.IsQualityReported;
         complaint.QualityReportNote = req.Note;
+        var isResubmissionAfterRejection = complaint.IsManagementApproved == false;
 
         // Hata tanımını güncelle
         complaint.ErrorDefinition = req.ErrorDefinition;
@@ -430,6 +461,21 @@ public class ComplaintsController : ControllerBase
             complaint.IsManagementApproved = null;
 
         await _repo.UpdateAsync(complaint);
+
+        if (!string.IsNullOrWhiteSpace(req.Note))
+        {
+            await _repo.AddHistoryAsync(new ComplaintHistory
+            {
+                ComplaintId = complaint.Id,
+                FromStatus = isResubmissionAfterRejection ? "Yönetim Reddi" : null,
+                ToStatus = req.IsQualityReported
+                    ? (isResubmissionAfterRejection ? "Kalite Raporu Yeniden Gönderildi" : "Kalite Raporu Gönderildi")
+                    : "Kalite Raporu Taslak",
+                Note = req.Note,
+                ChangedById = CurrentUserId,
+                DepartmentId = CurrentUserDepartmentId
+            });
+        }
         await LogActivityAsync("Kalite Raporu Güncellendi", $"Şikayet No: {complaint.ComplaintNumber}, Durum: {(req.IsQualityReported ? "Yapıldı" : "Bekliyor")}");
 
         // Kalite raporlaması tamamlandıysa bildirim gönder
@@ -533,6 +579,39 @@ public class ComplaintsController : ControllerBase
             catch (Exception ex)
             {
                 Console.WriteLine($"Email notification failed (management approval): {ex.Message}");
+            }
+        }
+        else if (req.IsApproved == false)
+        {
+            // Yönetici reddettiyse Kalite ve Kalite Güvence'ye bildirim gönder
+            try
+            {
+                var subject = $"{complaint.ComplaintNumber} numaralı şikayet yönetici tarafından reddedildi.";
+                var body = $@"
+                    <h3>Yönetici Reddi</h3>
+                    <p><strong>Şikayet No:</strong> {complaint.ComplaintNumber}</p>
+                    <p><strong>Müşteri:</strong> {complaint.CustomerName}</p>
+                    <p><strong>Proje:</strong> {complaint.ProjectName}</p>
+                    <p><strong>Reddeden:</strong> {CurrentUserName}</p>
+                    {(!string.IsNullOrWhiteSpace(req.Note) ? $"<p><strong>Ret Notu:</strong> {req.Note}</p>" : "")}
+                    <p>Yönetici reddi, lütfen {complaint.ComplaintNumber} nolu şikayeti kontrol edin. Şikayet kalite raporlaması aşamasına geri gönderilmiştir.</p>
+                    <p>Sistem üzerinden detayları inceleyebilirsiniz.</p>";
+
+                var targetDepts = new[] { "Kalite", "Kalite Güvence" };
+                var senderEmail = CurrentUserEmail; 
+                _ = Task.Run(async () => { 
+                    try { 
+                        using var scope = _scopeFactory.CreateScope();
+                        var emailSvc = scope.ServiceProvider.GetRequiredService<IEmailService>();
+                        await emailSvc.SendToDepartmentsAsync(senderEmail, targetDepts, subject, body); 
+                    } catch (Exception ex) { 
+                        Console.WriteLine($"Background email failure (management rejection): {ex.Message}"); 
+                    } 
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Email notification failed (management rejection): {ex.Message}");
             }
         }
 

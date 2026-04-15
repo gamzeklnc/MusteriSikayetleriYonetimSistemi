@@ -50,6 +50,8 @@ public class ComplaintRepository : IComplaintRepository
                 .ThenInclude(d => d.UploadedBy)
             .Include(c => c.History)
                 .ThenInclude(h => h.ChangedBy)
+            .Include(c => c.History)
+                .ThenInclude(h => h.Department)
             .Include(c => c.BarcodeResults)
             .AsSplitQuery()
             .FirstOrDefaultAsync(c => c.Id == id);

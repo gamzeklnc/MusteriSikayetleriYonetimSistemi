@@ -58,7 +58,8 @@ public record UpdateComplaintRequest(
     int? UnjustifiedHsa2Count,
     int? UnjustifiedOtherCount,
     bool? Has8DReport,
-    List<ComplaintBarcodeResultDto>? BarcodeResults
+    List<ComplaintBarcodeResultDto>? BarcodeResults,
+    string? Note
 );
 
 /// <summary>Durum değişikliği (Açık → Kapalı)</summary>
@@ -69,6 +70,7 @@ public record TransferDepartmentRequest(int TargetDepartmentId, string? Note);
 
 /// <summary>Not ekleme isteği</summary>
 public record AddNoteRequest(string Note, int DepartmentId);
+public record UpdateNoteRequest(string Note);
 
 /// <summary>Kalite raporu güncelleme isteği</summary>
 public class QualityReportUpdateRequest

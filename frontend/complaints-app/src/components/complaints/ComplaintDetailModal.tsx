@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
+import { useEffect, useRef, useState } from 'react';
+import { ComplaintDto, ComplaintDocument, ComplaintHistoryDto } from '@/types/complaint';
 import { parseSingleBarcode } from '@/utils/barcodeParser';
+import ComplaintNotesTimeline from './ComplaintNotesTimeline';
 import DocumentSection, { DocumentSectionRef } from './DocumentSection';
 import { complaintService } from '@/services/complaintService';
 import { useAuthStore } from '@/store/authStore';
@@ -50,6 +51,7 @@ export default function ComplaintDetailModal({
     );
     const [updatingTargetDate, setUpdatingTargetDate] = useState(false);
     const [closing, setClosing] = useState(false);
+    const [history, setHistory] = useState<ComplaintHistoryDto[]>([]);
     
     const [justificationCounts, setJustificationCounts] = useState({
         jhsa1: complaint.justifiedHsa1Count || 0,
@@ -66,6 +68,19 @@ export default function ComplaintDetailModal({
             return acc;
         }, {} as Record<string, boolean | null>) || {}
     );
+
+    const refreshHistory = async () => {
+        try {
+            const detail = await complaintService.getById(complaint.id);
+            setHistory(detail.history);
+        } catch (error) {
+            console.error('Not gecmisi yuklenemedi:', error);
+        }
+    };
+
+    useEffect(() => {
+        refreshHistory();
+    }, [complaint.id]);
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('tr-TR', {
@@ -376,6 +391,12 @@ export default function ComplaintDetailModal({
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                    <ComplaintNotesTimeline
+                        complaintId={complaint.id}
+                        history={history}
+                        onHistoryUpdated={refreshHistory}
+                        title="Departmanlar Arası Notlaşma"
+                    />
 
                     {/* Hedef Tarih Sadece Operasyonel Güncelleme (Aksiyonlar) Açıksa Görünür */}
                     {showOperationalStageUpdate && (

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
+import { useEffect, useState } from 'react';
+import { ComplaintDto, ComplaintDocument, ComplaintHistoryDto } from '@/types/complaint';
 import { complaintService } from '@/services/complaintService';
 import { parseSingleBarcode } from '@/utils/barcodeParser';
+import ComplaintNotesTimeline from './ComplaintNotesTimeline';
 import DocumentSection from './DocumentSection';
 import { useAuthStore } from '@/store/authStore';
 
@@ -22,6 +23,20 @@ export default function ManagementApprovalModal({ complaint, onClose, onSuccess,
     const [note, setNote] = useState(complaint.managementApprovalNote || '');
     const [isUpdating, setIsUpdating] = useState(false);
     const [barcodeFilter, setBarcodeFilter] = useState<'ALL' | 'HSA1' | 'HSA2'>('ALL');
+    const [history, setHistory] = useState<ComplaintHistoryDto[]>([]);
+
+    const refreshHistory = async () => {
+        try {
+            const detail = await complaintService.getById(complaint.id);
+            setHistory(detail.history);
+        } catch (err) {
+            console.error('Not gecmisi yuklenemedi:', err);
+        }
+    };
+
+    useEffect(() => {
+        refreshHistory();
+    }, [complaint.id]);
 
     const formatDate = (dateString: string) => {
         if (!dateString) return '-';
@@ -82,6 +97,13 @@ export default function ManagementApprovalModal({ complaint, onClose, onSuccess,
 
                 {/* Body */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                    <ComplaintNotesTimeline
+                        complaintId={complaint.id}
+                        history={history}
+                        onHistoryUpdated={refreshHistory}
+                        title="Aşama Not Geçmişi"
+                    />
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Sol Kolon - Detaylar */}
                         <div className="space-y-6">

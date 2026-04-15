@@ -6,6 +6,7 @@ import type {
     ChangeStatusRequest,
     TransferDepartmentRequest,
     AddNoteRequest,
+    UpdateNoteRequest,
     UpdateQualityReportRequest,
     ManagementApprovalRequest,
     CustomerFeedbackRequest,
@@ -56,6 +57,10 @@ export const complaintService = {
 
     addNote: async (id: number, data: AddNoteRequest): Promise<void> => {
         await apiClient.post(`/api/complaints/${id}/notes`, data);
+    },
+
+    updateNote: async (complaintId: number, noteId: number, data: UpdateNoteRequest): Promise<void> => {
+        await apiClient.patch(`/api/complaints/${complaintId}/notes/${noteId}`, data);
     },
 
     updateQualityReport: async (id: number, data: UpdateQualityReportRequest): Promise<void> => {

@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
+import { ComplaintDto, ComplaintDocument, ComplaintHistoryDto } from '@/types/complaint';
 import { complaintService } from '@/services/complaintService';
 import { errorOptionService } from '@/services/errorOptionService';
 import { ErrorDefinitionOption } from '@/types/errorOption';
 import { parseSingleBarcode } from '@/utils/barcodeParser';
+import ComplaintNotesTimeline from './ComplaintNotesTimeline';
 import DocumentSection from './DocumentSection';
 import { useAuthStore } from '@/store/authStore';
 
@@ -20,8 +21,22 @@ interface Props {
 export default function QualityReportModal({ complaint, onClose, onSuccess, onUpload, onDelete }: Props) {
     const { user } = useAuthStore();
     const isAdmin = user?.role === 'Admin';
+    const rejectedState = complaint.isManagementApproved === false;
+    const [history, setHistory] = useState<ComplaintHistoryDto[]>([]);
+    const refreshHistory = async () => {
+        try {
+            const detail = await complaintService.getById(complaint.id);
+            setHistory(detail.history);
+        } catch (err) {
+            console.error('Not gecmisi yuklenemedi:', err);
+        }
+    };
 
-    const [note, setNote] = useState(complaint.qualityReportNote || '');
+    useEffect(() => {
+        refreshHistory();
+    }, [complaint.id]);
+
+    const [note, setNote] = useState(rejectedState ? '' : (complaint.qualityReportNote || ''));
     const [errorDefinition, setErrorDefinition] = useState(complaint.errorDefinition || '');
     const [isUpdating, setIsUpdating] = useState(false);
     const [barcodeFilter, setBarcodeFilter] = useState<'ALL' | 'HSA1' | 'HSA2'>('ALL');
@@ -32,7 +47,6 @@ export default function QualityReportModal({ complaint, onClose, onSuccess, onUp
     }, []);
 
     // Yönetim tarafından reddedildi mi?
-    const isRejected = complaint.isManagementApproved === false;
     // Rapor kilitli mi? Onaylandıysa veya rapor tamamlandı ve onay bekleniyorsa kilitli
     const isLocked = complaint.isManagementApproved === true ||
         (complaint.isQualityReported && complaint.isManagementApproved === null);
@@ -80,14 +94,14 @@ export default function QualityReportModal({ complaint, onClose, onSuccess, onUp
 
             <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 {/* Header */}
-                <div className={`flex items-center justify-between px-6 py-4 border-b ${isRejected ? 'bg-red-50 border-red-100' : 'bg-slate-50/50 border-slate-100'}`}>
+                <div className={`flex items-center justify-between px-6 py-4 border-b ${rejectedState ? 'bg-red-50 border-red-100' : 'bg-slate-50/50 border-slate-100'}`}>
                     <div>
                         <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                             Kalite Müşteri Geri Bildirim Formu
-                            <span className={`px-2.5 py-1 rounded-md text-sm font-bold tracking-wider ${isRejected ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                            <span className={`px-2.5 py-1 rounded-md text-sm font-bold tracking-wider ${rejectedState ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
                                 {complaint.complaintNumber}
                             </span>
-                            {isRejected && (
+                            {rejectedState && (
                                 <span className="px-2.5 py-1 rounded-md bg-red-500 text-white text-xs font-bold tracking-wider animate-pulse">
                                     YÖNETİM REDDETTİ
                                 </span>
@@ -108,7 +122,7 @@ export default function QualityReportModal({ complaint, onClose, onSuccess, onUp
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
 
                     {/* Yönetim Red Uyarısı */}
-                    {isRejected && (
+                    {rejectedState && (
                         <div className="bg-red-50 border border-red-200 rounded-xl p-4">
                             <div className="flex items-start gap-3">
                                 <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -131,6 +145,13 @@ export default function QualityReportModal({ complaint, onClose, onSuccess, onUp
                             </div>
                         </div>
                     )}
+
+                    <ComplaintNotesTimeline
+                        complaintId={complaint.id}
+                        history={history}
+                        onHistoryUpdated={refreshHistory}
+                        title="Aşama Not Geçmişi"
+                    />
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Sol Kolon - Detaylar */}
@@ -246,7 +267,7 @@ export default function QualityReportModal({ complaint, onClose, onSuccess, onUp
                                         value={errorDefinition}
                                         onChange={(e) => setErrorDefinition(e.target.value)}
                                         className={`w-full px-3 py-2.5 border rounded-xl text-sm font-bold outline-none transition-all ${
-                                            isRejected
+                                            rejectedState
                                                 ? 'border-red-300 bg-red-50/30 focus:ring-2 focus:ring-red-400 focus:border-red-400 text-red-700'
                                                 : 'bg-slate-50/30 border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-blue-700'
                                         }`}
@@ -262,7 +283,7 @@ export default function QualityReportModal({ complaint, onClose, onSuccess, onUp
                             <div>
                                 <label className="text-[10px] text-slate-500 font-semibold mb-0.5 mb-1.5 block ml-1">
                                     Kalite Kontrol Notu
-                                    {isRejected && <span className="text-red-500 ml-1 normal-case">(Lütfen güncelleyin)</span>}
+                                    {rejectedState && <span className="text-red-500 ml-1 normal-case">(Lütfen güncelleyin)</span>}
                                 </label>
                                 <textarea
                                     value={note}
@@ -271,7 +292,7 @@ export default function QualityReportModal({ complaint, onClose, onSuccess, onUp
                                     placeholder="Ürün incelemesi hakkında detaylı bilgi verin..."
                                     className={`w-full px-4 py-3 border rounded-xl text-sm font-medium text-slate-800 outline-none transition-all placeholder:text-slate-300 min-h-[120px] resize-none shadow-inner ${isLocked
                                         ? 'bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed'
-                                        : isRejected
+                                        : rejectedState
                                             ? 'border-red-300 bg-red-50/30 focus:ring-2 focus:ring-red-400 focus:border-red-400'
                                             : 'bg-slate-50/30 border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500'
                                         }`}
@@ -288,7 +309,7 @@ export default function QualityReportModal({ complaint, onClose, onSuccess, onUp
                                 <button
                                     onClick={() => handleAction(true)}
                                     disabled={isUpdating}
-                                    className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all shadow-lg ${isRejected
+                                    className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all shadow-lg ${rejectedState
                                         ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-500/20'
                                         : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20'
                                         } ${isUpdating ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.98]'}`}
@@ -300,13 +321,13 @@ export default function QualityReportModal({ complaint, onClose, onSuccess, onUp
                                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                             </svg>
-                                            {isRejected ? 'YENİDEN RAPOR GÖNDER' : 'RAPOR TAMAMLANDI OLARAK İŞARETLE'}
+                                            {rejectedState ? 'YENİDEN RAPOR GÖNDER' : 'RAPOR TAMAMLANDI OLARAK İŞARETLE'}
                                         </>
                                     )}
                                 </button>
                             )}
 
-                            {complaint.isQualityReported && !isRejected && (
+                            {complaint.isQualityReported && !rejectedState && (
                                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50/50 rounded-lg border border-emerald-100/50">
                                     <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-tight">Raporlayan:</span>
                                     <span className="text-[10px] font-bold text-emerald-700">{complaint.qualityReportedByName}</span>

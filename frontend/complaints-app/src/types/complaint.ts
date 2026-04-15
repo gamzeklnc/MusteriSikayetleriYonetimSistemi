@@ -139,6 +139,7 @@ export interface UpdateComplaintRequest {
   unjustifiedOtherCount?: number;
   has8DReport?: boolean;
   barcodeResults?: ComplaintBarcodeResultDto[];
+  note?: string;
 }
 
 export interface ChangeStatusRequest {
@@ -155,6 +156,10 @@ export interface TransferDepartmentRequest {
 export interface AddNoteRequest {
   note: string;
   departmentId: number;
+}
+
+export interface UpdateNoteRequest {
+  note: string;
 }
 
 export interface UpdateQualityReportRequest {
