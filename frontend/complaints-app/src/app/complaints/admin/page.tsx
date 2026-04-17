@@ -340,8 +340,8 @@ export default function AdminPage() {
                                                     {deptUsers.map(u => (
                                                         <div key={u.id} className="group flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors border border-slate-100">
                                                             <div className="flex flex-col">
-                                                                <span className="text-xs font-bold text-slate-700">{u.name}</span>
-                                                                <span className="text-[10px] text-slate-500">{u.email}</span>
+                                                                 <span className="text-xs font-bold text-slate-700">{u.name}</span>
+                                                                 <span className="text-[10px] text-slate-500">{u.email}</span>
                                                             </div>
                                                             <div className="flex items-center gap-1 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity">
                                                                 <button onClick={() => { handleEditUser(u); }} className="p-1.5 text-blue-500 hover:bg-blue-200 rounded-md transition-colors"><Edit2 size={12} /></button>
@@ -353,6 +353,74 @@ export default function AdminPage() {
                                             </div>
                                         );
                                     })}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Veri Yönetimi Bölümü */}
+                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                            <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                                <h2 className="text-sm font-black text-slate-900 tracking-widest uppercase flex items-center gap-2">
+                                    <ShieldAlert size={16} className="text-red-500" />
+                                    Veri Yönetimi (Kritik İşlemler)
+                                </h2>
+                            </div>
+                            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {/* Veritabanı Sıfırla */}
+                                <div className="space-y-4 p-4 border border-red-100 bg-red-50/30 rounded-xl">
+                                    <div>
+                                        <h3 className="text-sm font-bold text-red-900">Veritabanını Sıfırla</h3>
+                                        <p className="text-xs text-red-700 mt-1 font-medium">Bu işlem tüm şikayetleri, dökümanları ve geçmişi kalıcı olarak siler. Kullanıcılar ve departmanlar korunur.</p>
+                                    </div>
+                                    <button 
+                                        onClick={async () => {
+                                            if (confirm('DİKKAT! Tüm şikayet kayıtları silinecek. Emin misiniz?')) {
+                                                try {
+                                                    await complaintService.resetDatabase();
+                                                    alert('Veritabanı başarıyla temizlendi.');
+                                                    fetchData();
+                                                } catch { alert('Hata oluştu.'); }
+                                            }
+                                        }}
+                                        className="flex items-center gap-2 px-6 py-2.5 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-500/20"
+                                    >
+                                        <Trash2 size={16} /> Tüm Verileri Sil
+                                    </button>
+                                </div>
+
+                                {/* Excel'den İçe Aktar */}
+                                <div className="space-y-4 p-4 border border-blue-100 bg-blue-50/30 rounded-xl">
+                                    <div>
+                                        <h3 className="text-sm font-bold text-blue-900">Excel'den İçe Aktar</h3>
+                                        <p className="text-xs text-blue-700 mt-1 font-medium">Excel dosyasındaki verileri sisteme yükler. Yükleme öncesi mevcut veriler temizlenir.</p>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <label className="flex-1 cursor-pointer">
+                                            <div className="flex items-center justify-center gap-2 px-4 py-2 bg-white border-2 border-dashed border-blue-200 rounded-lg text-xs font-bold text-blue-600 hover:bg-blue-50 transition-colors">
+                                                <ClipboardList size={16} /> Dosya Seç...
+                                            </div>
+                                            <input 
+                                                type="file" 
+                                                className="hidden" 
+                                                accept=".xlsx, .xls"
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (!file) return;
+                                                    if (confirm('Dosya yüklenirken mevcut veriler silinecek. Devam edilsin mi?')) {
+                                                        try {
+                                                            setLoading(true);
+                                                            await complaintService.importFromExcel(file);
+                                                            alert('Veriler başarıyla içe aktarıldı.');
+                                                            fetchData();
+                                                        } catch (err: any) {
+                                                            alert('Hata: ' + (err.response?.data || 'Yükleme başarısiz.'));
+                                                        } finally { setLoading(false); }
+                                                    }
+                                                    e.target.value = ''; // Reset input
+                                                }}
+                                            />
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -440,7 +508,7 @@ export default function AdminPage() {
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-1">
                                                 <label className="text-[10px] font-black text-slate-900  tracking-wider">Stok Kodu</label>
-                                                <input type="text"value={editingComplaint.stockCode} onChange={e => setEditingComplaint({ ...editingComplaint, stockCode: e.target.value })} className="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-900 bg-white focus:border-blue-500 outline-none" />
+                                                <input type="text"value={editingComplaint.stockCode || ''} onChange={e => setEditingComplaint({ ...editingComplaint, stockCode: e.target.value })} className="w-full px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-900 bg-white focus:border-blue-500 outline-none" />
                                             </div>
                                             <div className="space-y-1">
                                                 <label className="text-[10px] font-black text-slate-900  tracking-wider">Hata Tanımı</label>
@@ -553,7 +621,7 @@ export default function AdminPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-slate-900  tracking-wider">Rol</label>
-                                    <select value={userForm.role} onChange={e => setUserForm({ ...userForm, role: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 bg-white outline-none">
+                                    <select value={userForm.role || 'User'} onChange={e => setUserForm({ ...userForm, role: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 bg-white outline-none">
                                         <option value="Admin">Admin</option>
                                         <option value="User">User</option>
                                     </select>
@@ -579,3 +647,4 @@ export default function AdminPage() {
         </AppLayout>
     );
 }
+

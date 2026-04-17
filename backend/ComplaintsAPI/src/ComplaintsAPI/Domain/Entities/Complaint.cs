@@ -44,7 +44,7 @@ public class Complaint
     public int ComplaintWeek { get; set; }
 
     // ── Stok & Ürün Bilgileri ────────────────────────────────────────────────
-    public string StockCode { get; set; } = string.Empty;
+    public string? StockCode { get; set; }
 
     /// <summary>Barkodlar (Çoklu barkod için virgülle ayrılmış liste, ör: B1,B2,B3)</summary>
     public string Barcodes { get; set; } = string.Empty;

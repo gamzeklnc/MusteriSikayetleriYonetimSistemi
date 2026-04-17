@@ -76,7 +76,7 @@ public class AppDbContext : DbContext
             e.Property(x => x.CustomerName).IsRequired().HasMaxLength(200);
             e.Property(x => x.ProjectName).IsRequired().HasMaxLength(200);
             e.Property(x => x.ProjectLocation).IsRequired().HasMaxLength(100);
-            e.Property(x => x.StockCode).IsRequired().HasMaxLength(100);
+            e.Property(x => x.StockCode).IsRequired(false).HasMaxLength(100);
             e.Property(x => x.Brand).HasMaxLength(100);
             e.Property(x => x.ModulePower).HasMaxLength(50);
             e.Property(x => x.ErrorDefinition).HasColumnType("nvarchar(max)");
@@ -97,12 +97,12 @@ public class AppDbContext : DbContext
             e.HasOne(x => x.QualityReportedBy)
              .WithMany()
              .HasForeignKey(x => x.QualityReportedById)
-             .IsRequired(false).OnDelete(DeleteBehavior.SetNull);
+             .IsRequired(false).OnDelete(DeleteBehavior.Restrict);
 
             e.HasOne(x => x.ManagementApprovedBy)
              .WithMany()
              .HasForeignKey(x => x.ManagementApprovedById)
-             .IsRequired(false).OnDelete(DeleteBehavior.SetNull);
+             .IsRequired(false).OnDelete(DeleteBehavior.Restrict);
         });
 
         // ComplaintDocument

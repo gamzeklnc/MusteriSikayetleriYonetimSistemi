@@ -357,7 +357,12 @@ export default function ComplaintsPage() {
                                                 <StatusBadge status={complaint.status} />
                                             </td>
                                             <td className="px-1.5 py-1.5 whitespace-nowrap">
-                                                {complaint.isCustomerFeedbackDone ? (
+                                                {(complaint.status?.toLowerCase().startsWith('kapali') || complaint.status?.toLowerCase().startsWith('kapalı')) ? (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+                                                        Aşamalar Tamamlandı
+                                                    </span>
+                                                ) : complaint.isCustomerFeedbackDone ? (
                                                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-orange-50 text-orange-700 border border-orange-200">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-orange-500 inline-block"></span>
                                                         {complaint.operationalStage || 'Aksiyon Planı'}

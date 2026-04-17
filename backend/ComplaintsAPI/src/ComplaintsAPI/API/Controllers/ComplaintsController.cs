@@ -897,6 +897,10 @@ public class ComplaintsController : ControllerBase
     // ── Yardımcı Mapper ───────────────────────────────────────────────────────
     private static string GetDescriptiveStatus(Domain.Entities.Complaint c)
     {
+        // Eğer status zaten hesaplanmış ve kapalıysa (import veya manuel kapama) direkt döndür
+        if (c.Status != null && (c.Status.StartsWith("Kapali/") || c.Status.StartsWith("Kapal\u0131/")))
+            return c.Status;
+
         var now = DateTime.UtcNow;
         var deadline48h = c.RegistrationDate.AddHours(48);
         bool isTargetOverdue = c.HasTargetDate == true && c.TargetDate.HasValue && now > c.TargetDate.Value;
@@ -904,33 +908,25 @@ public class ComplaintsController : ControllerBase
 
         if (c.Status == "Kapali")
         {
-            // Kapalı/GT: hedef tarihi varsa ve geçtiyse, geçtikten sonra kapandıysa
-            // UpdatedAt field is set in Repository.UpdateAsync
             bool wasTargetOverdueAtClose = c.HasTargetDate == true && c.TargetDate.HasValue && c.UpdatedAt > c.TargetDate.Value;
-            
-            if (wasTargetOverdueAtClose) return "Kapalı/GT";
-            return "Kapalı/ZT";
+            if (wasTargetOverdueAtClose) return "Kapal\u0131/GT";
+            return "Kapal\u0131/ZT";
         }
 
         // Açık durumlar
-        // Açık/YG: Yanıt gecikti (İlk 48 saat yanıt verilmediyse)
         if (!c.IsCustomerFeedbackDone && is48hOverdue)
-        {
-            return "Açık/YG";
-        }
+            return "A\u00e7\u0131k/YG";
         
-        // Açık/GD: Gecikerek devam ediyor (48 saat gecikmiş ama yanıt verilmişse VEYA hedef tarih geçmişse)
         if (is48hOverdue || isTargetOverdue)
-        {
-            return "Açık/GD";
-        }
+            return "A\u00e7\u0131k/GD";
 
-        // Açık/ZD: Zamanında Devam Ediyor
-        return "Açık/ZD";
+        return "A\u00e7\u0131k/ZD";
     }
 
     private static string GetCurrentStage(Domain.Entities.Complaint c)
     {
+        if (c.Status != null && (c.Status.StartsWith("Kapali/") || c.Status.StartsWith("Kapalı/") || c.Status == "Kapali" || c.Status == "Kapalı"))
+            return "Aşamalar Tamamlandı";
         return c.IsCustomerFeedbackDone ? "Aksiyon Planı" :
                (c.IsManagementApproved == true ? "Müşteri Geri Dönüşü" :
                (c.IsQualityReported ? "Yönetim Onayı" : "Kalite Raporlaması"));

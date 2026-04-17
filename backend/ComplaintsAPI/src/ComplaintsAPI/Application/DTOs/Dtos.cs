@@ -18,7 +18,7 @@ public record CreateComplaintRequest(
     string ProjectLocation,
     string SellerName,
     DateTime ComplaintDate,
-    string StockCode,
+    string? StockCode,
     List<string>? Barcodes,
     int DefectiveQuantity,
     int? Hsa1,
@@ -35,7 +35,7 @@ public record UpdateComplaintRequest(
     string ProjectLocation,
     string? SellerName,
     DateTime ComplaintDate,
-    string StockCode,
+    string? StockCode,
     List<string>? Barcodes,
     int DefectiveQuantity,
     string? Brand,
@@ -138,7 +138,7 @@ public record ComplaintDto(
     string SellerName,
     DateTime ComplaintDate,            // Şikayet Tarihi
     DateTime RegistrationDate,         // Kayıt Tarihi (Sisteme giriş)
-    string StockCode,
+    string? StockCode,
     List<string>? Barcodes,
     string? Brand,
     int? Hsa1,

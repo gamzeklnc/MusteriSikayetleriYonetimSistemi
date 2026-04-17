@@ -126,5 +126,17 @@ export const complaintService = {
     
     deleteDocument: async (documentId: number): Promise<void> => {
         await apiClient.delete(`/api/complaints/documents/${documentId}`);
+    },
+
+    resetDatabase: async (): Promise<void> => {
+        await apiClient.post('/api/import/clear-database');
+    },
+
+    importFromExcel: async (file: File): Promise<void> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        await apiClient.post('/api/import/reset-and-import', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
     }
 };
