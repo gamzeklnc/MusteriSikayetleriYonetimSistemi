@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ComplaintDto, ComplaintDocument, ComplaintHistoryDto } from '@/types/complaint';
 import { complaintService } from '@/services/complaintService';
 import { errorOptionService } from '@/services/errorOptionService';
@@ -23,18 +23,18 @@ export default function QualityReportModal({ complaint, onClose, onSuccess, onUp
     const isAdmin = user?.role === 'Admin';
     const rejectedState = complaint.isManagementApproved === false;
     const [history, setHistory] = useState<ComplaintHistoryDto[]>([]);
-    const refreshHistory = async () => {
+    const refreshHistory = useCallback(async () => {
         try {
             const detail = await complaintService.getById(complaint.id);
             setHistory(detail.history);
         } catch (err) {
             console.error('Not gecmisi yuklenemedi:', err);
         }
-    };
+    }, [complaint.id]);
 
     useEffect(() => {
-        refreshHistory();
-    }, [complaint.id]);
+        void refreshHistory();
+    }, [complaint.id, refreshHistory]);
 
     const [note, setNote] = useState(rejectedState ? '' : (complaint.qualityReportNote || ''));
     const [errorDefinition, setErrorDefinition] = useState(complaint.errorDefinition || '');
@@ -149,7 +149,7 @@ export default function QualityReportModal({ complaint, onClose, onSuccess, onUp
                     <ComplaintNotesTimeline
                         complaintId={complaint.id}
                         history={history}
-                        onHistoryUpdated={refreshHistory}
+                        onHistoryUpdated={() => void refreshHistory()}
                         title="Aşama Not Geçmişi"
                     />
 

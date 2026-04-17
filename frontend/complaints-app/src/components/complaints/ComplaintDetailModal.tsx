@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ComplaintDto, ComplaintDocument, ComplaintHistoryDto } from '@/types/complaint';
 import { parseSingleBarcode } from '@/utils/barcodeParser';
 import ComplaintNotesTimeline from './ComplaintNotesTimeline';
@@ -69,18 +69,18 @@ export default function ComplaintDetailModal({
         }, {} as Record<string, boolean | null>) || {}
     );
 
-    const refreshHistory = async () => {
+    const refreshHistory = useCallback(async () => {
         try {
             const detail = await complaintService.getById(complaint.id);
             setHistory(detail.history);
         } catch (error) {
             console.error('Not gecmisi yuklenemedi:', error);
         }
-    };
+    }, [complaint.id]);
 
     useEffect(() => {
-        refreshHistory();
-    }, [complaint.id]);
+        void refreshHistory();
+    }, [complaint.id, refreshHistory]);
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('tr-TR', {
@@ -394,7 +394,7 @@ export default function ComplaintDetailModal({
                     <ComplaintNotesTimeline
                         complaintId={complaint.id}
                         history={history}
-                        onHistoryUpdated={refreshHistory}
+                        onHistoryUpdated={() => void refreshHistory()}
                         title="Departmanlar Arası Notlaşma"
                     />
 

@@ -240,9 +240,6 @@ export default function CustomerResponsePage() {
         fetchComplaints();
     }, []);
 
-    const formatDate = (d: string) =>
-        d ? new Date(d).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-';
-
     const filteredComplaints = complaints.filter(c => {
         const safeMatch = (val: string | undefined | null, search: string) =>
             !search || (val && val.toLowerCase().includes(search.toLowerCase()));

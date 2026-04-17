@@ -2,12 +2,16 @@
 backend/ComplaintsAPI/src/ComplaintsAPI/bin/
 backend/ComplaintsAPI/src/ComplaintsAPI/obj/
 backend/ComplaintsAPI/src/ComplaintsAPI/logs/
+backend/ComplaintsAPI/src/ComplaintsAPI/publish/
+backend/ComplaintsAPI/src/ComplaintsAPI/wwwroot/uploads/
 backend/ComplaintsAPI/src/ComplaintsAPI/appsettings.Development.json
 
 # Frontend
 frontend/complaints-app/.next/
 frontend/complaints-app/node_modules/
 frontend/complaints-app/.env.local
+frontend/complaints-app/.env.production
+frontend/complaints-app/src_backup/
 
 # General
 .DS_Store

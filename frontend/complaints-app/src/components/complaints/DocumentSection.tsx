@@ -1,5 +1,6 @@
 'use client';
 
+import axios from 'axios';
 import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { complaintService } from '@/services/complaintService';
@@ -23,14 +24,14 @@ export interface DocumentSectionRef {
 }
 
 const DocumentSection = forwardRef<DocumentSectionRef, Props>(
-    ({ complaintId, initialDocuments, currentStage, title = 'İlgili Dokümanlar (PDF, Word, Excel)', onUpload, onDelete, canUpload = true, is8DOnly = false }, ref) => {
+    ({ complaintId, initialDocuments, currentStage, title = 'Ilgili Dokumanlar (PDF, Word, Excel)', onUpload, onDelete, canUpload = true, is8DOnly = false }, ref) => {
     const [documents, setDocuments] = useState<ComplaintDocument[]>(initialDocuments || []);
     const { user } = useAuthStore();
-    
+
     useImperativeHandle(ref, () => ({
         openFileUpload: () => fileInputRef.current?.click()
     }));
-    
+
     useEffect(() => {
         setDocuments(initialDocuments || []);
     }, [initialDocuments]);
@@ -43,7 +44,7 @@ const DocumentSection = forwardRef<DocumentSectionRef, Props>(
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleDelete = async (doc: ComplaintDocument) => {
-        if (!window.confirm(`'${doc.fileName}' isimli dosyayı silmek istediğinize emin misiniz?`)) {
+        if (!window.confirm(`'${doc.fileName}' isimli dosyayi silmek istediginize emin misiniz?`)) {
             return;
         }
 
@@ -53,10 +54,10 @@ const DocumentSection = forwardRef<DocumentSectionRef, Props>(
             setDocuments(prev => prev.filter(d => d.id !== doc.id));
             onDelete?.(doc.id);
             toast.success('Dosya silindi.');
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Delete error:', error);
-            const message = error.response?.data || 'Dosya silinirken bir hata oluştu.';
-            toast.error(typeof message === 'string' ? message : 'Dosya silinirken bir hata oluştu.');
+            const message = axios.isAxiosError(error) ? error.response?.data : null;
+            toast.error(typeof message === 'string' ? message : 'Dosya silinirken bir hata olustu.');
         } finally {
             setIsDeleting(null);
         }
@@ -68,9 +69,9 @@ const DocumentSection = forwardRef<DocumentSectionRef, Props>(
 
         const allowedExtensions = ['.pdf', '.doc', '.docx', '.xls', '.xlsx'];
         const extension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
-        
+
         if (!allowedExtensions.includes(extension)) {
-            toast.error('Sadece PDF, Word ve Excel dosyalarına izin verilir.');
+            toast.error('Sadece PDF, Word ve Excel dosyalarina izin verilir.');
             return;
         }
 
@@ -79,10 +80,10 @@ const DocumentSection = forwardRef<DocumentSectionRef, Props>(
             const newDoc = await complaintService.uploadDocument(complaintId, file, is8DOnly);
             setDocuments(prev => [...prev, newDoc]);
             onUpload?.(newDoc);
-            toast.success('Dosya başarıyla yüklendi.');
+            toast.success('Dosya basariyla yuklendi.');
         } catch (error) {
             console.error('File upload error:', error);
-            toast.error('Dosya yüklenirken bir hata oluştu.');
+            toast.error('Dosya yuklenirken bir hata olustu.');
         } finally {
             setIsUploading(false);
             if (e.target) e.target.value = '';
@@ -94,15 +95,15 @@ const DocumentSection = forwardRef<DocumentSectionRef, Props>(
             await complaintService.downloadDocument(doc.id, doc.fileName);
         } catch (error) {
             console.error('Download error:', error);
-            toast.error('Dosya indirilirken bir hata oluştu.');
+            toast.error('Dosya indirilirken bir hata olustu.');
         }
     };
 
     const handlePreview = async (doc: ComplaintDocument) => {
         const isPdf = doc.fileName.toLowerCase().endsWith('.pdf');
-        
+
         if (!isPdf) {
-            toast('Bu dosya türü doğrudan görüntülenemez, indiriliyor...', { icon: 'ℹ️' });
+            toast('Bu dosya turu dogrudan goruntulenemez, indiriliyor...', { icon: 'i' });
             handleDownload(doc);
             return;
         }
@@ -113,7 +114,7 @@ const DocumentSection = forwardRef<DocumentSectionRef, Props>(
             setPreviewDoc(doc);
         } catch (error) {
             console.error('Preview error:', error);
-            toast.error('Dosya görüntülenirken bir hata oluştu.');
+            toast.error('Dosya goruntulenirken bir hata olustu.');
         }
     };
 
@@ -145,12 +146,12 @@ const DocumentSection = forwardRef<DocumentSectionRef, Props>(
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                         </svg>
-                        {isUploading ? 'Yükleniyor...' : 'Yeni Doküman Ekle'}
-                        <input 
-                            type="file" 
-                            className="hidden" 
+                        {isUploading ? 'Yukleniyor...' : 'Yeni Dokuman Ekle'}
+                        <input
+                            type="file"
+                            className="hidden"
                             ref={fileInputRef}
-                            onChange={handleFileUpload} 
+                            onChange={handleFileUpload}
                             disabled={isUploading}
                             accept=".pdf,.doc,.docx,.xls,.xlsx"
                         />
@@ -183,27 +184,27 @@ const DocumentSection = forwardRef<DocumentSectionRef, Props>(
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button 
+                                    <button
                                         onClick={() => handlePreview(doc)}
                                         className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-white rounded-lg transition-all"
-                                        title="Görüntüle"
+                                        title="Goruntule"
                                     >
                                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => handleDownload(doc)}
                                         className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-white rounded-lg transition-all"
-                                        title="İndir"
+                                        title="Indir"
                                     >
                                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                         </svg>
                                     </button>
                                     {canDelete && (
-                                        <button 
+                                        <button
                                             onClick={() => handleDelete(doc)}
                                             disabled={isDeleting === doc.id}
                                             className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
@@ -223,12 +224,11 @@ const DocumentSection = forwardRef<DocumentSectionRef, Props>(
                 </div>
             ) : (
                 <div className="bg-slate-50 rounded-xl p-6 border border-dashed border-slate-200 text-center">
-                    <div className="text-slate-400 text-xs font-bold">Henüz doküman eklenmemiş.</div>
-                    <div className="text-[10px] text-slate-400 mt-1 italic font-medium">PDF, Word veya Excel dosyaları yükleyebilirsiniz.</div>
+                    <div className="text-slate-400 text-xs font-bold">Henuz dokuman eklenmemis.</div>
+                    <div className="text-[10px] text-slate-400 mt-1 italic font-medium">PDF, Word veya Excel dosyalari yukleyebilirsiniz.</div>
                 </div>
             )}
 
-            {/* Preview Modal */}
             {previewUrl && previewDoc && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={closePreview}></div>
@@ -243,14 +243,14 @@ const DocumentSection = forwardRef<DocumentSectionRef, Props>(
                                 <h4 className="font-bold text-slate-800 truncate max-w-md">{previewDoc.fileName}</h4>
                             </div>
                             <div className="flex items-center gap-2">
-                                <button 
+                                <button
                                     onClick={() => handleDownload(previewDoc)}
                                     className="px-4 py-2 bg-slate-50 text-slate-600 hover:bg-slate-100 text-sm font-bold rounded-xl transition-all flex items-center gap-2"
                                 >
                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                     </svg>
-                                    İndir
+                                    Indir
                                 </button>
                                 <button onClick={closePreview} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all">
                                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -260,8 +260,8 @@ const DocumentSection = forwardRef<DocumentSectionRef, Props>(
                             </div>
                         </div>
                         <div className="flex-1 bg-slate-100 relative">
-                            <iframe 
-                                src={previewUrl} 
+                            <iframe
+                                src={previewUrl}
                                 className="w-full h-full border-none"
                                 title="Document Preview"
                             />

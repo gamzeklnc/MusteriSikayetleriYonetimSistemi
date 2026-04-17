@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ComplaintDto, ComplaintDocument, ComplaintHistoryDto } from '@/types/complaint';
 import { complaintService } from '@/services/complaintService';
 import { parseSingleBarcode } from '@/utils/barcodeParser';
@@ -25,18 +25,18 @@ export default function ManagementApprovalModal({ complaint, onClose, onSuccess,
     const [barcodeFilter, setBarcodeFilter] = useState<'ALL' | 'HSA1' | 'HSA2'>('ALL');
     const [history, setHistory] = useState<ComplaintHistoryDto[]>([]);
 
-    const refreshHistory = async () => {
+    const refreshHistory = useCallback(async () => {
         try {
             const detail = await complaintService.getById(complaint.id);
             setHistory(detail.history);
         } catch (err) {
             console.error('Not gecmisi yuklenemedi:', err);
         }
-    };
+    }, [complaint.id]);
 
     useEffect(() => {
-        refreshHistory();
-    }, [complaint.id]);
+        void refreshHistory();
+    }, [complaint.id, refreshHistory]);
 
     const formatDate = (dateString: string) => {
         if (!dateString) return '-';
@@ -100,7 +100,7 @@ export default function ManagementApprovalModal({ complaint, onClose, onSuccess,
                     <ComplaintNotesTimeline
                         complaintId={complaint.id}
                         history={history}
-                        onHistoryUpdated={refreshHistory}
+                        onHistoryUpdated={() => void refreshHistory()}
                         title="Aşama Not Geçmişi"
                     />
 

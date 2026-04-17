@@ -160,27 +160,57 @@ SQL ayri sunucudaysa:
 
 `backend/ComplaintsAPI/src/ComplaintsAPI/appsettings.Production.json`
 
-Asagidaki gibi gercek degerlerle duzenleyin:
+Bu dosyada artik secret tutulmamalidir. Secret degerleri environment variable olarak verin.
+
+Kullanilacak environment variable isimleri:
+
+- `ConnectionStrings__DefaultConnection`
+- `Jwt__Key`
+- `Jwt__Issuer`
+- `Jwt__Audience`
+- `EmailSettings__Host`
+- `EmailSettings__Port`
+- `EmailSettings__Username`
+- `EmailSettings__Password`
+- `EmailSettings__EnableSsl`
+- `AllowedOrigins__0`
+- `AllowedOrigins__1`
+
+Ornek:
+
+```powershell
+$env:ConnectionStrings__DefaultConnection="Server=SQLSUNUCU\\INSTANCE;Database=MusteriSikayet;User Id=complaints_app;Password=GUCLU_SIFRE;TrustServerCertificate=True;"
+$env:Jwt__Key="EN_AZ_32_KARAKTER_COK_GUCLU_BIR_ANAHTAR"
+$env:Jwt__Issuer="ComplaintsAPI"
+$env:Jwt__Audience="ComplaintsApp"
+$env:EmailSettings__Host="mail.sunucu.local"
+$env:EmailSettings__Port="587"
+$env:EmailSettings__Username="report@sirket.local"
+$env:EmailSettings__Password="MAIL_SIFRESI"
+$env:EmailSettings__EnableSsl="true"
+$env:AllowedOrigins__0="https://sikayet-app.sirket.local"
+```
+
+Referans amacli guvenli `appsettings.Production.json` iskeleti:
 
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=SQLSUNUCU\\INSTANCE;Database=MusteriSikayet;User Id=complaints_app;Password=GUCLU_SIFRE;TrustServerCertificate=True;"
+    "DefaultConnection": ""
   },
   "AllowedOrigins": [
-    "http://sikayet-app.sirket.local",
-    "http://sikayet.sirket.local"
+    "https://sikayet-app.sirket.local"
   ],
   "Jwt": {
-    "Key": "EN_AZ_32_KARAKTER_COK_GUCLU_BIR_ANAHTAR",
+    "Key": "",
     "Issuer": "ComplaintsAPI",
     "Audience": "ComplaintsApp"
   },
   "EmailSettings": {
-    "Host": "mail.sunucu.local",
-    "Port": 465,
-    "Username": "report@sirket.local",
-    "Password": "MAIL_SIFRESI",
+    "Host": "",
+    "Port": 587,
+    "Username": "",
+    "Password": "",
     "EnableSsl": true
   }
 }
@@ -205,6 +235,8 @@ Eger HTTPS kullanacaksaniz:
 ```env
 NEXT_PUBLIC_API_URL=https://sikayet-api.sirket.local
 ```
+
+Repo icinde ornek dosya olarak `frontend/complaints-app/.env.production.example` bulunur.
 
 ## 7. Build ve Publish
 

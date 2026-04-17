@@ -95,7 +95,7 @@ export default function AdminPage() {
             setEditingUser(null);
             setUserForm({ name: '', email: '', password: '', role: 'User', departmentId: 2 });
             await fetchData();
-        } catch (err) { alert('İşlem başarısız.'); }
+        } catch { alert('İşlem başarısız.'); }
     };
 
     const handleEditUser = (user: User) => {
@@ -116,7 +116,7 @@ export default function AdminPage() {
         try {
             await complaintService.delete(id);
             await fetchData();
-        } catch (err) { alert('Hata oluştu.'); } finally { setIsDeleting(null); }
+        } catch { alert('Hata oluştu.'); } finally { setIsDeleting(null); }
     };
 
     const handleUpdateComplaint = async (e: React.FormEvent) => {
@@ -129,7 +129,7 @@ export default function AdminPage() {
             });
             setEditingComplaint(null);
             await fetchData();
-        } catch (err) { alert('Hata oluştu.'); }
+        } catch { alert('Hata oluştu.'); }
     };
 
     const handleSaveErrorOption = async (e: React.FormEvent) => {
@@ -144,7 +144,7 @@ export default function AdminPage() {
             setEditingErrorOption(null);
             setErrorForm({ label: '' });
             await fetchData();
-        } catch (err) { alert('Hata oluştu.'); }
+        } catch { alert('Hata oluştu.'); }
     };
 
     const handleDeleteErrorOption = async (id: number) => {
@@ -152,7 +152,7 @@ export default function AdminPage() {
         try {
             await errorOptionService.delete(id);
             await fetchData();
-        } catch (err) { alert('Hata oluştu.'); }
+        } catch { alert('Hata oluştu.'); }
     };
 
     const filteredComplaints = complaints.filter(c => {
