@@ -148,5 +148,14 @@ export const complaintService = {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
         return res.data;
+    },
+
+    importType3Excel: async (file: File): Promise<{message: string}> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await apiClient.post<{message: string}>('/api/import/import-type3', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return res.data;
     }
 };

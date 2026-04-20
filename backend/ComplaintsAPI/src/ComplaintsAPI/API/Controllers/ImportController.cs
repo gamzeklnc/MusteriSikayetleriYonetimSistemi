@@ -452,4 +452,160 @@ public class ImportController : ControllerBase
         if (int.TryParse(value.ToString(), out var result)) return result;
         return 0;
     }
+
+    [HttpPost("import-type3")]
+    public async Task<IActionResult> ImportType3(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("Geçerli bir Excel dosyası yükleyin.");
+
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            Console.WriteLine($"\n---> TYPE-3 IMPORT ASAMASI: {file.FileName}");
+
+            using var stream = file.OpenReadStream();
+            // 2. satırdan okumaya başlayacağımız için useHeaderRow false
+            var rawRows = stream.Query(useHeaderRow: false).ToList();
+
+            if (rawRows.Count < 2)
+            {
+                await transaction.RollbackAsync();
+                return BadRequest("Excel dosyası boş veya çok az satır içeriyor.");
+            }
+
+            // Sütunlar:
+            // A sütunu: Şikayet Numarası (Örn: 2504 -> 25-04)
+            // E sütunu: Barkodlar ("AAAA" ise yoksayılacak)
+            // O sütunu: Haklı/Haksız durumu
+
+            var allComplaints = await _context.Complaints.ToListAsync();
+            var complaintDict = allComplaints.ToDictionary(c => c.ComplaintNumber, c => c, StringComparer.OrdinalIgnoreCase);
+
+            int updatedCount = 0;
+            int skippedCount = 0;
+
+            // 2. satır index 1'e denk gelir. Buradan itibaren verileri alıyoruz.
+            var groupedRows = rawRows.Skip(1)
+                .Select(r => r as IDictionary<string, object>)
+                .Where(r => r != null && r.ContainsKey("A") && r["A"] != null && !string.IsNullOrWhiteSpace(r["A"].ToString()))
+                .GroupBy(r => r["A"].ToString()!.Trim())
+                .ToList();
+
+            foreach (var group in groupedRows)
+            {
+                string rawNumber = group.Key;
+                string complaintNumber = rawNumber;
+                
+                // Eğer içinde tire yoksa ve en az 3 haneliyse (örn 2504) tire ekle: 25-04
+                if (rawNumber.Length >= 3 && !rawNumber.Contains("-"))
+                {
+                    complaintNumber = rawNumber.Substring(0, 2) + "-" + rawNumber.Substring(2);
+                }
+
+                if (!complaintDict.TryGetValue(complaintNumber, out var complaint))
+                {
+                    skippedCount++;
+                    continue;
+                }
+
+                // Barkodları birleştir (Mevcut olanları mükerrer yazmamak için hashset veya liste ile kontrol ediyoruz)
+                var existingBarcodes = complaint.Barcodes?
+                    .Split(new[] { ',', ';', ' ', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(b => b.Trim())
+                    .ToList() ?? new List<string>();
+
+                var newBarcodes = group
+                    .Where(r => r.ContainsKey("E") && r["E"] != null)
+                    .Select(r => r["E"].ToString()!.Trim())
+                    .Where(b => !string.IsNullOrWhiteSpace(b) && !b.Equals("AAAA", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                foreach(var nb in newBarcodes)
+                {
+                    if (!existingBarcodes.Contains(nb, StringComparer.OrdinalIgnoreCase))
+                    {
+                        existingBarcodes.Add(nb);
+                    }
+                }
+
+                complaint.Barcodes = string.Join(", ", existingBarcodes.Distinct());
+
+                // Barkodlardan HSA1 / HSA2 sayılarını da güncelleyelim
+                if (existingBarcodes.Any())
+                {
+                    complaint.Hsa1 = existingBarcodes.Count(b => b.StartsWith("HSA1", StringComparison.OrdinalIgnoreCase));
+                    complaint.Hsa2 = existingBarcodes.Count(b => b.StartsWith("HSA2", StringComparison.OrdinalIgnoreCase));
+                }
+
+                // Haklı/Haksız durumu ve Sayıların Belirlenmesi
+                int jHsa1 = 0, jHsa2 = 0, jOther = 0;
+                int uHsa1 = 0, uHsa2 = 0, uOther = 0;
+
+                foreach (var row in group)
+                {
+                    // G Sütunu: Fabrika (HSA-1 veya HSA-2)
+                    string fabrika = "";
+                    if (row.ContainsKey("G") && row["G"] != null)
+                    {
+                        fabrika = NormalizeKey(row["G"].ToString());
+                    }
+
+                    // O Sütunu: Durum (Haklı, Haksız, Devam Ediyor)
+                    string durum = "";
+                    if (row.ContainsKey("O") && row["O"] != null)
+                    {
+                        durum = NormalizeKey(row["O"].ToString());
+                    }
+
+                    if (durum.Contains("hakli"))
+                    {
+                        if (fabrika.Contains("hsa1")) jHsa1++;
+                        else if (fabrika.Contains("hsa2")) jHsa2++;
+                        else jOther++;
+                    }
+                    else if (durum.Contains("haksiz"))
+                    {
+                        if (fabrika.Contains("hsa1")) uHsa1++;
+                        else if (fabrika.Contains("hsa2")) uHsa2++;
+                        else uOther++;
+                    }
+                    // "devam ediyor" vb. ise sayaca ekleme (atla)
+                }
+
+                // Sayıları şikayete yaz (Eski sayıların üzerine yazarız ki güncel olsun)
+                complaint.JustifiedHsa1Count = jHsa1;
+                complaint.JustifiedHsa2Count = jHsa2;
+                complaint.JustifiedOtherCount = jOther;
+
+                complaint.UnjustifiedHsa1Count = uHsa1;
+                complaint.UnjustifiedHsa2Count = uHsa2;
+                complaint.UnjustifiedOtherCount = uOther;
+
+                // Genel durum (IsValidComplaint): Eğer en az 1 haklı varsa true, hiç haklı yok ama haksız varsa false
+                if (jHsa1 > 0 || jHsa2 > 0 || jOther > 0)
+                {
+                    complaint.IsValidComplaint = true;
+                }
+                else if (uHsa1 > 0 || uHsa2 > 0 || uOther > 0)
+                {
+                    complaint.IsValidComplaint = false;
+                }
+
+                complaint.UpdatedAt = DateTime.UtcNow;
+                updatedCount++;
+            }
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return Ok(new { Message = $"{updatedCount} adet şikayetin barkod ve haklı/haksız bilgileri başarıyla güncellendi. (Sistemde bulunamayan {skippedCount} numara atlandı.)" });
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            Console.WriteLine($"---> TYPE-3 HATA OLUSTU: {ex.Message}");
+            return StatusCode(500, $"İşlem sırasında hata oluştu: {ex.Message}");
+        }
+    }
 }

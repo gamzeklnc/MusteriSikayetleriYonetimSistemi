@@ -389,7 +389,7 @@ export default function AdminPage() {
                                 </div>
 
                                 {/* İçe Aktarma Seçenekleri */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
                                     {/* Excel'den İçe Aktar (Tip-1) */}
                                     <div className="space-y-4 p-4 border border-blue-100 bg-blue-50/30 rounded-xl">
                                         <div>
@@ -451,6 +451,41 @@ export default function AdminPage() {
                                                                 fetchData();
                                                             } catch (err: any) {
                                                                 alert('Hata: ' + (err.response?.data || 'Yükleme başarısiz.'));
+                                                            } finally { setLoading(false); }
+                                                        }
+                                                        e.target.value = ''; // Reset input
+                                                    }}
+                                                />
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    {/* Excel'den İçe Aktar (Tip-3) */}
+                                    <div className="space-y-4 p-4 border border-emerald-100 bg-emerald-50/30 rounded-xl">
+                                        <div>
+                                            <h3 className="text-sm font-bold text-emerald-900">Excel'den İçe Aktar (Tip-3)</h3>
+                                            <p className="text-xs text-emerald-700 mt-1 font-medium">Mevcut şikayetlerin Barkodlarını (E) ve Haklı/Haksız (O) durumlarını günceller. Sadece eşleşenleri değiştirir.</p>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <label className="flex-1 cursor-pointer">
+                                                <div className="flex items-center justify-center gap-2 px-4 py-2 bg-white border-2 border-dashed border-emerald-200 rounded-lg text-xs font-bold text-emerald-600 hover:bg-emerald-50 transition-colors">
+                                                    <ClipboardList size={16} /> Tip-3 Seç...
+                                                </div>
+                                                <input 
+                                                    type="file" 
+                                                    className="hidden" 
+                                                    accept=".xlsx, .xls"
+                                                    onChange={async (e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (!file) return;
+                                                        if (confirm('Tip-3: Mevcut şikayetlerin barkod ve durum bilgileri güncellenecektir. Emin misiniz?')) {
+                                                            try {
+                                                                setLoading(true);
+                                                                const result = await complaintService.importType3Excel(file);
+                                                                alert(result.message);
+                                                                fetchData();
+                                                            } catch (err: any) {
+                                                                alert('Hata: ' + (err.response?.data || 'Yükleme başarısız.'));
                                                             } finally { setLoading(false); }
                                                         }
                                                         e.target.value = ''; // Reset input
