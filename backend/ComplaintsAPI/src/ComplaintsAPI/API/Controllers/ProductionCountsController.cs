@@ -78,11 +78,17 @@ public class ProductionCountsController : ControllerBase
 
         try
         {
-            using var stream = file.OpenReadStream();
-            // useHeaderRow:false => her satır "A","B","C"... anahtarlı dict olarak gelir
-            var allRows = stream.Query(useHeaderRow: false).ToList();
+            using var ms = new MemoryStream();
+            await file.CopyToAsync(ms);
+            ms.Position = 0;
 
-            Console.WriteLine($"[EXCEL UPLOAD] Toplam satır: {allRows.Count}");
+            var sheetNames = ms.GetSheetNames().ToList();
+            string targetSheet = sheetNames.FirstOrDefault(s => s.IndexOf("Sayfa2", StringComparison.OrdinalIgnoreCase) >= 0) 
+                                 ?? sheetNames.LastOrDefault(); // Usually the production info is on the 2nd sheet
+
+            var allRows = ms.Query(sheetName: targetSheet, useHeaderRow: false).ToList();
+
+            Console.WriteLine($"[EXCEL UPLOAD] Hedef Sayfa: {targetSheet}, Toplam satır: {allRows.Count}");
 
             if (allRows.Count < 3)
                 return BadRequest("Excel dosyasında yeterli satır bulunamadı. En az 3 satır gerekli (1.boş, 2.başlık, 3+.veri).");

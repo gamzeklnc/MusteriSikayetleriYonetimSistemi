@@ -9,16 +9,17 @@ namespace ExcelCheck
     {
         static void Main(string[] args)
         {
-            var path = @"C:\Users\yasin\MusteriSikayetleriYonetimSistemi\Excel_Aktar\KG-LST-002 MUSTERI SIKAYETLERI TAKIP.xlsx";
-            var rawRows = MiniExcel.Query(path, useHeaderRow: false).ToList();
+            var path = @"c:\Users\yasin\MusteriSikayetleriYonetimSistemi\Excel_Aktar\ÜRT ADETLERİ.xlsx";
+            var rawRows = MiniExcel.Query(path, sheetName: "Sayfa2", useHeaderRow: false).ToList();
             
-            var row0 = rawRows[0] as IDictionary<string, object>;
-            Console.WriteLine("Row 0:");
-            foreach(var kv in row0) Console.WriteLine($"{kv.Key} => {kv.Value}");
-
-            var row1 = rawRows[1] as IDictionary<string, object>;
-            Console.WriteLine("\nRow 1:");
-            foreach(var kv in row1) Console.WriteLine($"{kv.Key} => {kv.Value}");
+            for(int i=0; i<Math.Min(20, rawRows.Count); i++)
+            {
+                var row = rawRows[i] as IDictionary<string, object>;
+                if (row != null) {
+                    Console.WriteLine($"Row {i}:");
+                    foreach(var kv in row.Take(15)) Console.WriteLine($"  {kv.Key} => {kv.Value}");
+                }
+            }
         }
     }
 }
