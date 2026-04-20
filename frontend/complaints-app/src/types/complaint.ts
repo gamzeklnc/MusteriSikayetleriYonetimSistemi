@@ -237,6 +237,8 @@ export interface SourceStat {
     sourceLabel: string;
     totalCount: number;
     justifiedCount: number;
+    productionCount?: number;
+    justificationRate?: number;
 }
 
 export interface CustomerErrorStat {
