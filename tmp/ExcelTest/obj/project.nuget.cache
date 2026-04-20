@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "A3BszaE/SSg=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\yasin\\MusteriSikayetleriYonetimSistemi\\tmp\\ExcelTest\\ExcelTest.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\yasin\\.nuget\\packages\\miniexcel\\1.43.1\\miniexcel.1.43.1.nupkg.sha512"
+  ],
+  "logs": []
+}

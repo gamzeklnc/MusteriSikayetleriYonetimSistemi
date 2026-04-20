@@ -52,14 +52,11 @@ public class ImportController : ControllerBase
         {
             Console.WriteLine($"\n---> IMPORT ASAMASI: {file.FileName}");
 
-            // 1. Verileri Temizle
-            await _context.ComplaintBarcodeResults.ExecuteDeleteAsync();
-            await _context.ComplaintDocuments.ExecuteDeleteAsync();
-            await _context.ComplaintHistories.ExecuteDeleteAsync();
-            await _context.UserActivityLogs.ExecuteDeleteAsync();
-            await _context.ProductionCounts.ExecuteDeleteAsync();
-            await _context.Complaints.ExecuteDeleteAsync();
-            Console.WriteLine("---> Mevcut veriler temizlendi.");
+            // 1. Mevcut Şikayet Numaralarını Al (Eskileri silmiyoruz, sadece yenileri ekliyoruz)
+            var existingNumbers = await _context.Complaints.Select(c => c.ComplaintNumber).ToListAsync();
+            var existingSet = new HashSet<string>(existingNumbers, StringComparer.OrdinalIgnoreCase);
+            
+            Console.WriteLine($"---> {existingSet.Count} adet mevcut kayit bulundu, yeniler eklenecek.");
 
             // 2. Excel'i Oku - Başlıklar 2. satırda olduğu için useHeaderRow:false kullanıyoruz
             using var stream = file.OpenReadStream();
@@ -202,6 +199,14 @@ public class ImportController : ControllerBase
                     complaint.ComplaintNumber = string.IsNullOrEmpty(complaintNo) ? $"{yearPart}-000" : complaintNo;
                 }
 
+                // Zaten bu numaraya sahip bir şikayet varsa atla
+                if (existingSet.Contains(complaint.ComplaintNumber))
+                {
+                    Console.WriteLine($"---> Atlandi (Zaten var): {complaint.ComplaintNumber}");
+                    continue;
+                }
+
+                existingSet.Add(complaint.ComplaintNumber);
                 complaints.Add(complaint);
             }
 
@@ -226,6 +231,182 @@ public class ImportController : ControllerBase
         {
             await transaction.RollbackAsync();
             Console.WriteLine($"---> HATA OLUSTU: {ex.Message}");
+            return StatusCode(500, $"İşlem sırasında hata oluştu: {ex.Message}");
+        }
+    }
+
+    [HttpPost("import-type2")]
+    public async Task<IActionResult> ImportType2(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("Geçerli bir Excel dosyası yükleyin.");
+
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            Console.WriteLine($"\n---> TYPE-2 IMPORT ASAMASI: {file.FileName}");
+
+            var existingNumbers = await _context.Complaints.Select(c => c.ComplaintNumber).ToListAsync();
+            var existingSet = new HashSet<string>(existingNumbers, StringComparer.OrdinalIgnoreCase);
+
+            using var stream = file.OpenReadStream();
+            var rawRows = stream.Query(useHeaderRow: false).ToList();
+
+            if (rawRows.Count < 2)
+            {
+                await transaction.RollbackAsync();
+                return BadRequest("Excel dosyası boş veya çok az satır içeriyor.");
+            }
+
+            IDictionary<string, object> headerRow = null;
+            int headerIndex = 0;
+            for (int i = 0; i < Math.Min(5, rawRows.Count); i++)
+            {
+                var r = rawRows[i] as IDictionary<string, object>;
+                if (r != null && r.Values.Any(v => NormalizeKey(v?.ToString()).Equals("no", StringComparison.OrdinalIgnoreCase)))
+                {
+                    headerRow = r;
+                    headerIndex = i;
+                    break;
+                }
+            }
+
+            if (headerRow == null)
+            {
+                await transaction.RollbackAsync();
+                return BadRequest("Excel başlık satırı (içinde 'NO' olan) okunamadı.");
+            }
+
+            var columnMap = new Dictionary<string, string>();
+            foreach (var key in headerRow.Keys)
+            {
+                var headerValue = headerRow[key]?.ToString()?.Trim() ?? "";
+                if (!string.IsNullOrEmpty(headerValue))
+                    columnMap[key] = headerValue;
+            }
+
+            var complaints = new List<Complaint>();
+            int adminUserId = 1;
+            var dataRows = new List<Dictionary<string, object>>();
+
+            foreach (var rawRow in rawRows.Skip(headerIndex + 1)) // Skip until we are past header. 
+            {
+                var rawDict = rawRow as IDictionary<string, object>;
+                if (rawDict == null) continue;
+
+                var dict = new Dictionary<string, object>();
+                foreach (var kv in rawDict)
+                {
+                    if (columnMap.TryGetValue(kv.Key, out var realName))
+                        dict[realName] = kv.Value ?? "";
+                }
+
+                string rowNo = GetValue(dict, "NO");
+                if (string.IsNullOrWhiteSpace(rowNo) || rowNo.Equals("NO", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                dataRows.Add(dict);
+            }
+
+            var grouped = dataRows.GroupBy(d => GetValue(d, "NO")).ToList();
+
+            foreach (var group in grouped)
+            {
+                var firstRow = group.First();
+                string complaintNoRaw = group.Key?.Trim() ?? "";
+                
+                string generatedComplaintNum = complaintNoRaw;
+                if (complaintNoRaw.Length >= 3)
+                {
+                    generatedComplaintNum = complaintNoRaw.Substring(0, 2) + "-" + complaintNoRaw.Substring(2);
+                }
+
+                if (existingSet.Contains(generatedComplaintNum))
+                {
+                    Console.WriteLine($"---> Atlandi (Zaten var): {generatedComplaintNum}");
+                    continue;
+                }
+
+                var allBarcodes = group
+                    .Select(d => GetValue(d, "MODÜLSERİNO", "MODULSERINO", "SERİNO", "SERINO"))
+                    .Where(b => !string.IsNullOrWhiteSpace(b))
+                    .Distinct()
+                    .ToList();
+                string mergedBarcodes = string.Join(", ", allBarcodes);
+
+                int totalQty = group.Sum(d => ParseInt(GetValue(d, "KUSURLUÜRÜNMİKTARI", "KUSURLUURUNMIKTARI", "KUSURLUMİKTAR")));
+
+                int hsa1 = 0;
+                int hsa2 = 0;
+                foreach (var row in group)
+                {
+                    int miktar = ParseInt(GetValue(row, "KUSURLUÜRÜNMİKTARI", "KUSURLUURUNMIKTARI", "KUSURLUMİKTAR"));
+                    string fabrika = GetValue(row, "FABRİKA", "FABRIKA");
+
+                    if (fabrika.Contains("HSA-1", StringComparison.OrdinalIgnoreCase) || fabrika.Contains("HSA 1", StringComparison.OrdinalIgnoreCase))
+                        hsa1 += miktar;
+                    else if (fabrika.Contains("HSA-2", StringComparison.OrdinalIgnoreCase) || fabrika.Contains("HSA 2", StringComparison.OrdinalIgnoreCase))
+                        hsa2 += miktar;
+                }
+
+                var complaintDateStr = GetValue(firstRow, "ŞİKAYETTARİHİ", "SIKAYETTARIHI", "TARİH");
+                var complaintDate = ParseDate(complaintDateStr);
+                
+                // Extra failsafe for year parsing from 'ŞİKAYET YIL'
+                string yearStr = GetValue(firstRow, "ŞİKAYETYIL", "SIKAYETYIL");
+                string monthStr = GetValue(firstRow, "ŞİKAYETAY", "SIKAYETAY");
+                if (complaintDate.Date == DateTime.UtcNow.Date && !string.IsNullOrEmpty(yearStr) && !string.IsNullOrEmpty(monthStr))
+                {
+                    if (int.TryParse(yearStr, out int y) && int.TryParse(monthStr, out int m))
+                        complaintDate = new DateTime(y, m, 1);
+                }
+
+                var complaint = new Complaint
+                {
+                    ComplaintNumber = generatedComplaintNum,
+                    CustomerName = GetValue(firstRow, "ŞİRKET", "SIRKET", "MÜŞTERİ") == "" ? "Bilinmiyor" : GetValue(firstRow, "ŞİRKET", "SIRKET", "MÜŞTERİ"),
+                    ProjectName = GetValue(firstRow, "PROJE") == "" ? "-" : GetValue(firstRow, "PROJE"),
+                    ProjectLocation = GetValue(firstRow, "PROJELOKASYONU", "PROJELOKASYON") == "" ? "-" : GetValue(firstRow, "PROJELOKASYONU", "PROJELOKASYON"),
+                    Brand = GetValue(firstRow, "MARKA", "ÜRÜNİSMİ", "URUNISMI", "URUNADI"),
+                    ComplaintDate = complaintDate,
+                    Barcodes = mergedBarcodes,
+                    ProductionDate = complaintDate, // Placeholder since Type-2 doesn't specify Production Date explicitly
+                    DefectiveQuantity = totalQty,
+                    ErrorDefinition = GetValue(firstRow, "HATATANIMI(ÖZET)", "HATATANIMI", "HATA"),
+                    InitialNote = GetValue(firstRow, "ŞİKAYETNOTLARI", "SIKAYETNOTLARI", "NOT", "ŞİKAYETNOTU"),
+                    CreatedById = adminUserId,
+                    Status = "Kapali/ZT",
+                    RegistrationDate = complaintDate,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    CurrentDepartmentId = 2,
+                    Hsa1 = hsa1,
+                    Hsa2 = hsa2
+                };
+                
+                complaint.SetDerivedDateFields();
+
+                if (string.IsNullOrWhiteSpace(complaint.CustomerName)) complaint.CustomerName = "Bilinmiyor";
+                if (string.IsNullOrWhiteSpace(complaint.ProjectName)) complaint.ProjectName = "-";
+
+                existingSet.Add(generatedComplaintNum);
+                complaints.Add(complaint);
+            }
+
+            if (complaints.Any())
+            {
+                await _context.Complaints.AddRangeAsync(complaints);
+                await _context.SaveChangesAsync();
+                Console.WriteLine($"---> TYPE-2 BASARILI: {complaints.Count} adet kayıt eklendi.");
+            }
+
+            await transaction.CommitAsync();
+            return Ok(new { Message = $"{complaints.Count} adet Tip-2 kayıt başarıyla içe aktarıldı." });
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            Console.WriteLine($"---> TYPE-2 HATA OLUSTU: {ex.Message}");
             return StatusCode(500, $"İşlem sırasında hata oluştu: {ex.Message}");
         }
     }

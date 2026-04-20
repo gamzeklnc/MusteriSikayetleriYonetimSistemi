@@ -132,11 +132,21 @@ export const complaintService = {
         await apiClient.post('/api/import/clear-database');
     },
 
-    importFromExcel: async (file: File): Promise<void> => {
+    importFromExcel: async (file: File): Promise<{message: string}> => {
         const formData = new FormData();
         formData.append('file', file);
-        await apiClient.post('/api/import/reset-and-import', formData, {
+        const res = await apiClient.post<{message: string}>('/api/import/reset-and-import', formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
+        return res.data;
+    },
+
+    importType2Excel: async (file: File): Promise<{message: string}> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await apiClient.post<{message: string}>('/api/import/import-type2', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return res.data;
     }
 };
