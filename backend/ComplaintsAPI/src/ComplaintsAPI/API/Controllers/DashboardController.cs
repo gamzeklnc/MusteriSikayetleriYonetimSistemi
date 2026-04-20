@@ -342,19 +342,37 @@ public class DashboardController : ControllerBase
             .GroupBy(_ => 1)
             .Select(g => new {
                 H1Total = g.Sum(c => c.JustifiedHsa1Count + c.UnjustifiedHsa1Count),
-                H1Just = g.Sum(c => c.JustifiedHsa1Count),
+                H1Just = (int)g.Sum(c => c.JustifiedHsa1Count),
                 H2Total = g.Sum(c => c.JustifiedHsa2Count + c.UnjustifiedHsa2Count),
-                H2Just = g.Sum(c => c.JustifiedHsa2Count),
+                H2Just = (int)g.Sum(c => c.JustifiedHsa2Count),
                 OTotal = g.Sum(c => c.JustifiedOtherCount + c.UnjustifiedOtherCount),
-                OJust = g.Sum(c => c.JustifiedOtherCount)
+                OJust = (int)g.Sum(c => c.JustifiedOtherCount)
             })
             .OrderBy(n => 1)
             .FirstOrDefaultAsync();
 
+        // Fetch production counts for the same period
+        var prodQuery = _context.ProductionCounts.AsNoTracking().AsQueryable();
+        if (startDate.HasValue)
+            prodQuery = prodQuery.Where(p => p.Year > startDate.Value.Year || (p.Year == startDate.Value.Year && p.Month >= startDate.Value.Month));
+        if (endDate.HasValue)
+            prodQuery = prodQuery.Where(p => p.Year < endDate.Value.Year || (p.Year == endDate.Value.Year && p.Month <= endDate.Value.Month));
+
+        var prodTotals = await prodQuery
+            .GroupBy(_ => 1)
+            .Select(g => new {
+                H1 = g.Sum(p => (long)p.Hsa1Count),
+                H2 = g.Sum(p => (long)p.Hsa2Count)
+            })
+            .FirstOrDefaultAsync();
+
+        long h1Prod = prodTotals?.H1 ?? 0;
+        long h2Prod = prodTotals?.H2 ?? 0;
+
         var sourceStats = new List<SourceStatDto>
         {
-            new SourceStatDto("HSA1", sourceRaw?.H1Total ?? 0, sourceRaw?.H1Just ?? 0),
-            new SourceStatDto("HSA2", sourceRaw?.H2Total ?? 0, sourceRaw?.H2Just ?? 0),
+            new SourceStatDto("HSA1", sourceRaw?.H1Total ?? 0, sourceRaw?.H1Just ?? 0, h1Prod, h1Prod > 0 ? (double)(sourceRaw?.H1Just ?? 0) * 100 / h1Prod : 0),
+            new SourceStatDto("HSA2", sourceRaw?.H2Total ?? 0, sourceRaw?.H2Just ?? 0, h2Prod, h2Prod > 0 ? (double)(sourceRaw?.H2Just ?? 0) * 100 / h2Prod : 0),
             new SourceStatDto("DİĞER", sourceRaw?.OTotal ?? 0, sourceRaw?.OJust ?? 0)
         };
 

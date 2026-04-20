@@ -652,8 +652,13 @@ export default function DashboardPage() {
                         <DualBarChart 
                             title="Şikayet - Üretim Tesisi Dağılışı" 
                             subtitle={sourceYear === 'Hepsi' ? "HSA1, HSA2 ve Diğer Kaynak Analizi" : `${sourceYear} Yılı HSA Analizi`}
-                            v1Label="Şikayet" v2Label="Haklı"
-                            data={(stats?.sourceStats || []).map(s => ({ label: s.sourceLabel, v1: s.totalCount, v2: s.justifiedCount }))}
+                            v1Label="Şikayet" v2Label="Haklılık (%)"
+                            data={(stats?.sourceStats || []).map(s => ({ 
+                                label: s.sourceLabel, 
+                                v1: s.totalCount, 
+                                v2: s.sourceLabel === 'DİĞER' ? s.justifiedCount : (s.justificationRate || 0),
+                                v2IsRate: s.sourceLabel !== 'DİĞER'
+                            }))}
                         >
                             <select className="text-[9px] font-black text-indigo-600 bg-indigo-50 border border-indigo-100 rounded px-1 py-1 outline-none"
                                 value={sourceYear} onChange={(e) => setSourceYear(e.target.value)}>

@@ -247,7 +247,7 @@ public record ErrorStatDto(string ErrorLabel, int TotalCount, IEnumerable<BrandB
 
 public record BrandBreakdownDto(string BrandName, int Count);
 
-public record SourceStatDto(string SourceLabel, int TotalCount, int JustifiedCount);
+public record SourceStatDto(string SourceLabel, int TotalCount, int JustifiedCount, long ProductionCount = 0, double JustificationRate = 0);
 
 public record CustomerErrorStatDto(string Label, int Count);
 

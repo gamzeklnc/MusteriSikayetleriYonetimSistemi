@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { productionCountService, ProductionCountDto, CreateProductionCountDto } from '@/services/productionCountService';
-import { Factory, Plus, Trash2, Save, CalendarDays, TrendingUp, BarChart3 } from 'lucide-react';
+import { Factory, Plus, Trash2, Save, CalendarDays, TrendingUp, BarChart3, FileSpreadsheet, Upload } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import { useRef } from 'react';
 
 const MONTH_NAMES = [
     'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
@@ -28,10 +29,13 @@ export default function ProductionCountsPage() {
     const currentDate = new Date();
     const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
     const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
-    const [productionCount, setProductionCount] = useState('');
+    const [hsa1Count, setHsa1Count] = useState('');
+    const [hsa2Count, setHsa2Count] = useState('');
 
     // Filter state
     const [filterYear, setFilterYear] = useState<string>('');
+    
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const fetchRecords = async () => {
         try {
@@ -68,16 +72,14 @@ export default function ProductionCountsPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const count = parseInt(productionCount);
-        if (isNaN(count) || count < 0) {
-            setError('Lütfen geçerli bir üretim sayısı girin.');
-            return;
-        }
+        const h1 = hsa1Count === '' ? null : parseInt(hsa1Count);
+        const h2 = hsa2Count === '' ? null : parseInt(hsa2Count);
 
         const dto: CreateProductionCountDto = {
             year: selectedYear,
             month: selectedMonth,
-            count: count,
+            hsa1Count: h1,
+            hsa2Count: h2,
         };
 
         try {
@@ -87,16 +89,18 @@ export default function ProductionCountsPage() {
             // Check if record exists BEFORE saving to determines the success message
             const existsBefore = records.some(r => Number(r.year) === Number(selectedYear) && Number(r.month) === Number(selectedMonth));
             
+            const totalCount = h1 + h2;
             await productionCountService.create(dto);
 
             if (existsBefore) {
-                setSuccess(`${selectedYear} ${MONTH_NAMES[selectedMonth - 1]} üretim sayısı güncellendi: ${count.toLocaleString('tr-TR')}`);
+                setSuccess(`${selectedYear} ${MONTH_NAMES[selectedMonth - 1]} üretim sayısı güncellendi: ${totalCount.toLocaleString('tr-TR')}`);
             } else {
-                setSuccess(`${selectedYear} ${MONTH_NAMES[selectedMonth - 1]} üretim sayısı kaydedildi: ${count.toLocaleString('tr-TR')}`);
+                setSuccess(`${selectedYear} ${MONTH_NAMES[selectedMonth - 1]} üretim sayısı kaydedildi: ${totalCount.toLocaleString('tr-TR')}`);
             }
 
             // Reset production count input
-            setProductionCount('');
+            setHsa1Count('');
+            setHsa2Count('');
             
             // Increment month automatically for next entry
             if (selectedMonth === 12) {
@@ -111,6 +115,27 @@ export default function ProductionCountsPage() {
             console.error('Kayıt hatası:', err);
             const errorMessage = (err as { response?: { data?: string } })?.response?.data;
             setError(typeof errorMessage === 'string' ? errorMessage : 'Kayıt sırasında bir hata oluştu.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            setSaving(true);
+            setError(null);
+            const response = await productionCountService.upload(file, selectedYear);
+            setSuccess(response.message);
+            await fetchRecords();
+            // Reset input
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        } catch (err: any) {
+            console.error('Yükleme hatası:', err);
+            const msg = err.response?.data?.message || err.response?.data || 'Excel yüklenirken bir hata oluştu.';
+            setError(typeof msg === 'string' ? msg : 'Excel yüklenirken bir hata oluştu.');
         } finally {
             setSaving(false);
         }
@@ -269,20 +294,34 @@ export default function ProductionCountsPage() {
                                     </select>
                                 </div>
 
-                                {/* Production Count */}
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-600 mb-1.5 tracking-wide">
-                                        Üretim Adedi
-                                    </label>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        value={productionCount}
-                                        onChange={(e) => setProductionCount(e.target.value)}
-                                        placeholder="Örn: 22900"
-                                        required
-                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition-all"
-                                    />
+                                {/* Production Counts */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-600 mb-1.5 tracking-wide">
+                                            HSA1 Üretim
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={hsa1Count}
+                                            onChange={(e) => setHsa1Count(e.target.value)}
+                                            placeholder="Örn: 12000"
+                                            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition-all"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-600 mb-1.5 tracking-wide">
+                                            HSA2 Üretim
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={hsa2Count}
+                                            onChange={(e) => setHsa2Count(e.target.value)}
+                                            placeholder="Örn: 10900"
+                                            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition-all"
+                                        />
+                                    </div>
                                 </div>
 
                                 {/* Existing record warning */}
@@ -292,14 +331,15 @@ export default function ProductionCountsPage() {
                                     
                                     return (
                                         <div className="flex flex-col gap-2">
-                                            <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl animate-fade-in">
-                                                <svg className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-xl animate-fade-in">
+                                                <svg className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
                                                 </svg>
                                                 <div>
-                                                    <p className="text-xs font-semibold text-amber-700">Bu ay için zaten kayıt mevcut</p>
-                                                    <p className="text-[10px] text-amber-600 mt-0.5">
-                                                        Mevcut değer: <strong>{existing.count.toLocaleString('tr-TR')}</strong> {isAdmin ? '— Kaydettiğinizde güncellenecektir.' : ''}
+                                                    <p className="text-xs font-bold text-red-700 uppercase tracking-tight">Bu ay için zaten kayıt mevcut!</p>
+                                                    <p className="text-[10px] text-red-600 mt-0.5 font-bold uppercase leading-tight">
+                                                        Üretim adedi güncelleme işlemi yapılamaz. <br/>
+                                                        LÜTFEN BT EKİBİNİZLE İLETİŞİME GEÇİN.
                                                     </p>
                                                 </div>
                                             </div>
@@ -315,7 +355,7 @@ export default function ProductionCountsPage() {
                                 {/* Submit */}
                                 {(() => {
                                     const existing = records.find(r => Number(r.year) === Number(selectedYear) && Number(r.month) === Number(selectedMonth));
-                                    const disabled = saving || !productionCount || !canSubmitAny || (!!existing && !isAdmin);
+                                    const disabled = saving || (!hsa1Count && !hsa2Count) || !!existing;
                                     
                                     return (
                                         <button
@@ -337,6 +377,29 @@ export default function ProductionCountsPage() {
                                         </button>
                                     );
                                 })()}
+
+                                {/* Excel Upload Alternative */}
+                                <div className="pt-4 border-t border-slate-100">
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        onChange={handleFileUpload}
+                                        accept=".xlsx, .xls"
+                                        className="hidden"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        disabled={saving}
+                                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-xl hover:bg-slate-50 transition-all shadow-sm disabled:opacity-50"
+                                    >
+                                        <FileSpreadsheet size={16} className="text-emerald-600" />
+                                        Excel'den Yükle ({selectedYear})
+                                    </button>
+                                    <p className="text-[10px] text-slate-400 text-center mt-2">
+                                        Excel formatı: B (Yıl), C (Ay), G (HSA1), H (HSA2), I (Toplam). Başlıklar 2. satırda olmalıdır.
+                                    </p>
+                                </div>
                             </form>
                         </div>
                     </div>
@@ -370,8 +433,9 @@ export default function ProductionCountsPage() {
                                         <tr>
                                             <th className="px-6 py-3">Yıl</th>
                                             <th className="px-6 py-3">Ay</th>
-                                            <th className="px-6 py-3 text-right">Üretim Adedi</th>
-                                            <th className="px-6 py-3 text-right">Kayıt Tarihi</th>
+                                            <th className="px-6 py-3 text-right">HSA1</th>
+                                            <th className="px-6 py-3 text-right">HSA2</th>
+                                            <th className="px-6 py-3 text-right">Toplam</th>
                                             <th className="px-6 py-3 text-right">İşlem</th>
                                         </tr>
                                     </thead>
@@ -411,18 +475,19 @@ export default function ProductionCountsPage() {
                                                         </span>
                                                     </td>
                                                     <td className="px-6 py-3.5 text-right">
+                                                        <span className="text-xs font-semibold text-slate-500">
+                                                            {(record.hsa1Count || 0).toLocaleString('tr-TR')}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-3.5 text-right">
+                                                        <span className="text-xs font-semibold text-slate-500">
+                                                            {(record.hsa2Count || 0).toLocaleString('tr-TR')}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-3.5 text-right">
                                                         <span className="text-sm font-bold text-violet-700 bg-violet-50 px-3 py-1 rounded-lg">
                                                             {record.count.toLocaleString('tr-TR')}
                                                         </span>
-                                                    </td>
-                                                    <td className="px-6 py-3.5 text-right text-xs text-slate-400">
-                                                        {new Date(record.createdAt).toLocaleDateString('tr-TR', {
-                                                            year: 'numeric',
-                                                            month: '2-digit',
-                                                            day: '2-digit',
-                                                            hour: '2-digit',
-                                                            minute: '2-digit'
-                                                        })}
                                                     </td>
                                                     <td className="px-6 py-3.5 text-right">
                                                         {isAdmin ? (
