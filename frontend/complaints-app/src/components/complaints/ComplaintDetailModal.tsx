@@ -592,6 +592,16 @@ export default function ComplaintDetailModal({
                                                     {factory === 'HSA1' && <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">HSA1</span>}
                                                     {factory === 'HSA2' && <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-100 text-indigo-700">HSA2</span>}
                                                 </div>
+
+                                                {!showOperationalStageUpdate && currentJust !== undefined && currentJust !== null && (
+                                                    <span className={`text-[10px] font-black px-2.5 py-1 rounded border ${
+                                                        currentJust
+                                                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                                            : 'bg-red-50 text-red-700 border-red-200'
+                                                    }`}>
+                                                        {currentJust ? 'Haklı' : 'Haksız'}
+                                                    </span>
+                                                )}
                                                 
                                                 {showOperationalStageUpdate && (
                                                     <div className="flex items-center gap-4 bg-slate-100/50 p-1.5 rounded-lg border border-slate-200/50">

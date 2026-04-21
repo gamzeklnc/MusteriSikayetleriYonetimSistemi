@@ -944,7 +944,7 @@ public class ComplaintsController : ControllerBase
         c.ComplaintDate,
         c.RegistrationDate,
         c.StockCode,
-        string.IsNullOrEmpty(c.Barcodes) ? new List<string>() : c.Barcodes.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList(),
+        string.IsNullOrEmpty(c.Barcodes) ? new List<string>() : c.Barcodes.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(b => b.Trim()).ToList(),
         c.Brand,
         c.Hsa1,
         c.Hsa2,

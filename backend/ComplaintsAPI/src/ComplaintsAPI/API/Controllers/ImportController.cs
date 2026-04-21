@@ -619,9 +619,27 @@ public class ImportController : ControllerBase
         
         // Türkçe karakterleri temizle (Daha garanti eşleşme için)
         return normalized
+            .Replace("\u015f", "s").Replace("\u00e7", "c")
+            .Replace("\u0131", "i").Replace("\u00fc", "u")
+            .Replace("\u00f6", "o").Replace("\u011f", "g")
             .Replace("ş", "s").Replace("ç", "c")
             .Replace("ı", "i").Replace("ü", "u")
             .Replace("ö", "o").Replace("ğ", "g");
+    }
+
+    private static bool IsCommonFactory(string factory)
+    {
+        return factory.Contains("1&2") || factory.Contains("1/2") || factory.Contains("ortak");
+    }
+
+    private static bool IsHsa1Factory(string factory)
+    {
+        return !IsCommonFactory(factory) && (factory.Contains("hsa1") || factory.Contains("hsa-1"));
+    }
+
+    private static bool IsHsa2Factory(string factory)
+    {
+        return !IsCommonFactory(factory) && (factory.Contains("hsa2") || factory.Contains("hsa-2"));
     }
 
     private DateTime ParseDate(object? value)
@@ -707,6 +725,7 @@ public class ImportController : ControllerBase
                     .Select(r => r["E"].ToString()!.Trim())
                     .Where(b => !string.IsNullOrWhiteSpace(b) && !b.Equals("AAAA", StringComparison.OrdinalIgnoreCase))
                     .ToList();
+                var hasBarcodeInImport = newBarcodes.Any();
 
                 foreach(var nb in newBarcodes)
                 {
@@ -728,6 +747,7 @@ public class ImportController : ControllerBase
                 // Haklı/Haksız durumu ve Sayıların Belirlenmesi
                 int jHsa1 = 0, jHsa2 = 0, jOther = 0;
                 int uHsa1 = 0, uHsa2 = 0, uOther = 0;
+                var barcodeDecisions = new Dictionary<string, bool?>(StringComparer.OrdinalIgnoreCase);
 
                 foreach (var row in group)
                 {
@@ -745,19 +765,66 @@ public class ImportController : ControllerBase
                         durum = NormalizeKey(row["O"].ToString());
                     }
 
+                    bool? isJustified = null;
                     if (durum.Contains("hakli"))
                     {
-                        if (fabrika.Contains("hsa1")) jHsa1++;
-                        else if (fabrika.Contains("hsa2")) jHsa2++;
+                        isJustified = true;
+                        if (!hasBarcodeInImport) jOther++;
+                        else if (IsHsa1Factory(fabrika)) jHsa1++;
+                        else if (IsHsa2Factory(fabrika)) jHsa2++;
                         else jOther++;
                     }
                     else if (durum.Contains("haksiz"))
                     {
-                        if (fabrika.Contains("hsa1")) uHsa1++;
-                        else if (fabrika.Contains("hsa2")) uHsa2++;
+                        isJustified = false;
+                        if (!hasBarcodeInImport) uOther++;
+                        else if (IsHsa1Factory(fabrika)) uHsa1++;
+                        else if (IsHsa2Factory(fabrika)) uHsa2++;
                         else uOther++;
                     }
                     // "devam ediyor" vb. ise sayaca ekleme (atla)
+
+                    if (row.ContainsKey("E") && row["E"] != null)
+                    {
+                        var rowBarcode = row["E"].ToString()?.Trim();
+                        if (!string.IsNullOrWhiteSpace(rowBarcode) && !rowBarcode.Equals("AAAA", StringComparison.OrdinalIgnoreCase))
+                        {
+                            barcodeDecisions[rowBarcode] = isJustified;
+                        }
+                    }
+                }
+
+                var existingResults = await _context.ComplaintBarcodeResults
+                    .Where(br => br.ComplaintId == complaint.Id)
+                    .ToListAsync();
+
+                foreach (var decision in barcodeDecisions)
+                {
+                    var existingResult = existingResults.FirstOrDefault(br =>
+                        br.Barcode.Equals(decision.Key, StringComparison.OrdinalIgnoreCase));
+
+                    if (decision.Value == null)
+                    {
+                        if (existingResult != null)
+                        {
+                            _context.ComplaintBarcodeResults.Remove(existingResult);
+                        }
+                        continue;
+                    }
+
+                    if (existingResult != null)
+                    {
+                        existingResult.IsJustified = decision.Value;
+                    }
+                    else
+                    {
+                        _context.ComplaintBarcodeResults.Add(new ComplaintBarcodeResult
+                        {
+                            ComplaintId = complaint.Id,
+                            Barcode = decision.Key,
+                            IsJustified = decision.Value
+                        });
+                    }
                 }
 
                 // Sayıları şikayete yaz (Eski sayıların üzerine yazarız ki güncel olsun)

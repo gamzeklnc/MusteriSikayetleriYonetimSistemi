@@ -29,6 +29,7 @@ export default function ComplaintsPage() {
         justifiedHsa1: '',
         hsa2: '',
         justifiedHsa2: '',
+        justifiedTotal: '',
         status: '',
         currentDepartmentName: ''
     });
@@ -65,6 +66,7 @@ export default function ComplaintsPage() {
     const filteredComplaints = complaints.filter(c => {
         const safeMatch = (val: string | undefined | null, search: string) =>
             !search || (val && val.toLowerCase().includes(search.toLowerCase()));
+        const totalJustified = (c.justifiedHsa1Count || 0) + (c.justifiedHsa2Count || 0) + (c.justifiedOtherCount || 0);
 
         const regDate = formatDate(c.registrationDate);
         const compDate = formatDate(c.complaintDate);
@@ -83,6 +85,7 @@ export default function ComplaintsPage() {
             safeMatch((c.justifiedHsa1Count || 0).toString(), filters.justifiedHsa1) &&
             safeMatch((c.hsa2 || 0).toString(), filters.hsa2) &&
             safeMatch((c.justifiedHsa2Count || 0).toString(), filters.justifiedHsa2) &&
+            safeMatch(totalJustified.toString(), filters.justifiedTotal) &&
             safeMatch(c.status, filters.status) &&
             safeMatch(c.currentDepartmentName, filters.currentDepartmentName)
         );
@@ -105,6 +108,7 @@ export default function ComplaintsPage() {
             'HSA1/Haklı': c.justifiedHsa1Count || 0,
             'HSA2': c.hsa2 || 0,
             'HSA2/Haklı': c.justifiedHsa2Count || 0,
+            'Toplam Haklı': (c.justifiedHsa1Count || 0) + (c.justifiedHsa2Count || 0) + (c.justifiedOtherCount || 0),
             'Durum': c.status,
             'Aşama': c.isCustomerFeedbackDone ? (c.operationalStage || 'Aksiyon Planı') : (
                 c.currentDepartmentName === 'Kalite Raporlaması' ? 'Kalite Raporlaması Bekleniyor' :
@@ -143,6 +147,7 @@ export default function ComplaintsPage() {
             { wch: 12 }, // HSA1/Haklı
             { wch: 10 }, // HSA2
             { wch: 12 }, // HSA2/Haklı
+            { wch: 14 }, // Toplam Haklı
             { wch: 15 }, // Durum
             { wch: 20 }, // Aşama
         ];
@@ -279,6 +284,10 @@ export default function ComplaintsPage() {
                                         <input type="text" placeholder="Ara..." value={filters.justifiedHsa2} onChange={e => handleFilterChange('justifiedHsa2', e.target.value)} className="w-full px-1 py-1 border border-indigo-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-indigo-400 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
+                                        <div className="mb-2 text-slate-700 font-bold leading-tight">Toplam Haklı</div>
+                                        <input type="text" placeholder="Ara..." value={filters.justifiedTotal} onChange={e => handleFilterChange('justifiedTotal', e.target.value)} className="w-full px-1 py-1 border border-slate-300 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-slate-400 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-1.5 py-1.5 align-bottom">
                                         <div className="mb-2 text-slate-500">Durum</div>
                                         <input type="text"placeholder="Ara..."value={filters.status} onChange={e => handleFilterChange('status', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
@@ -292,7 +301,7 @@ export default function ComplaintsPage() {
                             <tbody className="divide-y divide-slate-100">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={15} className="px-6 py-20 text-center">
+                                        <td colSpan={16} className="px-6 py-20 text-center">
                                             <div className="flex flex-col items-center justify-center text-slate-400">
                                                 <div className="w-10 h-10 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mb-4"></div>
                                                 <span className="text-xs font-bold  tracking-widest">Veriler yükleniyor...</span>
@@ -301,7 +310,7 @@ export default function ComplaintsPage() {
                                     </tr>
                                 ) : filteredComplaints.length === 0 ? (
                                     <tr>
-                                        <td colSpan={15} className="px-6 py-20 text-center text-slate-400 text-xs  tracking-widest font-bold">
+                                        <td colSpan={16} className="px-6 py-20 text-center text-slate-400 text-xs  tracking-widest font-bold">
                                             Arama kriterlerine uygun şikayet bulunamadı.
                                         </td>
                                     </tr>
@@ -352,6 +361,9 @@ export default function ComplaintsPage() {
                                             </td>
                                             <td className="px-1.5 py-1.5 font-bold text-indigo-600 text-center">
                                                 {complaint.justifiedHsa2Count || '-'}
+                                            </td>
+                                            <td className="px-1.5 py-1.5 font-black text-slate-800 text-center">
+                                                {((complaint.justifiedHsa1Count || 0) + (complaint.justifiedHsa2Count || 0) + (complaint.justifiedOtherCount || 0)) || '-'}
                                             </td>
                                             <td className="px-1.5 py-1.5">
                                                 <StatusBadge status={complaint.status} />
