@@ -161,13 +161,13 @@ export default function ComplaintsPage() {
 
     return (
         <AppLayout>
-            <div className="space-y-6">
-                <div className="flex items-center justify-between">
+            <div className="space-y-6 max-w-full overflow-x-hidden">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                     <div>
                         <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Şikayet Listesi</h1>
                         <p className="text-slate-900 font-medium text-sm mt-1">Sistemde kayıtlı tüm müşteri şikayetleri.</p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3 xl:justify-end">
                         <button
                             onClick={handleExportExcel}
                             className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2  tracking-wider"title="Excel&apos;e Aktar"
@@ -203,7 +203,7 @@ export default function ComplaintsPage() {
                         <span className="text-slate-500 font-medium">: Gecikerek Devam Ediyor</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                        <span className="px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 border border-rose-100">Kapalı/GT</span>
+                        <span className="px-1.5 py-0.5 rounded bg-purple-50 text-purple-600 border border-purple-100">Kapalı/GT</span>
                         <span className="text-slate-500 font-medium">: Gecikerek Tamamlandı</span>
                     </div>
                     <div className="flex items-center gap-1.5">
@@ -222,8 +222,28 @@ export default function ComplaintsPage() {
                         </div>
                     )}
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left text-[11px]">
+                    <div className="overflow-hidden">
+                        <table className="complaints-fit-table w-full table-fixed text-left text-[10px]">
+                            <colgroup>
+                                <col style={{ width: '6.2%' }} />
+                                <col style={{ width: '5.1%' }} />
+                                <col style={{ width: '5.1%' }} />
+                                <col style={{ width: '7.2%' }} />
+                                <col style={{ width: '5.8%' }} />
+                                <col style={{ width: '6.2%' }} />
+                                <col style={{ width: '4.4%' }} />
+                                <col style={{ width: '3.8%' }} />
+                                <col style={{ width: '3.3%' }} />
+                                <col style={{ width: '7.2%' }} />
+                                <col style={{ width: '3.3%' }} />
+                                <col style={{ width: '4.2%' }} />
+                                <col style={{ width: '3.3%' }} />
+                                <col style={{ width: '4.2%' }} />
+                                <col style={{ width: '4.8%' }} />
+                                <col style={{ width: '5.2%' }} />
+                                <col style={{ width: '8.5%' }} />
+                                <col style={{ width: '5.4%' }} />
+                            </colgroup>
                             <thead className="bg-slate-50 text-[10px]  font-bold text-slate-500 border-b border-slate-200 tracking-wider">
                                 <tr>
                                     <th className="px-1.5 py-1.5 align-bottom">
@@ -272,7 +292,10 @@ export default function ComplaintsPage() {
                                         <input type="text" placeholder="Ara..." value={filters.hsa1} onChange={e => handleFilterChange('hsa1', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
-                                        <div className="mb-2 text-emerald-600 font-bold leading-tight">HSA1/Haklı</div>
+                                        <div className="mb-2 text-emerald-600 font-bold leading-tight text-center">
+                                            <span className="block">HSA1</span>
+                                            <span className="block">Haklı</span>
+                                        </div>
                                         <input type="text" placeholder="Ara..." value={filters.justifiedHsa1} onChange={e => handleFilterChange('justifiedHsa1', e.target.value)} className="w-full px-1 py-1 border border-emerald-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-emerald-400 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
@@ -280,11 +303,17 @@ export default function ComplaintsPage() {
                                         <input type="text" placeholder="Ara..." value={filters.hsa2} onChange={e => handleFilterChange('hsa2', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
-                                        <div className="mb-2 text-indigo-600 font-bold leading-tight">HSA2/Haklı</div>
+                                        <div className="mb-2 text-indigo-600 font-bold leading-tight text-center">
+                                            <span className="block">HSA2</span>
+                                            <span className="block">Haklı</span>
+                                        </div>
                                         <input type="text" placeholder="Ara..." value={filters.justifiedHsa2} onChange={e => handleFilterChange('justifiedHsa2', e.target.value)} className="w-full px-1 py-1 border border-indigo-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-indigo-400 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
-                                        <div className="mb-2 text-slate-700 font-bold leading-tight">Toplam Haklı</div>
+                                        <div className="mb-2 text-slate-700 font-bold leading-tight text-center">
+                                            <span className="block">Toplam</span>
+                                            <span className="block">Haklı</span>
+                                        </div>
                                         <input type="text" placeholder="Ara..." value={filters.justifiedTotal} onChange={e => handleFilterChange('justifiedTotal', e.target.value)} className="w-full px-1 py-1 border border-slate-300 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-slate-400 outline-none transition-all" />
                                     </th>
                                     <th className="px-1.5 py-1.5 align-bottom">
@@ -301,7 +330,7 @@ export default function ComplaintsPage() {
                             <tbody className="divide-y divide-slate-100">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={16} className="px-6 py-20 text-center">
+                                        <td colSpan={18} className="px-6 py-20 text-center">
                                             <div className="flex flex-col items-center justify-center text-slate-400">
                                                 <div className="w-10 h-10 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mb-4"></div>
                                                 <span className="text-xs font-bold  tracking-widest">Veriler yükleniyor...</span>
@@ -310,7 +339,7 @@ export default function ComplaintsPage() {
                                     </tr>
                                 ) : filteredComplaints.length === 0 ? (
                                     <tr>
-                                        <td colSpan={16} className="px-6 py-20 text-center text-slate-400 text-xs  tracking-widest font-bold">
+                                        <td colSpan={18} className="px-6 py-20 text-center text-slate-400 text-xs  tracking-widest font-bold">
                                             Arama kriterlerine uygun şikayet bulunamadı.
                                         </td>
                                     </tr>
@@ -362,40 +391,40 @@ export default function ComplaintsPage() {
                                             <td className="px-1.5 py-1.5 font-bold text-indigo-600 text-center">
                                                 {complaint.justifiedHsa2Count || '-'}
                                             </td>
-                                            <td className="px-1.5 py-1.5 font-black text-slate-800 text-center">
+                                            <td className="px-1.5 py-1.5 font-medium text-slate-800 text-center">
                                                 {((complaint.justifiedHsa1Count || 0) + (complaint.justifiedHsa2Count || 0) + (complaint.justifiedOtherCount || 0)) || '-'}
                                             </td>
                                             <td className="px-1.5 py-1.5">
-                                                <StatusBadge status={complaint.status} />
+                                                <StatusBadge status={complaint.status} className="max-w-full truncate" />
                                             </td>
-                                            <td className="px-1.5 py-1.5 whitespace-nowrap">
+                                            <td className="px-1.5 py-1.5">
                                                 {(complaint.status?.toLowerCase().startsWith('kapali') || complaint.status?.toLowerCase().startsWith('kapalı')) ? (
-                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                    <span className="inline-flex max-w-full items-center gap-1 px-1.5 py-1 rounded-md text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 truncate">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
                                                         Aşamalar Tamamlandı
                                                     </span>
                                                 ) : complaint.isCustomerFeedbackDone ? (
-                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-orange-50 text-orange-700 border border-orange-200">
+                                                    <span className="inline-flex max-w-full items-center gap-1 px-1.5 py-1 rounded-md text-[9px] font-bold bg-orange-50 text-orange-700 border border-orange-200 truncate">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-orange-500 inline-block"></span>
                                                         {complaint.operationalStage || 'Aksiyon Planı'}
                                                     </span>
                                                 ) : complaint.currentDepartmentName === 'Müşteri Geri Dönüşü' ? (
-                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                                                    <span className="inline-flex max-w-full items-center gap-1 px-1.5 py-1 rounded-md text-[9px] font-bold bg-purple-50 text-purple-700 border border-purple-200 truncate">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-purple-500 inline-block"></span>
                                                         Müşteri Geri Dönüşü Bekleniyor
                                                     </span>
                                                 ) : complaint.currentDepartmentName === 'Yönetim Onayı' ? (
-                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                                                    <span className="inline-flex max-w-full items-center gap-1 px-1.5 py-1 rounded-md text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200 truncate">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block"></span>
                                                         Yönetim Onayı Bekleniyor
                                                     </span>
                                                 ) : complaint.currentDepartmentName === 'Kalite Raporlaması' ? (
-                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                    <span className="inline-flex max-w-full items-center gap-1 px-1.5 py-1 rounded-md text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 truncate">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
                                                         Kalite Raporlaması Bekleniyor
                                                     </span>
                                                 ) : (
-                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-slate-50 text-slate-700 border border-slate-200">
+                                                    <span className="inline-flex max-w-full items-center gap-1 px-1.5 py-1 rounded-md text-[9px] font-bold bg-slate-50 text-slate-700 border border-slate-200 truncate">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-slate-500 inline-block"></span>
                                                         Yeni Kayıt
                                                     </span>
@@ -404,7 +433,7 @@ export default function ComplaintsPage() {
                                             <td className="px-1.5 py-1.5 text-right">
                                                 <button
                                                     onClick={() => setSelectedComplaint(complaint)}
-                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"title="Detaylar&apos;ı Görüntüle"
+                                                    className="inline-flex max-w-full items-center justify-center gap-1 px-1.5 py-1.5 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"title="Detaylar&apos;ı Görüntüle"
                                                 >
                                                     <svg className="w-4 h-4"fill="none"viewBox="0 0 24 24"stroke="currentColor">
                                                         <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

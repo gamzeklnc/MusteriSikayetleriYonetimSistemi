@@ -12,7 +12,10 @@ export default function StatusBadge({ status, className = "" }: StatusBadgeProps
     if (s.startsWith('kapali/zt') || s.startsWith('kapal\u0131/zt')) {
       return 'bg-emerald-50 text-emerald-600 border-emerald-100';
     }
-    if (s.startsWith('kapali/gt') || s.startsWith('kapal\u0131/gt') || s.startsWith('a\u00e7\u0131k/yg') || s.startsWith('acik/yg')) {
+    if (s.startsWith('kapali/gt') || s.startsWith('kapal\u0131/gt')) {
+      return 'bg-purple-50 text-purple-600 border-purple-100';
+    }
+    if (s.startsWith('a\u00e7\u0131k/yg') || s.startsWith('acik/yg')) {
       return 'bg-red-50 text-red-600 border-red-100';
     }
     if (s.startsWith('a\u00e7\u0131k/gd') || s.startsWith('acik/gd')) {

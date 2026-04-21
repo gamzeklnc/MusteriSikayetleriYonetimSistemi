@@ -109,6 +109,7 @@ public class ImportController : ControllerBase
                 var dict = new Dictionary<string, object>();
                 foreach (var kv in rawDict)
                 {
+                    dict[kv.Key] = kv.Value ?? "";
                     if (columnMap.TryGetValue(kv.Key, out var realName))
                         dict[realName] = kv.Value ?? "";
                 }
@@ -143,7 +144,7 @@ public class ImportController : ControllerBase
 
                 // Tüm gruptaki barkodları birleştir
                 var allBarcodes = group
-                    .Select(d => GetValue(d, "KusurluPanelSeriNo", "SeriNo", "Barkod"))
+                    .Select(d => GetValue(d, "O", "KusurluPanelSeriNo", "SeriNo", "Barkod"))
                     .Where(b => !string.IsNullOrWhiteSpace(b))
                     .Distinct()
                     .ToList();
@@ -167,22 +168,70 @@ public class ImportController : ControllerBase
                     ErrorDefinition = GetValue(firstRow, "HATATANIMI", "Hata"),
                     StockCode = null,
                     SellerName = string.Empty,
-                    InitialNote = string.Empty,
+                    InitialNote = GetValue(firstRow, "P", "ŞikayetNotu", "SikayetNotu", "ŞikayetNotları", "SikayetNotlari", "Not"),
                     CreatedById = adminUserId,
                     Status = "Kapali/ZT",
                     RegistrationDate = complaintDate,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
-                    CurrentDepartmentId = 2
+                    CurrentDepartmentId = 2,
+                    BarcodeResults = new List<ComplaintBarcodeResult>()
                 };
 
-                // Barkodlardan HSA1/HSA2 say
-                if (!string.IsNullOrEmpty(mergedBarcodes))
+                int hsa1 = 0, hsa2 = 0;
+                int jHsa1 = 0, jHsa2 = 0, jOther = 0;
+                int uHsa1 = 0, uHsa2 = 0, uOther = 0;
+
+                foreach (var row in group)
                 {
-                    var splitBarcodes = mergedBarcodes.Split(new[] { ',', ';', ' ', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-                    complaint.Hsa1 = splitBarcodes.Count(b => b.StartsWith("HSA1", StringComparison.OrdinalIgnoreCase));
-                    complaint.Hsa2 = splitBarcodes.Count(b => b.StartsWith("HSA2", StringComparison.OrdinalIgnoreCase));
+                    var barcode = GetValue(row, "O", "KusurluPanelSeriNo", "SeriNo", "Barkod");
+                    var factory = NormalizeKey(GetValue(row, "G", "Fabrika", "FABRİKA", "FABRIKA"));
+                    var decision = GetValue(row, "R", "Haklı/Haksız", "Hakli/Haksiz", "Durum");
+
+                    if (!string.IsNullOrWhiteSpace(barcode))
+                    {
+                        if (IsHsa1Factory(factory)) hsa1++;
+                        else if (IsHsa2Factory(factory)) hsa2++;
+                    }
+
+                    bool? isJustified = null;
+                    if (IsCheckedDecision(decision))
+                    {
+                        isJustified = true;
+                        if (IsHsa1Factory(factory)) jHsa1++;
+                        else if (IsHsa2Factory(factory)) jHsa2++;
+                        else jOther++;
+                    }
+                    else if (IsRejectedDecision(decision))
+                    {
+                        isJustified = false;
+                        if (IsHsa1Factory(factory)) uHsa1++;
+                        else if (IsHsa2Factory(factory)) uHsa2++;
+                        else uOther++;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(barcode) && isJustified != null)
+                    {
+                        complaint.BarcodeResults.Add(new ComplaintBarcodeResult
+                        {
+                            Barcode = barcode.Trim(),
+                            Factory = NormalizeFactoryLabel(factory),
+                            IsJustified = isJustified
+                        });
+                    }
                 }
+
+                complaint.Hsa1 = hsa1;
+                complaint.Hsa2 = hsa2;
+                complaint.JustifiedHsa1Count = jHsa1;
+                complaint.JustifiedHsa2Count = jHsa2;
+                complaint.JustifiedOtherCount = jOther;
+                complaint.UnjustifiedHsa1Count = uHsa1;
+                complaint.UnjustifiedHsa2Count = uHsa2;
+                complaint.UnjustifiedOtherCount = uOther;
+
+                if (jHsa1 > 0 || jHsa2 > 0 || jOther > 0) complaint.IsValidComplaint = true;
+                else if (uHsa1 > 0 || uHsa2 > 0 || uOther > 0) complaint.IsValidComplaint = false;
 
                 complaint.SetDerivedDateFields();
 
@@ -650,6 +699,33 @@ public class ImportController : ControllerBase
         if (IsHsa1Factory(factory)) return "HSA-1";
         if (IsHsa2Factory(factory)) return "HSA-2";
         return factory.Trim();
+    }
+
+    private static bool IsCheckedDecision(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return false;
+        var normalized = value.Trim().ToLowerInvariant();
+        return normalized.Contains("✓")
+            || normalized.Contains("✔")
+            || normalized.Contains("√")
+            || normalized.Equals("true")
+            || normalized.Equals("evet")
+            || normalized.Equals("hakli")
+            || normalized.Equals("haklı");
+    }
+
+    private static bool IsRejectedDecision(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return false;
+        var normalized = value.Trim().ToLowerInvariant();
+        return normalized.Equals("x")
+            || normalized.Contains("✗")
+            || normalized.Contains("✘")
+            || normalized.Equals("false")
+            || normalized.Equals("hayir")
+            || normalized.Equals("hayır")
+            || normalized.Equals("haksiz")
+            || normalized.Equals("haksız");
     }
 
     private DateTime ParseDate(object? value)

@@ -22,6 +22,13 @@ public class DashboardController : ControllerBase
         _context = context;
     }
 
+    private static bool IsClosedStatus(string? status)
+    {
+        if (string.IsNullOrWhiteSpace(status)) return false;
+        var normalized = status.Trim().ToLowerInvariant();
+        return normalized.StartsWith("kapali") || normalized.StartsWith("kapal\u0131");
+    }
+
     [HttpGet("stats")]
     public async Task<ActionResult<DashboardStatsDto>> GetStats(
         [FromQuery] DateTime? startDate = null, 
@@ -57,23 +64,19 @@ public class DashboardController : ControllerBase
         var globalQuery = _context.Complaints
             .AsNoTracking()
             .AsQueryable();
-        var globalAggregates = await globalQuery
-            .GroupBy(_ => 1)
-            .Select(g => new
+        var globalStatusRows = await globalQuery
+            .Select(c => new
             {
-                Total = g.Count(),
-                Open = g.Count(c => c.Status != "Kapali"),
-                Closed = g.Count(c => c.Status == "Kapali"),
-                Justified = g.Sum(c => (long)(c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount)),
-                Unjustified = g.Sum(c => (long)(c.UnjustifiedHsa1Count + c.UnjustifiedHsa2Count + c.UnjustifiedOtherCount))
+                c.Status,
+                Justified = c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount,
+                Unjustified = c.UnjustifiedHsa1Count + c.UnjustifiedHsa2Count + c.UnjustifiedOtherCount
             })
-            .OrderBy(n => 1)
-            .FirstOrDefaultAsync();
-        var globalTotal = globalAggregates?.Total ?? 0;
-        var globalOpen = globalAggregates?.Open ?? 0;
-        var globalClosed = globalAggregates?.Closed ?? 0;
-        var globalJustified = globalAggregates?.Justified ?? 0;
-        var globalUnjustified = globalAggregates?.Unjustified ?? 0;
+            .ToListAsync();
+        var globalTotal = globalStatusRows.Count;
+        var globalClosed = globalStatusRows.Count(c => IsClosedStatus(c.Status));
+        var globalOpen = globalTotal - globalClosed;
+        var globalJustified = globalStatusRows.Sum(c => (long)c.Justified);
+        var globalUnjustified = globalStatusRows.Sum(c => (long)c.Unjustified);
 
         var globalProductionCount = await _context.ProductionCounts
             .AsNoTracking()
@@ -81,25 +84,21 @@ public class DashboardController : ControllerBase
         double globalRatio = globalProductionCount > 0 ? (double)globalJustified * 100 / globalProductionCount : 0;
 
         // Filtered Stats
-        var filteredAggregates = await query
-            .GroupBy(_ => 1)
-            .Select(g => new
+        var filteredStatusRows = await query
+            .Select(c => new
             {
-                Total = g.Count(),
-                Open = g.Count(c => c.Status != "Kapali"),
-                Closed = g.Count(c => c.Status == "Kapali"),
-                Justified = g.Sum(c => (long)(c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount)),
-                Unjustified = g.Sum(c => (long)(c.UnjustifiedHsa1Count + c.UnjustifiedHsa2Count + c.UnjustifiedOtherCount))
+                c.Status,
+                Justified = c.JustifiedHsa1Count + c.JustifiedHsa2Count + c.JustifiedOtherCount,
+                Unjustified = c.UnjustifiedHsa1Count + c.UnjustifiedHsa2Count + c.UnjustifiedOtherCount
             })
-            .OrderBy(n => 1)
-            .FirstOrDefaultAsync();
-        var total = filteredAggregates?.Total ?? 0;
-        var open = filteredAggregates?.Open ?? 0;
-        var closed = filteredAggregates?.Closed ?? 0;
+            .ToListAsync();
+        var total = filteredStatusRows.Count;
+        var closed = filteredStatusRows.Count(c => IsClosedStatus(c.Status));
+        var open = total - closed;
         
         // Ürün bazlı haklılık hesaplaması
-        var justifiedProducts = filteredAggregates?.Justified ?? 0;
-        var unjustifiedProducts = filteredAggregates?.Unjustified ?? 0;
+        var justifiedProducts = filteredStatusRows.Sum(c => (long)c.Justified);
+        var unjustifiedProducts = filteredStatusRows.Sum(c => (long)c.Unjustified);
         
         var totalEvaluated = justifiedProducts + unjustifiedProducts;
         double ratio = totalEvaluated > 0 ? (double)justifiedProducts / totalEvaluated : 0;
