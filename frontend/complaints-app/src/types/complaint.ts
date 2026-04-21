@@ -16,6 +16,7 @@ export interface ComplaintDocument {
 export interface ComplaintBarcodeResultDto {
   id: number;
   barcode: string;
+  factory?: string | null;
   isJustified: boolean | null;
 }
 

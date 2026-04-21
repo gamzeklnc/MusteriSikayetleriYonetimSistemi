@@ -237,6 +237,10 @@ namespace ComplaintsAPI.Infrastructure.Data.Migrations
                     b.Property<int>("ComplaintId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Factory")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<bool?>("IsJustified")
                         .HasColumnType("bit");
 

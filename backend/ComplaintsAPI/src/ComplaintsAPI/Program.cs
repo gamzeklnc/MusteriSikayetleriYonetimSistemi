@@ -122,6 +122,28 @@ builder.Services.AddCors(options =>
 // ── APP ────────────────────────────────────────────────
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.ExecuteSqlRaw(@"
+IF COL_LENGTH('dbo.ComplaintBarcodeResults', 'Factory') IS NULL
+BEGIN
+    ALTER TABLE dbo.ComplaintBarcodeResults ADD Factory nvarchar(20) NULL;
+END
+
+IF OBJECT_ID('dbo.__EFMigrationsHistory') IS NOT NULL
+   AND NOT EXISTS (
+       SELECT 1
+       FROM dbo.__EFMigrationsHistory
+       WHERE MigrationId = '20260421120000_AddFactoryToBarcodeResults'
+   )
+BEGIN
+    INSERT INTO dbo.__EFMigrationsHistory (MigrationId, ProductVersion)
+    VALUES ('20260421120000_AddFactoryToBarcodeResults', '8.0.0');
+END
+");
+}
+
 
 // 🔥 SWAGGER ROOT
 app.UseSwagger();

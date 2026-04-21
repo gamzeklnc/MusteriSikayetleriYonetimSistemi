@@ -68,6 +68,12 @@ export default function ComplaintDetailModal({
             return acc;
         }, {} as Record<string, boolean | null>) || {}
     );
+    const barcodeFactories = complaint.barcodeResults?.reduce((acc: Record<string, string>, br) => {
+        if (br.factory) {
+            acc[br.barcode] = br.factory;
+        }
+        return acc;
+    }, {} as Record<string, string>) || {};
 
     const refreshHistory = useCallback(async () => {
         try {
@@ -92,8 +98,8 @@ export default function ComplaintDetailModal({
 
     const filteredBarcodes = complaint.barcodes?.filter(barcode => {
         if (barcodeFilter === 'ALL') return true;
-        const parsed = parseSingleBarcode(barcode);
-        return parsed.factory === barcodeFilter;
+        const factory = barcodeFactories[barcode] || parseSingleBarcode(barcode).factory;
+        return factory === barcodeFilter || factory === barcodeFilter.replace('HSA', 'HSA-');
     }) || [];
 
     const handleExportExcel = async () => {
@@ -141,7 +147,7 @@ export default function ComplaintDetailModal({
         // Map each barcode to a full row. If no barcodes exist, create a single row indicating that.
         if (complaint.barcodes && complaint.barcodes.length > 0) {
             dataRows = complaint.barcodes.map(b => {
-                const factory = parseSingleBarcode(b).factory;
+                const factory = barcodeFactories[b] || parseSingleBarcode(b).factory;
                 return [...commonData, b, factory];
             });
         } else {
@@ -217,7 +223,7 @@ export default function ComplaintDetailModal({
                 has8DReport: has8DReport,
                 barcodeResults: Object.entries(barcodeJusts)
                     .filter(([, val]) => val !== null)
-                    .map(([bc, val]) => ({ id: 0, barcode: bc, isJustified: !!val }))
+                    .map(([bc, val]) => ({ id: 0, barcode: bc, factory: barcodeFactories[bc] || null, isJustified: !!val }))
             });
             if (onOperationalStageUpdate) {
                 onOperationalStageUpdate(updatedComplaint);
@@ -246,7 +252,7 @@ export default function ComplaintDetailModal({
                 has8DReport: has8DReport,
                 barcodeResults: Object.entries(barcodeJusts)
                     .filter(([, val]) => val !== null)
-                    .map(([bc, val]) => ({ id: 0, barcode: bc, isJustified: !!val }))
+                    .map(([bc, val]) => ({ id: 0, barcode: bc, factory: barcodeFactories[bc] || null, isJustified: !!val }))
             });
             setNote('');
             if (onOperationalStageUpdate) {
@@ -582,15 +588,16 @@ export default function ComplaintDetailModal({
                             {filteredBarcodes.length > 0 ? (
                                 <ul className="max-h-60 overflow-y-auto divide-y divide-slate-100 p-2">
                                     {filteredBarcodes.map((barcode, idx) => {
-                                        const factory = parseSingleBarcode(barcode).factory;
+                                        const factory = barcodeFactories[barcode] || parseSingleBarcode(barcode).factory;
                                         const currentJust = barcodeJusts[barcode];
                                         return (
                                             <li key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-md transition-colors gap-3">
                                                 <div className="flex items-center gap-3">
                                                     <span className="text-slate-900 font-bold w-8 inline-block select-none">{idx + 1}.</span>
                                                     <span className="font-bold tracking-tight text-slate-700">{barcode}</span>
-                                                    {factory === 'HSA1' && <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">HSA1</span>}
-                                                    {factory === 'HSA2' && <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-100 text-indigo-700">HSA2</span>}
+                                                    {(factory === 'HSA1' || factory === 'HSA-1') && <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">HSA-1</span>}
+                                                    {(factory === 'HSA2' || factory === 'HSA-2') && <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-100 text-indigo-700">HSA-2</span>}
+                                                    {factory === '1&2' && <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">1&2</span>}
                                                 </div>
 
                                                 {!showOperationalStageUpdate && currentJust !== undefined && currentJust !== null && (

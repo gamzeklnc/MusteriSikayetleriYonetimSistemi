@@ -112,6 +112,7 @@ public record UpdateTargetDateRequest(bool? HasTargetDate, DateTime? TargetDate)
 public record ComplaintBarcodeResultDto(
     int Id,
     string Barcode,
+    string? Factory,
     bool? IsJustified
 );
 

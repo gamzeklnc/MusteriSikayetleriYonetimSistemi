@@ -77,9 +77,7 @@ export default function NewComplaintPage() {
 
         setFormData(prev => ({
             ...prev,
-            barcodes: aggregated.barcodes,
-            hsa1: aggregated.hsa1Count,
-            hsa2: aggregated.hsa2Count
+            barcodes: aggregated.barcodes
         }));
     };
 

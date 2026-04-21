@@ -314,6 +314,7 @@ public class ComplaintsController : ControllerBase
                 complaint.BarcodeResults.Add(new ComplaintBarcodeResult
                 {
                     Barcode = br.Barcode,
+                    Factory = br.Factory,
                     IsJustified = br.IsJustified,
                     ComplaintId = complaint.Id
                 });
@@ -712,6 +713,7 @@ public class ComplaintsController : ControllerBase
                 complaint.BarcodeResults.Add(new ComplaintBarcodeResult
                 {
                     Barcode = br.Barcode,
+                    Factory = br.Factory,
                     IsJustified = br.IsJustified,
                     ComplaintId = complaint.Id
                 });
@@ -977,7 +979,7 @@ public class ComplaintsController : ControllerBase
         c.UnjustifiedHsa2Count,
         c.UnjustifiedOtherCount,
         c.Has8DReport,
-        c.BarcodeResults.Select(br => new ComplaintBarcodeResultDto(br.Id, br.Barcode, br.IsJustified)),
+        c.BarcodeResults.Select(br => new ComplaintBarcodeResultDto(br.Id, br.Barcode, br.Factory, br.IsJustified)),
         c.Documents.Select(d => new ComplaintDocumentDto(
             d.Id,
             d.FileName,

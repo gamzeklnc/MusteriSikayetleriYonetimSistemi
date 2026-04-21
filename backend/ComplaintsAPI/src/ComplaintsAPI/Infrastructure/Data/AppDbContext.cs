@@ -26,6 +26,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<ComplaintBarcodeResult>(entity =>
         {
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.Factory).HasMaxLength(20).IsRequired(false);
             entity.HasOne(e => e.Complaint)
                   .WithMany(c => c.BarcodeResults)
                   .HasForeignKey(e => e.ComplaintId)

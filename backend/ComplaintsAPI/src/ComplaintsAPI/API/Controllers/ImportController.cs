@@ -349,7 +349,7 @@ public class ImportController : ControllerBase
 
                             barcodeStrings.Add(barcodeVal);
 
-                            var fabrika = GetValue(br, "FABRİKA", "FABRIKA").ToLowerInvariant();
+                            var fabrika = NormalizeKey(GetValue(br, "FABRİKA", "FABRIKA"));
                             var durum = GetValue(br, "HAKLI/HAKSIZŞİKAYET", "HAKLI/HAKSIZSIKAYET", "DURUM").ToLowerInvariant();
                             
                             int miktar = ParseInt(GetValue(br, "KUSURLUÜRÜNMİKTARI", "KUSURLUURUNMIKTARI", "KUSURLUMİKTAR"));
@@ -360,24 +360,25 @@ public class ImportController : ControllerBase
                             if (durum.Contains("hakli") || durum.Contains("haklı"))
                             {
                                 isJustified = true;
-                                if (fabrika.Contains("1")) jHsa1 += miktar;
-                                else if (fabrika.Contains("2")) jHsa2 += miktar;
+                                if (IsHsa1Factory(fabrika)) jHsa1 += miktar;
+                                else if (IsHsa2Factory(fabrika)) jHsa2 += miktar;
                                 else jOther += miktar;
                             }
                             else if (durum.Contains("haksiz") || durum.Contains("haksız"))
                             {
                                 isJustified = false;
-                                if (fabrika.Contains("1")) uHsa1 += miktar;
-                                else if (fabrika.Contains("2")) uHsa2 += miktar;
+                                if (IsHsa1Factory(fabrika)) uHsa1 += miktar;
+                                else if (IsHsa2Factory(fabrika)) uHsa2 += miktar;
                                 else uOther += miktar;
                             }
 
-                            if (fabrika.Contains("1")) hsa1 += miktar;
-                            else if (fabrika.Contains("2")) hsa2 += miktar;
+                            if (IsHsa1Factory(fabrika)) hsa1 += miktar;
+                            else if (IsHsa2Factory(fabrika)) hsa2 += miktar;
 
                             complaint.BarcodeResults.Add(new ComplaintBarcodeResult
                             {
                                 Barcode = barcodeVal,
+                                Factory = NormalizeFactoryLabel(fabrika),
                                 IsJustified = isJustified
                             });
                         }
@@ -504,11 +505,11 @@ public class ImportController : ControllerBase
                 foreach (var row in group)
                 {
                     int miktar = ParseInt(GetValue(row, "KUSURLUÜRÜNMİKTARI", "KUSURLUURUNMIKTARI", "KUSURLUMİKTAR"));
-                    string fabrika = GetValue(row, "FABRİKA", "FABRIKA");
+                    string fabrika = NormalizeKey(GetValue(row, "FABRİKA", "FABRIKA"));
 
-                    if (fabrika.Contains("HSA-1", StringComparison.OrdinalIgnoreCase) || fabrika.Contains("HSA 1", StringComparison.OrdinalIgnoreCase))
+                    if (IsHsa1Factory(fabrika))
                         hsa1 += miktar;
-                    else if (fabrika.Contains("HSA-2", StringComparison.OrdinalIgnoreCase) || fabrika.Contains("HSA 2", StringComparison.OrdinalIgnoreCase))
+                    else if (IsHsa2Factory(fabrika))
                         hsa2 += miktar;
                 }
 
@@ -642,6 +643,15 @@ public class ImportController : ControllerBase
         return !IsCommonFactory(factory) && (factory.Contains("hsa2") || factory.Contains("hsa-2"));
     }
 
+    private static string? NormalizeFactoryLabel(string factory)
+    {
+        if (string.IsNullOrWhiteSpace(factory)) return null;
+        if (IsCommonFactory(factory)) return "1&2";
+        if (IsHsa1Factory(factory)) return "HSA-1";
+        if (IsHsa2Factory(factory)) return "HSA-2";
+        return factory.Trim();
+    }
+
     private DateTime ParseDate(object? value)
     {
         if (value == null || string.IsNullOrWhiteSpace(value.ToString())) return DateTime.UtcNow;
@@ -738,16 +748,30 @@ public class ImportController : ControllerBase
                 complaint.Barcodes = string.Join(", ", existingBarcodes.Distinct());
 
                 // Barkodlardan HSA1 / HSA2 sayılarını da güncelleyelim
-                if (existingBarcodes.Any())
+                if (hasBarcodeInImport)
                 {
-                    complaint.Hsa1 = existingBarcodes.Count(b => b.StartsWith("HSA1", StringComparison.OrdinalIgnoreCase));
-                    complaint.Hsa2 = existingBarcodes.Count(b => b.StartsWith("HSA2", StringComparison.OrdinalIgnoreCase));
+                    complaint.Hsa1 = group.Count(row =>
+                    {
+                        var barcode = row.ContainsKey("E") ? row["E"]?.ToString()?.Trim() : null;
+                        var factory = row.ContainsKey("G") ? NormalizeKey(row["G"]?.ToString() ?? "") : "";
+                        return !string.IsNullOrWhiteSpace(barcode)
+                            && !barcode.Equals("AAAA", StringComparison.OrdinalIgnoreCase)
+                            && IsHsa1Factory(factory);
+                    });
+                    complaint.Hsa2 = group.Count(row =>
+                    {
+                        var barcode = row.ContainsKey("E") ? row["E"]?.ToString()?.Trim() : null;
+                        var factory = row.ContainsKey("G") ? NormalizeKey(row["G"]?.ToString() ?? "") : "";
+                        return !string.IsNullOrWhiteSpace(barcode)
+                            && !barcode.Equals("AAAA", StringComparison.OrdinalIgnoreCase)
+                            && IsHsa2Factory(factory);
+                    });
                 }
 
                 // Haklı/Haksız durumu ve Sayıların Belirlenmesi
                 int jHsa1 = 0, jHsa2 = 0, jOther = 0;
                 int uHsa1 = 0, uHsa2 = 0, uOther = 0;
-                var barcodeDecisions = new Dictionary<string, bool?>(StringComparer.OrdinalIgnoreCase);
+                var barcodeDecisions = new Dictionary<string, (bool? IsJustified, string? Factory)>(StringComparer.OrdinalIgnoreCase);
 
                 foreach (var row in group)
                 {
@@ -789,7 +813,7 @@ public class ImportController : ControllerBase
                         var rowBarcode = row["E"].ToString()?.Trim();
                         if (!string.IsNullOrWhiteSpace(rowBarcode) && !rowBarcode.Equals("AAAA", StringComparison.OrdinalIgnoreCase))
                         {
-                            barcodeDecisions[rowBarcode] = isJustified;
+                            barcodeDecisions[rowBarcode] = (isJustified, NormalizeFactoryLabel(fabrika));
                         }
                     }
                 }
@@ -803,7 +827,7 @@ public class ImportController : ControllerBase
                     var existingResult = existingResults.FirstOrDefault(br =>
                         br.Barcode.Equals(decision.Key, StringComparison.OrdinalIgnoreCase));
 
-                    if (decision.Value == null)
+                    if (decision.Value.IsJustified == null)
                     {
                         if (existingResult != null)
                         {
@@ -814,7 +838,8 @@ public class ImportController : ControllerBase
 
                     if (existingResult != null)
                     {
-                        existingResult.IsJustified = decision.Value;
+                        existingResult.IsJustified = decision.Value.IsJustified;
+                        existingResult.Factory = decision.Value.Factory;
                     }
                     else
                     {
@@ -822,7 +847,8 @@ public class ImportController : ControllerBase
                         {
                             ComplaintId = complaint.Id,
                             Barcode = decision.Key,
-                            IsJustified = decision.Value
+                            Factory = decision.Value.Factory,
+                            IsJustified = decision.Value.IsJustified
                         });
                     }
                 }
