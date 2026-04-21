@@ -281,8 +281,8 @@ public record CreateErrorOptionRequest(string Label);
 public record UserActivityLogDto(
     int Id,
     int? UserId,
-    string UserFullName,
-    string Action,
-    string Details,
+    string? UserFullName,
+    string? Action,
+    string? Details,
     DateTime CreatedAt
 );

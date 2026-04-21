@@ -1,31 +1,17 @@
-using MiniExcelLibs;
 using System;
+using System.IO;
 using System.Linq;
+using MiniExcelLibs;
 
-class Program
-{
-    static void Main()
-    {
-        string path = @"C:\Users\yasin\MusteriSikayetleriYonetimSistemi\Excel_Aktar\KG-LST-002 MUSTERI SIKAYETLERI TAKIP.xlsx";
-        var rows = MiniExcel.Query(path, useHeaderRow: true).ToList();
+class Program {
+    static void Main(string[] args) {
+        var path = @"C:\Users\yasin\MusteriSikayetleriYonetimSistemi\Excel_Aktar\KG-LST-002 MUSTERI SIKAYETLERI TAKIP.xlsx";
         
-        if (rows.Count > 0)
-        {
-            Console.WriteLine("Headers:");
-            var firstRow = rows[0] as IDictionary<string, object>;
-            foreach (var key in firstRow.Keys)
-            {
-                Console.WriteLine($"- {key}");
-            }
-            Console.WriteLine("\nFirst Row Data:");
-            foreach (var kvp in firstRow)
-            {
-                Console.WriteLine($"{kvp.Key}: {kvp.Value}");
-            }
-        }
-        else
-        {
-            Console.WriteLine("File is empty.");
+        var genelListeRows = MiniExcel.Query(path, useHeaderRow: false, sheetName: "GENEL LİSTE").Take(3).ToList();
+        Console.WriteLine("GENEL LİSTE First 3 rows:");
+        foreach(var row in genelListeRows) {
+            var dict = row as System.Collections.Generic.IDictionary<string, object>;
+            Console.WriteLine(string.Join(" | ", dict?.Select(x => $"{x.Key}={x.Value}") ?? new string[0]));
         }
     }
 }

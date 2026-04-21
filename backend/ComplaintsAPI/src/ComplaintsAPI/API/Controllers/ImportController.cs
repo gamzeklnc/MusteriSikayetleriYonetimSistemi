@@ -250,6 +250,169 @@ public class ImportController : ControllerBase
             var existingSet = new HashSet<string>(existingNumbers, StringComparer.OrdinalIgnoreCase);
 
             using var stream = file.OpenReadStream();
+            var sheetNames = MiniExcel.GetSheetNames(stream);
+
+            bool isMultiSheetFormat = sheetNames.Any(s => s.Equals("GENEL LİSTE", StringComparison.OrdinalIgnoreCase)) &&
+                                      sheetNames.Any(s => s.Equals("BARKODLAR", StringComparison.OrdinalIgnoreCase));
+
+            if (isMultiSheetFormat)
+            {
+                Console.WriteLine("---> ÇOK SAYFALI FORMAT ALGILANDI");
+                var complaints = new List<Complaint>();
+                int adminUserId = 1;
+
+                var genelListeRaw = stream.Query(useHeaderRow: false, sheetName: "GENEL LİSTE").ToList();
+                var barkodlarRaw = stream.Query(useHeaderRow: false, sheetName: "BARKODLAR").ToList();
+
+                if (genelListeRaw.Count < 2) return BadRequest("GENEL LİSTE sayfası boş.");
+                
+                var headerGenel = genelListeRaw[0] as IDictionary<string, object>;
+                var headerBarkodlar = barkodlarRaw.Count > 0 ? barkodlarRaw[0] as IDictionary<string, object> : null;
+
+                var colMapGenel = BuildColumnMap(headerGenel);
+                var colMapBarkodlar = BuildColumnMap(headerBarkodlar);
+
+                // Gruplama - Barkodlar
+                var barkodGroups = barkodlarRaw.Skip(1)
+                    .Select(r => r as IDictionary<string, object>)
+                    .Where(r => r != null)
+                    .Select(r => MapDict(r, colMapBarkodlar))
+                    .Where(d => !string.IsNullOrWhiteSpace(GetValue(d, "NO")))
+                    .GroupBy(d => GetValue(d, "NO"))
+                    .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
+
+                foreach (var rawRow in genelListeRaw.Skip(1))
+                {
+                    var dict = MapDict(rawRow as IDictionary<string, object>, colMapGenel);
+                    string rowNoRaw = GetValue(dict, "NO");
+                    
+                    if (string.IsNullOrWhiteSpace(rowNoRaw) || rowNoRaw.Equals("NO", StringComparison.OrdinalIgnoreCase)) continue;
+
+                    string generatedComplaintNum = rowNoRaw.Trim();
+                    if (generatedComplaintNum.Length >= 3 && !generatedComplaintNum.Contains("-"))
+                        generatedComplaintNum = generatedComplaintNum.Substring(0, 2) + "-" + generatedComplaintNum.Substring(2);
+
+                    if (existingSet.Contains(generatedComplaintNum))
+                    {
+                        Console.WriteLine($"---> Atlandi (Zaten var): {generatedComplaintNum}");
+                        continue;
+                    }
+
+                    var complaintDateStr = GetValue(dict, "ŞİKAYETTARİHİ", "SIKAYETTARIHI", "TARİH");
+                    var complaintDate = ParseDate(complaintDateStr);
+
+                    string yearStr = GetValue(dict, "ŞİKAYETYIL", "SIKAYETYIL");
+                    string monthStr = GetValue(dict, "ŞİKAYETAY", "SIKAYETAY");
+                    if (complaintDate.Date == DateTime.UtcNow.Date && !string.IsNullOrEmpty(yearStr) && !string.IsNullOrEmpty(monthStr))
+                    {
+                        if (int.TryParse(yearStr, out int y) && int.TryParse(monthStr, out int m))
+                            complaintDate = new DateTime(y, m, 1);
+                    }
+
+                    var complaint = new Complaint
+                    {
+                        ComplaintNumber = generatedComplaintNum,
+                        CustomerName = GetValue(dict, "ŞİRKET", "SIRKET", "MÜŞTERİ") == "" ? "Bilinmiyor" : GetValue(dict, "ŞİRKET", "SIRKET", "MÜŞTERİ"),
+                        ProjectName = GetValue(dict, "PROJE") == "" ? "-" : GetValue(dict, "PROJE"),
+                        ProjectLocation = GetValue(dict, "PROJELOKASYONU", "PROJELOKASYON") == "" ? "-" : GetValue(dict, "PROJELOKASYONU", "PROJELOKASYON"),
+                        Brand = GetValue(dict, "MARKA", "ÜRÜNİSMİ", "URUNISMI", "URUNADI"),
+                        ComplaintDate = complaintDate,
+                        ProductionDate = complaintDate,
+                        DefectiveQuantity = ParseInt(GetValue(dict, "KUSURLUÜRÜNMİKTARI", "KUSURLUURUNMIKTARI", "KUSURLUMİKTAR")),
+                        ErrorDefinition = GetValue(dict, "HATATANIMI(ÖZET)", "HATATANIMI", "HATA"),
+                        InitialNote = GetValue(dict, "ŞİKAYETNOTLARI", "SIKAYETNOTLARI", "NOT", "ŞİKAYETNOTU"),
+                        CreatedById = adminUserId,
+                        Status = "Kapali/ZT",
+                        RegistrationDate = complaintDate,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
+                        CurrentDepartmentId = 2,
+                        BarcodeResults = new List<ComplaintBarcodeResult>()
+                    };
+
+                    complaint.SetDerivedDateFields();
+
+                    if (string.IsNullOrWhiteSpace(complaint.CustomerName)) complaint.CustomerName = "Bilinmiyor";
+                    if (string.IsNullOrWhiteSpace(complaint.ProjectName)) complaint.ProjectName = "-";
+
+                    int jHsa1 = 0, jHsa2 = 0, jOther = 0;
+                    int uHsa1 = 0, uHsa2 = 0, uOther = 0;
+                    int hsa1 = 0, hsa2 = 0;
+                    var barcodeStrings = new List<string>();
+
+                    if (barkodGroups.TryGetValue(rowNoRaw.Trim(), out var barcodeRows))
+                    {
+                        foreach (var br in barcodeRows)
+                        {
+                            var barcodeVal = GetValue(br, "MODÜLSERİNO", "MODULSERINO", "SERİNO", "SERINO");
+                            if (string.IsNullOrWhiteSpace(barcodeVal)) continue;
+
+                            barcodeStrings.Add(barcodeVal);
+
+                            var fabrika = GetValue(br, "FABRİKA", "FABRIKA").ToLowerInvariant();
+                            var durum = GetValue(br, "HAKLI/HAKSIZŞİKAYET", "HAKLI/HAKSIZSIKAYET", "DURUM").ToLowerInvariant();
+                            
+                            int miktar = ParseInt(GetValue(br, "KUSURLUÜRÜNMİKTARI", "KUSURLUURUNMIKTARI", "KUSURLUMİKTAR"));
+                            if (miktar <= 0) miktar = 1;
+
+                            bool? isJustified = null;
+
+                            if (durum.Contains("hakli") || durum.Contains("haklı"))
+                            {
+                                isJustified = true;
+                                if (fabrika.Contains("1")) jHsa1 += miktar;
+                                else if (fabrika.Contains("2")) jHsa2 += miktar;
+                                else jOther += miktar;
+                            }
+                            else if (durum.Contains("haksiz") || durum.Contains("haksız"))
+                            {
+                                isJustified = false;
+                                if (fabrika.Contains("1")) uHsa1 += miktar;
+                                else if (fabrika.Contains("2")) uHsa2 += miktar;
+                                else uOther += miktar;
+                            }
+
+                            if (fabrika.Contains("1")) hsa1 += miktar;
+                            else if (fabrika.Contains("2")) hsa2 += miktar;
+
+                            complaint.BarcodeResults.Add(new ComplaintBarcodeResult
+                            {
+                                Barcode = barcodeVal,
+                                IsJustified = isJustified
+                            });
+                        }
+                    }
+
+                    complaint.Barcodes = string.Join(", ", barcodeStrings.Distinct());
+                    complaint.Hsa1 = hsa1;
+                    complaint.Hsa2 = hsa2;
+                    complaint.JustifiedHsa1Count = jHsa1;
+                    complaint.JustifiedHsa2Count = jHsa2;
+                    complaint.JustifiedOtherCount = jOther;
+                    complaint.UnjustifiedHsa1Count = uHsa1;
+                    complaint.UnjustifiedHsa2Count = uHsa2;
+                    complaint.UnjustifiedOtherCount = uOther;
+
+                    if (jHsa1 > 0 || jHsa2 > 0 || jOther > 0) complaint.IsValidComplaint = true;
+                    else if (uHsa1 > 0 || uHsa2 > 0 || uOther > 0) complaint.IsValidComplaint = false;
+
+                    existingSet.Add(generatedComplaintNum);
+                    complaints.Add(complaint);
+                }
+
+                if (complaints.Any())
+                {
+                    await _context.Complaints.AddRangeAsync(complaints);
+                    await _context.SaveChangesAsync();
+                    Console.WriteLine($"---> TYPE-2 (MULTI-SHEET) BASARILI: {complaints.Count} adet kayıt eklendi.");
+                }
+
+                await transaction.CommitAsync();
+                return Ok(new { Message = $"{complaints.Count} adet Tip-2 kayıt (Çoklu Sayfa formatı) başarıyla içe aktarıldı." });
+            }
+
+            // --- TEK SAYFALI ESKİ FORMAT ---
+            Console.WriteLine("---> TEK SAYFALI FORMAT ALGILANDI (ESKİ)");
             var rawRows = stream.Query(useHeaderRow: false).ToList();
 
             if (rawRows.Count < 2)
@@ -285,8 +448,8 @@ public class ImportController : ControllerBase
                     columnMap[key] = headerValue;
             }
 
-            var complaints = new List<Complaint>();
-            int adminUserId = 1;
+            var fallbackComplaints = new List<Complaint>();
+            int fallbackAdminUserId = 1;
             var dataRows = new List<Dictionary<string, object>>();
 
             foreach (var rawRow in rawRows.Skip(headerIndex + 1)) // Skip until we are past header. 
@@ -374,7 +537,7 @@ public class ImportController : ControllerBase
                     DefectiveQuantity = totalQty,
                     ErrorDefinition = GetValue(firstRow, "HATATANIMI(ÖZET)", "HATATANIMI", "HATA"),
                     InitialNote = GetValue(firstRow, "ŞİKAYETNOTLARI", "SIKAYETNOTLARI", "NOT", "ŞİKAYETNOTU"),
-                    CreatedById = adminUserId,
+                    CreatedById = fallbackAdminUserId,
                     Status = "Kapali/ZT",
                     RegistrationDate = complaintDate,
                     CreatedAt = DateTime.UtcNow,
@@ -390,18 +553,18 @@ public class ImportController : ControllerBase
                 if (string.IsNullOrWhiteSpace(complaint.ProjectName)) complaint.ProjectName = "-";
 
                 existingSet.Add(generatedComplaintNum);
-                complaints.Add(complaint);
+                fallbackComplaints.Add(complaint);
             }
 
-            if (complaints.Any())
+            if (fallbackComplaints.Any())
             {
-                await _context.Complaints.AddRangeAsync(complaints);
+                await _context.Complaints.AddRangeAsync(fallbackComplaints);
                 await _context.SaveChangesAsync();
-                Console.WriteLine($"---> TYPE-2 BASARILI: {complaints.Count} adet kayıt eklendi.");
+                Console.WriteLine($"---> TYPE-2 BASARILI: {fallbackComplaints.Count} adet kayıt eklendi.");
             }
 
             await transaction.CommitAsync();
-            return Ok(new { Message = $"{complaints.Count} adet Tip-2 kayıt başarıyla içe aktarıldı." });
+            return Ok(new { Message = $"{fallbackComplaints.Count} adet Tip-2 kayıt başarıyla içe aktarıldı." });
         }
         catch (Exception ex)
         {
@@ -409,6 +572,30 @@ public class ImportController : ControllerBase
             Console.WriteLine($"---> TYPE-2 HATA OLUSTU: {ex.Message}");
             return StatusCode(500, $"İşlem sırasında hata oluştu: {ex.Message}");
         }
+    }
+
+    private Dictionary<string, string> BuildColumnMap(IDictionary<string, object>? headerRow)
+    {
+        var map = new Dictionary<string, string>();
+        if (headerRow == null) return map;
+        foreach (var key in headerRow.Keys)
+        {
+            var headerValue = headerRow[key]?.ToString()?.Trim() ?? "";
+            if (!string.IsNullOrEmpty(headerValue)) map[key] = headerValue;
+        }
+        return map;
+    }
+
+    private Dictionary<string, object> MapDict(IDictionary<string, object>? rawDict, Dictionary<string, string> colMap)
+    {
+        var dict = new Dictionary<string, object>();
+        if (rawDict == null) return dict;
+        foreach (var kv in rawDict)
+        {
+            if (colMap.TryGetValue(kv.Key, out var realName))
+                dict[realName] = kv.Value ?? "";
+        }
+        return dict;
     }
 
     private string GetValue(IDictionary<string, object> dict, params string[] names)
