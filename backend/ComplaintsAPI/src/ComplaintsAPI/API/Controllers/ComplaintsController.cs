@@ -156,19 +156,12 @@ try
 
     var senderEmail = "report@hsaenerji.net"; // 🔥 DÜZELTİLDİ
 
-    _ = Task.Run(async () => 
-    { 
-        try 
-        { 
-            using var scope = _scopeFactory.CreateScope();
-            var emailSvc = scope.ServiceProvider.GetRequiredService<IEmailService>();
-            await emailSvc.SendToDepartmentsAsync(senderEmail, targetDepts, subject, body); 
-        } 
-        catch (Exception ex) 
-        { 
-            Console.WriteLine($"Background email failure: {ex.Message}"); 
-        } 
-    });
+    await _emailService.SendToDepartmentsAsync(
+    senderEmail,
+    targetDepts,
+    subject,
+    body
+);
 }
 catch (Exception ex)
 {
