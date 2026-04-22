@@ -13,6 +13,7 @@
           "MailKit": "4.15.1",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.13",
           "Microsoft.EntityFrameworkCore.SqlServer": "8.0.13",
+          "MiniExcel": "1.43.0",
           "Serilog.AspNetCore": "8.0.3",
           "Serilog.Sinks.File": "5.0.0",
           "Swashbuckle.AspNetCore": "6.9.0"
@@ -430,6 +431,14 @@
           "lib/net8.0/MimeKit.dll": {
             "assemblyVersion": "4.15.0.0",
             "fileVersion": "4.15.1.0"
+          }
+        }
+      },
+      "MiniExcel/1.43.0": {
+        "runtime": {
+          "lib/net8.0/MiniExcel.dll": {
+            "assemblyVersion": "1.43.0.0",
+            "fileVersion": "1.43.0.0"
           }
         }
       },
@@ -979,6 +988,13 @@
       "sha512": "sha512-cxCcQhD0zhboFoG136jJuJtQjNRDJ+BxBm3f2vWn+53bff/CRo+K1mAkWjsW4Wuyy5O22F40MdMG2nRzQu1cJw==",
       "path": "mimekit/4.15.1",
       "hashPath": "mimekit.4.15.1.nupkg.sha512"
+    },
+    "MiniExcel/1.43.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ImtWDO4zpjNKuNdFlK5LeNcpVtN/8aWp8M0rd8LPjrCU87ND2qbUEfvIcuS9RDGw+9OxS4ZZaDI0PcHiLtb8qg==",
+      "path": "miniexcel/1.43.0",
+      "hashPath": "miniexcel.1.43.0.nupkg.sha512"
     },
     "Serilog/3.1.1": {
       "type": "package",

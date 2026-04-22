@@ -140,35 +140,40 @@ public class ComplaintsController : ControllerBase
 
         await LogActivityAsync("Şikayet Oluşturuldu", $"Şikayet No: {created.ComplaintNumber}");
 
-        // Email Bildirimi Gönder
-        try
-        {
-            var subject = $"{created.ComplaintNumber} numaralı şikayet kaydı oluşturulmuştur.";
-            var body = $@"
-                <h3>Yeni Şikayet Kaydı</h3>
-                <p><strong>Şikayet No:</strong> {created.ComplaintNumber}</p>
-                <p><strong>Müşteri:</strong> {created.CustomerName}</p>
-                <p><strong>Proje:</strong> {created.ProjectName}</p>
-                <p><strong>Oluşturan:</strong> {CurrentUserName}</p>
-                <p>Sistem üzerinden detayları inceleyebilirsiniz.</p>";
+       // Email Bildirimi Gönder
+try
+{
+    var subject = $"{created.ComplaintNumber} numaralı şikayet kaydı oluşturulmuştur.";
+    var body = $@"
+        <h3>Yeni Şikayet Kaydı</h3>
+        <p><strong>Şikayet No:</strong> {created.ComplaintNumber}</p>
+        <p><strong>Müşteri:</strong> {created.CustomerName}</p>
+        <p><strong>Proje:</strong> {created.ProjectName}</p>
+        <p><strong>Oluşturan:</strong> {CurrentUserName}</p>
+        <p>Sistem üzerinden detayları inceleyebilirsiniz.</p>";
 
-            var targetDepts = new[] { "Satış", "Kalite", "Kalite Güvence" };
-            var senderEmail = CurrentUserEmail; 
-            _ = Task.Run(async () => { 
-                try { 
-                    using var scope = _scopeFactory.CreateScope();
-                    var emailSvc = scope.ServiceProvider.GetRequiredService<IEmailService>();
-                    await emailSvc.SendToDepartmentsAsync(senderEmail, targetDepts, subject, body); 
-                } catch (Exception ex) { 
-                    Console.WriteLine($"Background email failure: {ex.Message}"); 
-                } 
-            });
-        }
-        catch (Exception ex)
-        {
-            // Email hatası şikayet oluşturma işlemini bozmamalı
-            Console.WriteLine($"Email notification failed: {ex.Message}");
-        }
+    var targetDepts = new[] { "Satış", "Kalite", "Kalite Güvence" };
+
+    var senderEmail = "report@hsaenerji.net"; // 🔥 DÜZELTİLDİ
+
+    _ = Task.Run(async () => 
+    { 
+        try 
+        { 
+            using var scope = _scopeFactory.CreateScope();
+            var emailSvc = scope.ServiceProvider.GetRequiredService<IEmailService>();
+            await emailSvc.SendToDepartmentsAsync(senderEmail, targetDepts, subject, body); 
+        } 
+        catch (Exception ex) 
+        { 
+            Console.WriteLine($"Background email failure: {ex.Message}"); 
+        } 
+    });
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Email notification failed: {ex.Message}");
+}
 
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created.Id);
     }
@@ -496,7 +501,7 @@ public class ComplaintsController : ControllerBase
                     <p>Kalite raporlaması tamamlanmıştır. Sistem üzerinden detayları inceleyebilirsiniz.</p>";
 
                 var targetDepts = new[] { "Kalite", "Kalite Güvence", "Yönetim" };
-                var senderEmail = CurrentUserEmail; 
+                var senderEmail = "report@hsaenerji.net"; 
                 _ = Task.Run(async () => { 
                     try { 
                         using var scope = _scopeFactory.CreateScope();
@@ -566,7 +571,7 @@ public class ComplaintsController : ControllerBase
 
                 // IT departmanı hariç tüm departmanlara gönder
                 var targetDepts = new[] { "Satış", "Kalite", "Kalite Güvence", "Yönetim" };
-                var senderEmail = CurrentUserEmail; 
+                var senderEmail = "report@hsaenerji.net"; 
                 _ = Task.Run(async () => { 
                     try { 
                         using var scope = _scopeFactory.CreateScope();
@@ -599,7 +604,7 @@ public class ComplaintsController : ControllerBase
                     <p>Sistem üzerinden detayları inceleyebilirsiniz.</p>";
 
                 var targetDepts = new[] { "Kalite", "Kalite Güvence" };
-                var senderEmail = CurrentUserEmail; 
+                var senderEmail = "report@hsaenerji.net"; 
                 _ = Task.Run(async () => { 
                     try { 
                         using var scope = _scopeFactory.CreateScope();
@@ -661,7 +666,7 @@ public class ComplaintsController : ControllerBase
                     <p>Müşteri ile görüşülmüş ve geri dönüş süreci tamamlanmıştır. Operasyonel aksiyon aşamasına geçilebilir.</p>";
 
                 var targetDepts = new[] { "Kalite Güvence" };
-                var senderEmail = CurrentUserEmail; 
+                var senderEmail = "report@hsaenerji.net"; 
                 _ = Task.Run(async () => { 
                     try { 
                         using var scope = _scopeFactory.CreateScope();
