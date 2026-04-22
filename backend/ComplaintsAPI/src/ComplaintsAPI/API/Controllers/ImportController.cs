@@ -53,8 +53,8 @@ public class ImportController : ControllerBase
             Console.WriteLine($"\n---> IMPORT ASAMASI: {file.FileName}");
 
             // 1. Mevcut Şikayet Numaralarını Al (Eskileri silmiyoruz, sadece yenileri ekliyoruz)
-            var existingNumbers = await _context.Complaints.Select(c => c.ComplaintNumber).ToListAsync();
-            var existingSet = new HashSet<string>(existingNumbers, StringComparer.OrdinalIgnoreCase);
+            var existingComplaints = await _context.Complaints.ToDictionaryAsync(c => c.ComplaintNumber, StringComparer.OrdinalIgnoreCase);
+            var existingSet = new HashSet<string>(existingComplaints.Keys, StringComparer.OrdinalIgnoreCase);
             
             Console.WriteLine($"---> {existingSet.Count} adet mevcut kayit bulundu, yeniler eklenecek.");
 
@@ -177,6 +177,7 @@ public class ImportController : ControllerBase
                     CurrentDepartmentId = 2,
                     BarcodeResults = new List<ComplaintBarcodeResult>()
                 };
+                MarkImportedComplaintWorkflowAsCompleted(complaint, adminUserId);
 
                 int hsa1 = 0, hsa2 = 0;
                 int jHsa1 = 0, jHsa2 = 0, jOther = 0;
@@ -251,6 +252,9 @@ public class ImportController : ControllerBase
                 // Zaten bu numaraya sahip bir şikayet varsa atla
                 if (existingSet.Contains(complaint.ComplaintNumber))
                 {
+                    if (existingComplaints.TryGetValue(complaint.ComplaintNumber, out var existingComplaint))
+                        MarkImportedComplaintWorkflowAsCompleted(existingComplaint, adminUserId);
+
                     Console.WriteLine($"---> Atlandi (Zaten var): {complaint.ComplaintNumber}");
                     continue;
                 }
@@ -272,6 +276,9 @@ public class ImportController : ControllerBase
                 Console.WriteLine("---> KRITIK: Hiç kayıt eklenemedi! Kolonlariniz eşleşmiyor olabilir.");
                 Console.WriteLine("---> Mevcut Kolonlar: " + columnDebug);
             }
+
+            if (_context.ChangeTracker.HasChanges())
+                await _context.SaveChangesAsync();
 
             await transaction.CommitAsync();
             return Ok(new { Message = $"{complaints.Count} adet kayıt başarıyla içe aktarıldı." });
@@ -295,8 +302,8 @@ public class ImportController : ControllerBase
         {
             Console.WriteLine($"\n---> TYPE-2 IMPORT ASAMASI: {file.FileName}");
 
-            var existingNumbers = await _context.Complaints.Select(c => c.ComplaintNumber).ToListAsync();
-            var existingSet = new HashSet<string>(existingNumbers, StringComparer.OrdinalIgnoreCase);
+            var existingComplaints = await _context.Complaints.ToDictionaryAsync(c => c.ComplaintNumber, StringComparer.OrdinalIgnoreCase);
+            var existingSet = new HashSet<string>(existingComplaints.Keys, StringComparer.OrdinalIgnoreCase);
 
             using var stream = file.OpenReadStream();
             var sheetNames = MiniExcel.GetSheetNames(stream);
@@ -343,6 +350,12 @@ public class ImportController : ControllerBase
 
                     if (existingSet.Contains(generatedComplaintNum))
                     {
+                        if (existingComplaints.TryGetValue(generatedComplaintNum, out var existingComplaint))
+                        {
+                            MarkImportedComplaintWorkflowAsCompleted(existingComplaint, adminUserId);
+                            await _context.SaveChangesAsync();
+                        }
+
                         Console.WriteLine($"---> Atlandi (Zaten var): {generatedComplaintNum}");
                         continue;
                     }
@@ -378,6 +391,7 @@ public class ImportController : ControllerBase
                         CurrentDepartmentId = 2,
                         BarcodeResults = new List<ComplaintBarcodeResult>()
                     };
+                    MarkImportedComplaintWorkflowAsCompleted(complaint, adminUserId);
 
                     complaint.SetDerivedDateFields();
 
@@ -536,6 +550,12 @@ public class ImportController : ControllerBase
 
                 if (existingSet.Contains(generatedComplaintNum))
                 {
+                    if (existingComplaints.TryGetValue(generatedComplaintNum, out var existingComplaint))
+                    {
+                        MarkImportedComplaintWorkflowAsCompleted(existingComplaint, fallbackAdminUserId);
+                        await _context.SaveChangesAsync();
+                    }
+
                     Console.WriteLine($"---> Atlandi (Zaten var): {generatedComplaintNum}");
                     continue;
                 }
@@ -596,6 +616,7 @@ public class ImportController : ControllerBase
                     Hsa1 = hsa1,
                     Hsa2 = hsa2
                 };
+                MarkImportedComplaintWorkflowAsCompleted(complaint, fallbackAdminUserId);
                 
                 complaint.SetDerivedDateFields();
 
@@ -660,6 +681,18 @@ public class ImportController : ControllerBase
             }
         }
         return "";
+    }
+
+    private static void MarkImportedComplaintWorkflowAsCompleted(Complaint complaint, int systemUserId)
+    {
+        complaint.IsQualityReported = true;
+        complaint.QualityReportNote ??= "Excel import ile kalite raporu tamamlandi.";
+        complaint.QualityReportedById ??= systemUserId;
+        complaint.Has8DReport = true;
+
+        complaint.IsManagementApproved = true;
+        complaint.ManagementApprovalNote ??= "Excel import ile yonetim onayi tamamlandi.";
+        complaint.ManagementApprovedById ??= systemUserId;
     }
 
     private string NormalizeKey(string key)
@@ -949,6 +982,7 @@ public class ImportController : ControllerBase
                 }
 
                 complaint.UpdatedAt = DateTime.UtcNow;
+                MarkImportedComplaintWorkflowAsCompleted(complaint, 1);
                 updatedCount++;
             }
 

@@ -59,7 +59,7 @@ export default function QualityReportPage() {
         if (c.currentDepartmentName === 'Müşteri Geri Dönüşü') return 'Müşteri Geri Dönüşü Bekleniyor';
         if (c.currentDepartmentName === 'Yönetim Onayı') return 'Yönetim Onayı Bekleniyor';
         if (c.currentDepartmentName === 'Kalite Raporlaması') return 'Kalite Raporlaması Bekleniyor';
-        return 'Yeni Kayıt';
+        return c.currentDepartmentName || 'Yeni Kayıt';
     };
 
     const filteredComplaints = complaints.filter(c => {
@@ -232,7 +232,7 @@ export default function QualityReportPage() {
                                                         </span>
                                                     ) : (
                                                         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold bg-slate-50 text-slate-700 border border-slate-200">
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-slate-500 inline-block"></span>Yeni Kayıt
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-slate-500 inline-block"></span>{stageLabel}
                                                         </span>
                                                     )}
                                                 </td>

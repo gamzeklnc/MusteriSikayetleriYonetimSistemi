@@ -932,6 +932,9 @@ catch (Exception ex)
                (c.IsQualityReported ? "Yönetim Onayı" : "Kalite Raporlaması"));
     }
 
+    private static bool IsExcelImportedCompletedComplaint(Domain.Entities.Complaint c) =>
+        c.Status != null && (c.Status.StartsWith("Kapali/") || c.Status.StartsWith("Kapalı/"));
+
     private static ComplaintDto MapToDto(Domain.Entities.Complaint c) => new(
         c.Id,
         c.ComplaintNumber,
@@ -960,11 +963,11 @@ catch (Exception ex)
         c.ComplaintWeek,
         c.CreatedBy?.Name ?? "Sistem",
         c.CreatedAt,
-        c.IsQualityReported,
-        c.QualityReportNote,
+        c.IsQualityReported || IsExcelImportedCompletedComplaint(c),
+        c.QualityReportNote ?? (IsExcelImportedCompletedComplaint(c) ? "Excel import ile kalite raporu tamamlandi." : null),
         c.QualityReportedBy?.Name,
-        c.IsManagementApproved,
-        c.ManagementApprovalNote,
+        c.IsManagementApproved ?? (IsExcelImportedCompletedComplaint(c) ? true : null),
+        c.ManagementApprovalNote ?? (IsExcelImportedCompletedComplaint(c) ? "Excel import ile yonetim onayi tamamlandi." : null),
         c.ManagementApprovedBy?.Name,
         c.IsCustomerFeedbackDone,
         c.CustomerFeedbackNote,
@@ -976,7 +979,7 @@ catch (Exception ex)
         c.UnjustifiedHsa1Count,
         c.UnjustifiedHsa2Count,
         c.UnjustifiedOtherCount,
-        c.Has8DReport,
+        c.Has8DReport ?? (IsExcelImportedCompletedComplaint(c) ? true : null),
         c.BarcodeResults.Select(br => new ComplaintBarcodeResultDto(br.Id, br.Barcode, br.Factory, br.IsJustified)),
         c.Documents.Select(d => new ComplaintDocumentDto(
             d.Id,
