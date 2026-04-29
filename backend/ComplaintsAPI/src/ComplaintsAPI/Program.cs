@@ -10,6 +10,10 @@ using ComplaintsAPI.Infrastructure.Data;
 using ComplaintsAPI.Infrastructure.Repositories;
 using ComplaintsAPI.Infrastructure.Services;
 
+using DotNetEnv;
+
+Env.Load(".env.local");
+
 var builder = WebApplication.CreateBuilder(args);
 
 // ── Serilog ─────────────────────────────────────────────
