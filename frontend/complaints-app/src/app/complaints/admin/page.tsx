@@ -513,7 +513,7 @@ export default function AdminPage() {
 
                             <div className="space-y-1">
                                 <label className="text-[10px] font-black text-slate-900  tracking-wider">Hata Tanımı</label>
-                                <input required value={errorForm.label} onChange={e => setErrorForm({ ...errorForm, label: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none"placeholder="Örn: Cam Çiziği" />
+                                <input required value={errorForm.label} onChange={e => setErrorForm({ ...errorForm, label: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white outline-none text-slate-900 font-medium"placeholder="Örn: Cam Çiziği" />
                             </div>
                         </div>
                         <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">

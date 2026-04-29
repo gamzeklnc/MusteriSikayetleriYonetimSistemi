@@ -87,8 +87,8 @@ function GenericBarChart({ title, subtitle, data, children, paddingBottom = 40, 
                                     className={`w-full max-w-[45px] rounded-t-sm bg-gradient-to-t ${color} shadow-sm transition-all duration-1000 relative group-hover:brightness-110`}
                                     style={{ height: `${Math.max(heightPercent, 2)}%` }}
                                 />
-                                <div className="absolute top-full pt-4 w-full text-center px-1">
-                                    <span className="font-black text-slate-600 uppercase tracking-tighter block truncate text-[8px]">
+                                <div className="absolute w-0 overflow-visible" style={{ top: '100%', left: '50%', paddingTop: '6px' }}>
+                                    <span className="font-black text-slate-600 uppercase tracking-tighter text-[8px] whitespace-nowrap inline-block text-right" style={{ transform: 'translateX(-100%) rotate(-45deg)', transformOrigin: 'top right' }}>
                                         {item.label}
                                     </span>
                                 </div>
@@ -118,9 +118,9 @@ function DualBarChart({ title, subtitle, data, children, v1Label, v2Label }: {
     v2Label: string
 }) {
     const maxV1 = Math.max(...data.map(i => i.v1), 1);
-    const maxV2 = Math.max(...data.map(i => i.v2), 0.1);
+    const maxV2 = Math.max(...data.map(i => i.v2), 0.001);
     const chartMaxV1 = maxV1 * 1.2;
-    const chartMaxV2 = maxV2 * 1.2;
+    const chartMaxV2 = maxV2 * 1.25;
 
     const formatRate = (val: number) => {
         if (val === 0) return '0';
@@ -143,11 +143,11 @@ function DualBarChart({ title, subtitle, data, children, v1Label, v2Label }: {
                 <div className="flex items-center gap-4">
                     <div className="flex flex-col items-end gap-1 mr-4">
                         <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-blue-500" />
+                            <div className="w-2.5 h-2.5 rounded-sm bg-gradient-to-t from-blue-600 to-blue-400" />
                             <span className="text-[8px] font-black text-slate-500 uppercase">{v1Label}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                            <div className="w-3 h-0.5 bg-orange-500 rounded-full" />
                             <span className="text-[8px] font-black text-slate-500 uppercase">{v2Label}</span>
                         </div>
                     </div>
@@ -157,7 +157,7 @@ function DualBarChart({ title, subtitle, data, children, v1Label, v2Label }: {
             
             <div className="flex-1 flex gap-2 relative">
                 {/* Sol Eksen (Şikayet Adedi) */}
-                <div className="flex flex-col justify-between h-full pr-3 min-w-[50px] z-10 border-r border-slate-100" style={{ paddingBottom: '40px' }}>
+                <div className="flex flex-col justify-between h-full pr-3 min-w-[50px] z-10 border-r border-slate-100" style={{ paddingBottom: '100px' }}>
                     {[...Array.from({ length: 6 }, (_, i) => (chartMaxV1 / 5) * i)].reverse().map((step, idx) => (
                         <span key={idx} className="text-[8px] font-black text-slate-500 text-right leading-none">
                             {Math.round(step).toLocaleString()}
@@ -165,50 +165,77 @@ function DualBarChart({ title, subtitle, data, children, v1Label, v2Label }: {
                     ))}
                 </div>
 
-                {/* Bar Alanı */}
-                <div className="flex-1 relative flex items-end justify-around" style={{ paddingBottom: '40px' }}>
-                    {data.map((item) => {
-                        const h1 = (item.v1 / chartMaxV1) * 100;
-                        const h2 = (item.v2 / chartMaxV2) * 100;
-                        return (
-                            <div key={item.label} className="flex-1 flex flex-col items-center group relative h-full justify-end px-1">
-                                <div className="flex items-end gap-1 w-full max-w-[60px] h-full">
-                                    <div className="flex-1 flex flex-col items-center group/bar1 relative h-full justify-end">
-                                        <div className="absolute bottom-full mb-1 z-20 pointer-events-none transition-all duration-200 opacity-0 group-hover/bar1:opacity-100 group-hover/bar1:scale-110">
-                                            <span className="text-[8px] font-black text-blue-700 bg-blue-50 px-1 py-0.5 rounded border border-blue-100 shadow-sm whitespace-nowrap">
-                                                {item.v1.toLocaleString()}
-                                            </span>
-                                        </div>
-                                        <div 
-                                            className="w-full rounded-t-sm bg-gradient-to-t from-blue-600 to-blue-400 shadow-sm transition-all duration-1000"
-                                            style={{ height: `${Math.max(h1, 2)}%` }}
-                                        />
-                                    </div>
-                                    <div className="flex-1 flex flex-col items-center group/bar2 relative h-full justify-end">
-                                        <div className="absolute bottom-full mb-1 z-20 pointer-events-none transition-all duration-200 opacity-0 group-hover/bar2:opacity-100 group-hover/bar2:scale-110">
-                                            <span className="text-[8px] font-black text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded border border-emerald-100 shadow-sm whitespace-nowrap">
-                                                {item.v2IsRate ? `%${formatRate(item.v2)}` : item.v2}
-                                            </span>
-                                        </div>
-                                        <div 
-                                            className="w-full rounded-t-sm bg-gradient-to-t from-emerald-600 to-emerald-400 shadow-sm transition-all duration-1000"
-                                            style={{ height: `${Math.max(h2, 2)}%` }}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="absolute top-full pt-3 w-full text-center">
-                                    <span className="text-[9px] font-black text-slate-600 uppercase tracking-tighter block truncate px-1">
-                                        {item.label}
+                {/* Bar + Line Alanı */}
+                <div className="flex-1 relative" style={{ paddingBottom: '100px' }}>
+                    {/* SVG Çizgi Katmanı */}
+                    <div className="absolute top-0 left-0 right-0 z-10 pointer-events-none" style={{ bottom: '100px' }}>
+                        <svg className="w-full h-full overflow-visible" preserveAspectRatio="none">
+                            {data.map((item, idx) => {
+                                const x = `${(idx + 0.5) * (100 / data.length)}%`;
+                                const y = `${100 - ((item.v2 / chartMaxV2) * 100)}%`;
+                                const nextItem = data[idx + 1];
+                                if (!nextItem) return null;
+                                const nextX = `${(idx + 1.5) * (100 / data.length)}%`;
+                                const nextY = `${100 - ((nextItem.v2 / chartMaxV2) * 100)}%`;
+                                return (
+                                    <line key={`line-${idx}`} x1={x} y1={y} x2={nextX} y2={nextY} stroke="#f97316" strokeWidth="2.5" fill="none" />
+                                );
+                            })}
+                            {data.map((item, idx) => {
+                                const x = `${(idx + 0.5) * (100 / data.length)}%`;
+                                const y = `${100 - ((item.v2 / chartMaxV2) * 100)}%`;
+                                return (
+                                    <circle key={`dot-${idx}`} cx={x} cy={y} r="4" fill="#f97316" stroke="#ffffff" strokeWidth="2" />
+                                );
+                            })}
+                        </svg>
+                    </div>
+
+                    {/* Çizgi Nokta Etiketleri (Haklılık Oranı) */}
+                    <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none" style={{ bottom: '100px' }}>
+                        {data.map((item, idx) => {
+                            const lineH = chartMaxV2 > 0 ? (item.v2 / chartMaxV2) * 100 : 0;
+                            return (
+                                <div key={`linelabel-${idx}`} className="absolute flex flex-col items-center justify-center transform -translate-x-1/2" style={{ bottom: `calc(${lineH}% + 8px)`, left: `calc(${(idx + 0.5) * (100 / data.length)}%)` }}>
+                                    <span className="text-[8px] font-black text-orange-600 bg-white/95 backdrop-blur-sm px-1 py-0.5 rounded border border-orange-100 shadow-sm whitespace-nowrap z-20">
+                                        {item.v2IsRate ? `%${formatRate(item.v2)}` : item.v2}
                                     </span>
                                 </div>
-                            </div>
-                        );
-                    })}
-                    <div className="absolute left-0 right-0 h-[2px] bg-slate-300" style={{ bottom: '40px' }} />
+                            );
+                        })}
+                    </div>
+
+                    {/* Sütunlar (Şikayet Adedi) */}
+                    <div className="absolute top-0 left-0 right-0 flex items-end justify-around" style={{ bottom: '100px' }}>
+                        {data.map((item, idx) => {
+                            const barH = chartMaxV1 > 0 ? (item.v1 / chartMaxV1) * 100 : 0;
+                            return (
+                                <div key={`bar-${idx}`} className="flex-1 flex flex-col items-center group relative h-full justify-end px-1 z-0" style={{ maxWidth: '50px' }}>
+                                    {/* Sütun Etiketi */}
+                                    <div className="absolute z-10 pointer-events-none mb-1 transition-all duration-200 opacity-0 group-hover:opacity-100 group-hover:scale-110" style={{ bottom: `${Math.max(barH, 2)}%` }}>
+                                        <span className="text-[8px] font-black text-blue-700 bg-blue-50/90 backdrop-blur-sm px-1 py-0.5 rounded border border-blue-100 shadow-sm whitespace-nowrap">
+                                            {item.v1.toLocaleString()}
+                                        </span>
+                                    </div>
+                                    <div 
+                                        className="w-full rounded-t-sm bg-gradient-to-t from-blue-600 to-blue-400 shadow-sm transition-all duration-1000 group-hover:brightness-110"
+                                        style={{ height: `${Math.max(barH, 2)}%` }}
+                                    />
+                                    {/* Alt X Ekseni Etiketi */}
+                                    <div className="absolute w-0 overflow-visible" style={{ top: '100%', left: '50%', paddingTop: '6px' }}>
+                                        <span className="text-[8px] font-black text-slate-600 uppercase tracking-tighter whitespace-nowrap inline-block text-right" style={{ transform: 'translateX(-100%) rotate(-45deg)', transformOrigin: 'top right' }}>
+                                            {item.label}
+                                        </span>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                        <div className="absolute left-0 right-0 h-[1.5px] bg-slate-400 bottom-0" />
+                    </div>
                 </div>
 
                 {/* Sağ Eksen (Haklılık Oranı %) */}
-                <div className="flex flex-col justify-between h-full pl-3 min-w-[50px] z-10 border-l border-slate-100" style={{ paddingBottom: '40px' }}>
+                <div className="flex flex-col justify-between h-full pl-3 min-w-[50px] z-10 border-l border-slate-100" style={{ paddingBottom: '100px' }}>
                     {[...Array.from({ length: 6 }, (_, i) => (chartMaxV2 / 5) * i)].reverse().map((step, idx) => (
                         <span key={idx} className="text-[8px] font-black text-slate-500 text-left leading-none">
                             %{formatRate(step)}
@@ -401,14 +428,13 @@ function StackedErrorBarChart({ title, subtitle, data, allBrands, children }: { 
             </div>
 
             <div className="flex-1 flex gap-2 relative">
-                <div className="absolute left-[38px] top-0 bottom-14 w-[1.5px] bg-slate-300 z-10" />
-                <div className="flex flex-col justify-between h-full pb-14 pr-3 min-w-[38px]">
+                <div className="absolute left-[38px] top-0 bottom-24 w-[1.5px] bg-slate-300 z-10" />
+                <div className="flex flex-col justify-between h-full pb-24 pr-3 min-w-[38px]">
                     <span className="text-[8px] font-black text-slate-400 text-right">{maxTotal}</span>
                     <span className="text-[8px] font-black text-slate-400 text-right">{Math.round(maxTotal/2)}</span>
                     <span className="text-[8px] font-black text-slate-400 text-right">0</span>
                 </div>
-
-                <div className="flex-1 relative flex items-end justify-around pb-14">
+                <div className="flex-1 relative flex items-end justify-around pb-24">
                     {data.map((item) => {
                         const totalH = (item.totalCount / (maxTotal * 1.1)) * 100;
                         return (
@@ -437,15 +463,15 @@ function StackedErrorBarChart({ title, subtitle, data, allBrands, children }: { 
                                         );
                                     })}
                                 </div>
-                                <div className="absolute top-full pt-3 w-full text-center">
-                                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-tighter block truncate">
+                                <div className="absolute w-0 overflow-visible" style={{ top: '100%', left: '50%', paddingTop: '6px' }}>
+                                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-tighter whitespace-nowrap inline-block text-right" style={{ transform: 'translateX(-100%) rotate(-45deg)', transformOrigin: 'top right' }}>
                                         {item.errorLabel}
                                     </span>
                                 </div>
                             </div>
                         );
                     })}
-                    <div className="absolute bottom-14 left-0 right-0 h-[1.5px] bg-slate-300" />
+                    <div className="absolute bottom-24 left-0 right-0 h-[1.5px] bg-slate-300" />
                 </div>
             </div>
         </div>
@@ -626,7 +652,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* 5. Brand */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[400px]">
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[500px]">
                         <DualBarChart 
                             title="Marka Bazlı Şikayet & Haklılık" 
                             v1Label="Şikayet (Adet)" v2Label="Haklılık (%)"
@@ -649,7 +675,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* 6. Error Analysis */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[400px]">
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[500px]">
                         <StackedErrorBarChart 
                             title="Hata Tanımları & Marka Kıyaslaması" 
                             subtitle={errorYear === 'Hepsi' ? "Tüm Zamanlar Hata Dağılımı" : `${errorYear} Yılı Hata Analizi`}
@@ -664,7 +690,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* 7. Production Site */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[400px]">
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[500px]">
                         <DualBarChart 
                             title="Şikayet - Üretim Tesisi Dağılışı" 
                             subtitle={sourceYear === 'Hepsi' ? "HSA1, HSA2 ve Diğer Kaynak Analizi" : `${sourceYear} Yılı HSA Analizi`}
@@ -685,7 +711,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* 8. Customer Error Analysis */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[400px]">
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[500px]">
                         <GenericBarChart 
                             title="Müşteriye Göre Hata Tanımı" 
                             subtitle={c8Customer !== 'Hepsi' ? `${c8Customer} Hata Dağılımı` : c8Error !== 'Hepsi' ? `${c8Error} Bildiren Müşteriler` : "Müşteri ve Hata Yoğunluğu"}

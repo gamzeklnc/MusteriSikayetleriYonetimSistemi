@@ -165,7 +165,7 @@ public class ImportController : ControllerBase
                     Barcodes = mergedBarcodes,
                     ProductionDate = ParseDate(GetValue(firstRow, "ÜretimTarihi", "UretimTarihi")),
                     DefectiveQuantity = totalQty,
-                    ErrorDefinition = GetValue(firstRow, "HATATANIMI", "Hata"),
+                    ErrorDefinition = NormalizeErrorDefinition(GetValue(firstRow, "HATATANIMI", "Hata")),
                     StockCode = null,
                     SellerName = string.Empty,
                     InitialNote = GetValue(firstRow, "P", "ŞikayetNotu", "SikayetNotu", "ŞikayetNotları", "SikayetNotlari", "Not"),
@@ -381,7 +381,7 @@ public class ImportController : ControllerBase
                         ComplaintDate = complaintDate,
                         ProductionDate = complaintDate,
                         DefectiveQuantity = ParseInt(GetValue(dict, "KUSURLUÜRÜNMİKTARI", "KUSURLUURUNMIKTARI", "KUSURLUMİKTAR")),
-                        ErrorDefinition = GetValue(dict, "HATATANIMI(ÖZET)", "HATATANIMI", "HATA"),
+                        ErrorDefinition = NormalizeErrorDefinition(GetValue(dict, "HATATANIMI(ÖZET)", "HATATANIMI", "HATA")),
                         InitialNote = GetValue(dict, "ŞİKAYETNOTLARI", "SIKAYETNOTLARI", "NOT", "ŞİKAYETNOTU"),
                         CreatedById = adminUserId,
                         Status = "Kapali/ZT",
@@ -605,7 +605,7 @@ public class ImportController : ControllerBase
                     Barcodes = mergedBarcodes,
                     ProductionDate = complaintDate, // Placeholder since Type-2 doesn't specify Production Date explicitly
                     DefectiveQuantity = totalQty,
-                    ErrorDefinition = GetValue(firstRow, "HATATANIMI(ÖZET)", "HATATANIMI", "HATA"),
+                    ErrorDefinition = NormalizeErrorDefinition(GetValue(firstRow, "HATATANIMI(ÖZET)", "HATATANIMI", "HATA")),
                     InitialNote = GetValue(firstRow, "ŞİKAYETNOTLARI", "SIKAYETNOTLARI", "NOT", "ŞİKAYETNOTU"),
                     CreatedById = fallbackAdminUserId,
                     Status = "Kapali/ZT",
@@ -997,5 +997,208 @@ public class ImportController : ControllerBase
             Console.WriteLine($"---> TYPE-3 HATA OLUSTU: {ex.Message}");
             return StatusCode(500, $"İşlem sırasında hata oluştu: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Hata tanımı string'ini normalize eder.
+    /// Excel'den gelen "DiyotHatası", "Diyot Hatası", "DİYOT HATASI" gibi farklı yazımları
+    /// tek bir standart formata dönüştürür.
+    /// </summary>
+    private static string NormalizeErrorDefinition(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return "";
+
+        // Trim ve fazla boşlukları temizle
+        var input = System.Text.RegularExpressions.Regex.Replace(raw.Trim(), @"\s+", " ");
+
+        // Karşılaştırma için tüm ayırıcıları sil
+        string stripped = input
+            .Replace(" ", "")
+            .Replace("-", "")
+            .Replace("/", "")
+            .Replace(".", "")
+            .Replace("(", "")
+            .Replace(")", "")
+            .Replace("_", "");
+
+        // Önce Türkçe büyük harfleri küçüğe çevir (ToLowerInvariant İ→i̇ bug'ını önlemek için)
+        stripped = stripped
+            .Replace("İ", "i").Replace("I", "i")
+            .Replace("Ş", "s").Replace("Ç", "c")
+            .Replace("Ü", "u").Replace("Ö", "o")
+            .Replace("Ğ", "g")
+            .Replace("\u0130", "i")  // İ (capital I with dot)
+            .ToLowerInvariant();
+
+        // Türkçe küçük harfleri ASCII'ye çevir
+        stripped = stripped
+            .Replace("ş", "s").Replace("ç", "c")
+            .Replace("ı", "i").Replace("ü", "u")
+            .Replace("ö", "o").Replace("ğ", "g")
+            .Replace("\u015f", "s").Replace("\u00e7", "c")
+            .Replace("\u0131", "i").Replace("\u00fc", "u")
+            .Replace("\u00f6", "o").Replace("\u011f", "g")
+            .Replace("i\u0307", "i");  // combining dot above (İ → i̇ artifact)
+
+        // Bilinen hata tanımı eşleştirme tablosu
+        var knownErrors = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            // Diyot
+            { "diyothatasi", "Diyot Hatası" },
+            { "diyot", "Diyot Hatası" },
+
+            // Kırık / Cam
+            { "kirik", "Kırık" },
+            { "kirikcam", "Kırık Cam" },
+            { "kirikkacak", "Kırık/Kaçak" },
+            { "kacak", "Kaçak" },
+            { "camkirilmasi", "Cam Kırılması" },
+
+            // Filike
+            { "filikehatasi", "Filike Hatası" },
+            { "filekehatasi", "Filike Hatası" },
+            { "filtkehatasi", "Filike Hatası" },
+            { "filike", "Filike Hatası" },
+
+            // Hot Spot
+            { "hotspot", "Hot Spot" },
+            { "hotspothatasi", "Hot Spot" },
+
+            // Çerçeve
+            { "cercevedeformasyonu", "Çerçeve Deformasyonu" },
+            { "cercevehatasi", "Çerçeve Hatası" },
+            { "cerceve", "Çerçeve Deformasyonu" },
+
+            // Junction Box / JB Lehim
+            { "junctionboxhatasi", "Junction Box Hatası" },
+            { "junctionbox", "Junction Box Hatası" },
+            { "jbhatasi", "Junction Box Hatası" },
+            { "jboxhatasi", "Junction Box Hatası" },
+            { "jblehimhatasi", "JB Lehim Hatası" },
+            { "jblehim", "JB Lehim Hatası" },
+            { "junctionboxlehimhatasi", "JB Lehim Hatası" },
+            { "junctionboxlehim", "JB Lehim Hatası" },
+
+            // Backsheet
+            { "backsheethatasi", "Backsheet Hatası" },
+            { "backsheet", "Backsheet Hatası" },
+
+            // P Sınıf
+            { "psinifkartlielek", "P Sınıf Kartlı ile Sevk" },
+            { "psinifkartlilesevk", "P Sınıf Kartlı ile Sevk" },
+            { "psinifkartliilsevk", "P Sınıf Kartlı ile Sevk" },
+            { "psinifkartlilesek", "P Sınıf Kartlı ile Sevk" },
+            { "psinifkartliilesvk", "P Sınıf Kartlı ile Sevk" },
+            { "psinifkartliilesevk", "P Sınıf Kartlı ile Sevk" },
+
+            // Sararma
+            { "sararmaguclenmishatasi", "Sararma" },
+            { "sararma", "Sararma" },
+
+            // Delaminasyon
+            { "delaminasyon", "Delaminasyon" },
+
+            // Micro Crack
+            { "microcrack", "Micro Crack" },
+            { "mikrocatlak", "Micro Crack" },
+
+            // Snail Track
+            { "snailtrack", "Snail Track" },
+            { "snailtrail", "Snail Track" },
+
+            // Solma
+            { "solmarenk", "Solma/Renk" },
+            { "solma", "Solma" },
+
+            // PID
+            { "pid", "PID" },
+            { "pidhatasi", "PID Hatası" },
+
+            // Güç Kaybı
+            { "guckaybikontrol", "Güç Kaybı/Kontrol" },
+            { "guckaybi", "Güç Kaybı" },
+            { "guckaybikontrolverim", "Güç Kaybı/Kontrol" },
+
+            // Performans
+            { "performansdusuklugu", "Performans Düşüklüğü" },
+            { "performansdusulugu", "Performans Düşüklüğü" },
+
+            // EVA
+            { "evahatasi", "EVA Hatası" },
+            { "eva", "EVA Hatası" },
+
+            // Laminasyon
+            { "laminasyonhatasi", "Laminasyon Hatası" },
+            { "laminasyon", "Laminasyon Hatası" },
+
+            // Cell
+            { "cellyapistirmasi", "Cell Yapıştırması" },
+            { "cellyapistirmahatasi", "Cell Yapıştırması" },
+            { "cellhatasi", "Cell Hatası" },
+
+            // Ribbon
+            { "ribbonhatasi", "Ribbon Hatası" },
+            { "ribbon", "Ribbon Hatası" },
+
+            // Çatırtılı
+            { "catirtili", "Çatırtılı" },
+            { "catirtilimodul", "Çatırtılı Modül" },
+
+            // Etiket
+            { "etikethatasi", "Etiket Hatası" },
+            { "etiket", "Etiket Hatası" },
+
+            // Konnektör
+            { "konektorhatasi", "Konnektör Hatası" },
+            { "konnektorhatasi", "Konnektör Hatası" },
+            { "konnektor", "Konnektör Hatası" },
+
+            // Kablo
+            { "kablohatasi", "Kablo Hatası" },
+            { "kablo", "Kablo Hatası" },
+
+            // EL Hatası
+            { "elhatasi", "EL Hatası" },
+
+            // Lehim
+            { "lehimhatasi", "Lehim Hatası" },
+            { "lehim", "Lehim Hatası" },
+
+            // Aramesa / Diğer
+            { "aramesahatasi", "Aramesa Hatası" },
+            { "aramesa", "Aramesa Hatası" },
+        };
+
+        if (knownErrors.TryGetValue(stripped, out var canonical))
+            return canonical;
+
+        // Eşleşme bulunamazsa, fazla boşlukları temizleyip olduğu gibi döndür (Title Case)
+        return CultureInfo.GetCultureInfo("tr-TR").TextInfo.ToTitleCase(input.ToLower(CultureInfo.GetCultureInfo("tr-TR")));
+    }
+
+    /// <summary>
+    /// Mevcut tüm şikayetlerin ErrorDefinition alanını normalize eder.
+    /// </summary>
+    [HttpPost("normalize-errors")]
+    public async Task<IActionResult> NormalizeAllErrors()
+    {
+        var complaints = await _context.Complaints
+            .Where(c => !string.IsNullOrEmpty(c.ErrorDefinition))
+            .ToListAsync();
+
+        int updatedCount = 0;
+        foreach (var c in complaints)
+        {
+            var normalized = NormalizeErrorDefinition(c.ErrorDefinition);
+            if (normalized != c.ErrorDefinition)
+            {
+                Console.WriteLine($"----> Normalize: '{c.ErrorDefinition}' → '{normalized}' (#{c.ComplaintNumber})");
+                c.ErrorDefinition = normalized;
+                updatedCount++;
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        return Ok(new { Message = $"{updatedCount} adet şikayetin hata tanımı normalize edildi. (Toplam: {complaints.Count})" });
     }
 }
