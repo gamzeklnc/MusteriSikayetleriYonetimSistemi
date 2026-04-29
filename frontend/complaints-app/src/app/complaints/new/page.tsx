@@ -208,7 +208,7 @@ export default function NewComplaintPage() {
                             <div className="space-y-1">
                                 <label className="block text-[11px] font-bold text-slate-500  tracking-wider">Stok Kodu</label>
                                 <input
-                                    type="text"name="stockCode" required value={formData.stockCode} onChange={handleChange}
+                                    type="text"name="stockCode" value={formData.stockCode} onChange={handleChange}
                                     className="w-full px-2 py-1.5 text-xs bg-white border-slate-400 border-2 rounded-lg focus:ring-2 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-900 font-medium"
                                 />
                             </div>
