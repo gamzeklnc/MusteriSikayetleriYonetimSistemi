@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
 import { ComplaintDto, ComplaintDocument } from '@/types/complaint';
@@ -10,6 +11,14 @@ import { useAuthStore } from '@/store/authStore';
 
 export default function ApprovalPage() {
     const { user } = useAuthStore();
+    const router = useRouter();
+    const isAuthorized = user?.departmentId === 4 || user?.role === 'Admin';
+
+    useEffect(() => {
+        if (user && !isAuthorized) {
+            router.replace('/dashboard');
+        }
+    }, [user, isAuthorized, router]);
     const [complaints, setComplaints] = useState<ComplaintDto[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -80,6 +89,10 @@ export default function ApprovalPage() {
             )
         );
     });
+
+    if (!isAuthorized) {
+        return <AppLayout><div className="flex items-center justify-center min-h-[400px]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div></AppLayout>;
+    }
 
     return (
         <AppLayout>

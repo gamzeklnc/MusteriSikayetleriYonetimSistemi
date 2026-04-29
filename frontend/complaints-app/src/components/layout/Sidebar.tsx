@@ -91,10 +91,12 @@ export default function Sidebar() {
                     Kalite Raporlaması
                 </Link>
 
+                {mounted && (user?.departmentId === 4 || user?.role === 'Admin') && (
                 <Link href="/complaints/approval" className={linkClass('/complaints/approval')}>
                     <UserCheck size={18} />
                     Yönetim Onayı
                 </Link>
+                )}
 
                 <Link href="/complaints/customer-response" className={linkClass('/complaints/customer-response')}>
                     <MessageCircle size={18} />

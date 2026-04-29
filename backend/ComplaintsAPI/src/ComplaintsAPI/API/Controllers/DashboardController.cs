@@ -100,8 +100,15 @@ public class DashboardController : ControllerBase
         var justifiedProducts = filteredStatusRows.Sum(c => (long)c.Justified);
         var unjustifiedProducts = filteredStatusRows.Sum(c => (long)c.Unjustified);
         
-        var totalEvaluated = justifiedProducts + unjustifiedProducts;
-        double ratio = totalEvaluated > 0 ? (double)justifiedProducts / totalEvaluated : 0;
+        // Filtered production count for the same period
+        var filteredProdQuery = _context.ProductionCounts.AsNoTracking().AsQueryable();
+        if (startDate.HasValue)
+            filteredProdQuery = filteredProdQuery.Where(p => p.Year > startDate.Value.Year || (p.Year == startDate.Value.Year && p.Month >= startDate.Value.Month));
+        if (endDate.HasValue)
+            filteredProdQuery = filteredProdQuery.Where(p => p.Year < endDate.Value.Year || (p.Year == endDate.Value.Year && p.Month <= endDate.Value.Month));
+        var filteredProductionCount = await filteredProdQuery.SumAsync(p => (long)p.Count);
+
+        double ratio = filteredProductionCount > 0 ? (double)justifiedProducts * 100 / filteredProductionCount : 0;
 
         System.Console.WriteLine($"[DashboardStats] Global - Justified: {globalJustified}, Production: {globalProductionCount}, Ratio: {globalRatio}");
 

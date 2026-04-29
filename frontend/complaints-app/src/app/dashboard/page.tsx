@@ -119,6 +119,16 @@ function DualBarChart({ title, subtitle, data, children, v1Label, v2Label }: {
 }) {
     const maxV1 = Math.max(...data.map(i => i.v1), 1);
     const maxV2 = Math.max(...data.map(i => i.v2), 0.1);
+    const chartMaxV1 = maxV1 * 1.2;
+    const chartMaxV2 = maxV2 * 1.2;
+
+    const formatRate = (val: number) => {
+        if (val === 0) return '0';
+        if (val < 0.001) return val.toFixed(5);
+        if (val < 0.01) return val.toFixed(4);
+        if (val < 1) return val.toFixed(3);
+        return val.toFixed(2);
+    };
     
     return (
         <div className="w-full h-full flex flex-col">
@@ -146,30 +156,27 @@ function DualBarChart({ title, subtitle, data, children, v1Label, v2Label }: {
             </div>
             
             <div className="flex-1 flex gap-2 relative">
-                <div className="absolute left-[38px] top-0 bottom-14 w-[1.5px] bg-slate-300 z-10" />
-                <div className="flex flex-col justify-between h-full pb-14 pr-3 min-w-[38px]">
-                    <span className="text-[8px] font-black text-slate-400 text-right">MAX</span>
-                    <span className="text-[8px] font-black text-slate-400 text-right">MID</span>
-                    <span className="text-[8px] font-black text-slate-400 text-right">0</span>
+                {/* Sol Eksen (Şikayet Adedi) */}
+                <div className="flex flex-col justify-between h-full pr-3 min-w-[50px] z-10 border-r border-slate-100" style={{ paddingBottom: '40px' }}>
+                    {[...Array.from({ length: 6 }, (_, i) => (chartMaxV1 / 5) * i)].reverse().map((step, idx) => (
+                        <span key={idx} className="text-[8px] font-black text-slate-500 text-right leading-none">
+                            {Math.round(step).toLocaleString()}
+                        </span>
+                    ))}
                 </div>
 
-                <div className="flex-1 relative flex items-end justify-around pb-14">
-                    <div className="absolute inset-0 bottom-14 flex flex-col justify-between pointer-events-none">
-                        <div className="w-full border-t border-slate-100 border-dashed" />
-                        <div className="w-full border-t border-slate-100 border-dashed" />
-                        <div className="w-full border-t border-transparent" />
-                    </div>
-
+                {/* Bar Alanı */}
+                <div className="flex-1 relative flex items-end justify-around" style={{ paddingBottom: '40px' }}>
                     {data.map((item) => {
-                        const h1 = (item.v1 / (maxV1 * 1.2)) * 100;
-                        const h2 = (item.v2 / (maxV2 * 1.2)) * 100;
+                        const h1 = (item.v1 / chartMaxV1) * 100;
+                        const h2 = (item.v2 / chartMaxV2) * 100;
                         return (
                             <div key={item.label} className="flex-1 flex flex-col items-center group relative h-full justify-end px-1">
                                 <div className="flex items-end gap-1 w-full max-w-[60px] h-full">
                                     <div className="flex-1 flex flex-col items-center group/bar1 relative h-full justify-end">
-                                        <div className="absolute bottom-full mb-1 z-20 pointer-events-none transition-all group-hover/bar1:scale-110">
-                                            <span className="text-[8px] font-black text-blue-700 bg-blue-50 px-1 py-0.5 rounded border border-blue-100 shadow-sm">
-                                                {item.v1}
+                                        <div className="absolute bottom-full mb-1 z-20 pointer-events-none transition-all duration-200 opacity-0 group-hover/bar1:opacity-100 group-hover/bar1:scale-110">
+                                            <span className="text-[8px] font-black text-blue-700 bg-blue-50 px-1 py-0.5 rounded border border-blue-100 shadow-sm whitespace-nowrap">
+                                                {item.v1.toLocaleString()}
                                             </span>
                                         </div>
                                         <div 
@@ -178,9 +185,9 @@ function DualBarChart({ title, subtitle, data, children, v1Label, v2Label }: {
                                         />
                                     </div>
                                     <div className="flex-1 flex flex-col items-center group/bar2 relative h-full justify-end">
-                                        <div className="absolute bottom-full mb-1 z-20 pointer-events-none transition-all group-hover/bar2:scale-110">
-                                            <span className="text-[8px] font-black text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded border border-emerald-100 shadow-sm">
-                                                {item.v2IsRate ? `%${item.v2.toFixed(3)}` : item.v2}
+                                        <div className="absolute bottom-full mb-1 z-20 pointer-events-none transition-all duration-200 opacity-0 group-hover/bar2:opacity-100 group-hover/bar2:scale-110">
+                                            <span className="text-[8px] font-black text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded border border-emerald-100 shadow-sm whitespace-nowrap">
+                                                {item.v2IsRate ? `%${formatRate(item.v2)}` : item.v2}
                                             </span>
                                         </div>
                                         <div 
@@ -197,7 +204,16 @@ function DualBarChart({ title, subtitle, data, children, v1Label, v2Label }: {
                             </div>
                         );
                     })}
-                    <div className="absolute bottom-14 left-0 right-0 h-[2px] bg-slate-300" />
+                    <div className="absolute left-0 right-0 h-[2px] bg-slate-300" style={{ bottom: '40px' }} />
+                </div>
+
+                {/* Sağ Eksen (Haklılık Oranı %) */}
+                <div className="flex flex-col justify-between h-full pl-3 min-w-[50px] z-10 border-l border-slate-100" style={{ paddingBottom: '40px' }}>
+                    {[...Array.from({ length: 6 }, (_, i) => (chartMaxV2 / 5) * i)].reverse().map((step, idx) => (
+                        <span key={idx} className="text-[8px] font-black text-slate-500 text-left leading-none">
+                            %{formatRate(step)}
+                        </span>
+                    ))}
                 </div>
             </div>
         </div>
@@ -532,7 +548,7 @@ export default function DashboardPage() {
         { label: 'Toplam Şikayet', value: summaryStats?.totalComplaints || 0, icon: <FileText className="w-4 h-4 text-blue-600" />, color: 'bg-blue-50 border-blue-100' },
         { label: 'Açık Şikayetler', value: summaryStats?.openComplaints || 0, icon: <Clock className="w-4 h-4 text-amber-600" />, color: 'bg-amber-50 border-amber-100' },
         { label: 'Kapalı Şikayetler', value: summaryStats?.closedComplaints || 0, icon: <CheckCircle2 className="w-4 h-4 text-slate-600" />, color: 'bg-slate-50 border-slate-100' },
-        { label: 'Haklılık Oranı', value: `%${(summaryStats?.justifiedRatio || 0).toFixed(4)}`, icon: <TrendingUp className="w-4 h-4 text-emerald-600" />, color: 'bg-emerald-50 border-emerald-100' },
+        { label: 'Haklı Şikayet Oranı', value: `%${(summaryStats?.justifiedRatio || 0).toFixed(4)}`, icon: <TrendingUp className="w-4 h-4 text-emerald-600" />, color: 'bg-emerald-50 border-emerald-100' },
         { label: 'Haklı Ürün', value: summaryStats?.totalJustifiedProducts || 0, icon: <CheckCircle2 className="w-4 h-4 text-emerald-500" />, color: 'bg-emerald-50 border-emerald-100' },
         { label: 'Haksız Ürün', value: summaryStats?.totalUnjustifiedProducts || 0, icon: <AlertCircle className="w-4 h-4 text-red-500" />, color: 'bg-red-50 border-red-100' },
     ];
@@ -578,7 +594,7 @@ export default function DashboardPage() {
                                 data={[
                                     { label: '1. ALTI AY', value: stats.justificationChart.firstHalfRate, color: 'from-blue-500 to-indigo-600' },
                                     { label: '2. ALTI AY', value: stats.justificationChart.secondHalfRate, color: 'from-indigo-400 to-indigo-600' },
-                                    { label: 'KÜMÜLATİF', value: stats.justificationChart.cumulativeRate, color: 'from-emerald-500 to-teal-600' }
+                                    { label: '2021-Bugün', value: stats.justificationChart.cumulativeRate, color: 'from-emerald-500 to-teal-600' }
                                 ]}
                             />
                         ) : <div className="flex-1 flex items-center justify-center text-slate-400">Veri Yüklenemedi</div>}
