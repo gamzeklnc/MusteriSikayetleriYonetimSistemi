@@ -21,13 +21,15 @@ public class ComplaintsController : ControllerBase
     private readonly AppDbContext _context;
     private readonly IEmailService _emailService;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger<ComplaintsController> _logger;
 
-    public ComplaintsController(IComplaintRepository repo, AppDbContext context, IEmailService emailService, IServiceScopeFactory scopeFactory)
+    public ComplaintsController(IComplaintRepository repo, AppDbContext context, IEmailService emailService, IServiceScopeFactory scopeFactory, ILogger<ComplaintsController> logger)
     {
         _repo = repo;
         _context = context;
         _emailService = emailService;
         _scopeFactory = scopeFactory;
+        _logger = logger;
     }
 
     private int CurrentUserId => int.TryParse(User.FindFirstValue("userId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub"), out var id) ? id : 0;
@@ -79,6 +81,8 @@ public class ComplaintsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateComplaintRequest req)
     {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        
         var complaint = new Complaint
         {
             CustomerName       = req.CustomerName,
@@ -101,6 +105,7 @@ public class ComplaintsController : ControllerBase
 
         // Stok kodundan marka ve güç bilgisi türet (Simülasyon)
         DeriveFieldsFromStockCode(complaint);
+        Console.WriteLine($"[CREATE-PERF] Step1 Setup: {sw.ElapsedMilliseconds}ms");
         
         // Şikayet tarihinden yıl/ay/hafta türet
         complaint.SetDerivedDateFields();
@@ -111,6 +116,8 @@ public class ComplaintsController : ControllerBase
         
         int nextId = 1;
         var latestComplaintNumber = await _repo.GetLatestComplaintNumberForYearAsync(today.Year);
+        Console.WriteLine($"[CREATE-PERF] Step2 GetLatestNumber: {sw.ElapsedMilliseconds}ms");
+        
         if (!string.IsNullOrWhiteSpace(latestComplaintNumber))
         {
             var maxIdStr = latestComplaintNumber.Split('-').LastOrDefault();
@@ -123,6 +130,7 @@ public class ComplaintsController : ControllerBase
         complaint.ComplaintNumber = $"{yearPart}-{nextId:D2}";
 
         var created = await _repo.CreateAsync(complaint);
+        Console.WriteLine($"[CREATE-PERF] Step3 CreateAsync: {sw.ElapsedMilliseconds}ms");
         
         // Eğer Formdan bir Not bilgisi de geldiyse, doğrudan şikayet geçmişine ilk not olarak ekleyelim.
         if (!string.IsNullOrWhiteSpace(req.Note))
@@ -136,38 +144,43 @@ public class ComplaintsController : ControllerBase
                 ToStatus = null,
                 ChangedById = created.CreatedById
             });
+            Console.WriteLine($"[CREATE-PERF] Step4 AddHistory: {sw.ElapsedMilliseconds}ms");
         }
 
         await LogActivityAsync("Şikayet Oluşturuldu", $"Şikayet No: {created.ComplaintNumber}");
+        Console.WriteLine($"[CREATE-PERF] Step5 LogActivity: {sw.ElapsedMilliseconds}ms");
 
-       // Email Bildirimi Gönder
-try
-{
-    var subject = $"{created.ComplaintNumber} numaralı şikayet kaydı oluşturulmuştur.";
-    var body = $@"
-        <h3>Yeni Şikayet Kaydı</h3>
-        <p><strong>Şikayet No:</strong> {created.ComplaintNumber}</p>
-        <p><strong>Müşteri:</strong> {created.CustomerName}</p>
-        <p><strong>Proje:</strong> {created.ProjectName}</p>
-        <p><strong>Oluşturan:</strong> {CurrentUserName}</p>
-        <p>Sistem üzerinden detayları inceleyebilirsiniz.</p>";
+        // Email Bildirimi Gönder
+        try
+        {
+            var subject = $"{created.ComplaintNumber} numaralı şikayet kaydı oluşturulmuştur.";
+            var body = $@"
+                <h3>Yeni Şikayet Kaydı</h3>
+                <p><strong>Şikayet No:</strong> {created.ComplaintNumber}</p>
+                <p><strong>Müşteri:</strong> {created.CustomerName}</p>
+                <p><strong>Proje:</strong> {created.ProjectName}</p>
+                <p><strong>Oluşturan:</strong> {CurrentUserName}</p>
+                <p>Sistem üzerinden detayları inceleyebilirsiniz.</p>";
 
-    var targetDepts = new[] { "Satış", "Kalite", "Kalite Güvence" };
+            var targetDepts = new[] { "Satış", "Kalite", "Kalite Güvence" };
+            var senderEmail = "report@hsaenerji.net";
 
-    var senderEmail = "report@hsaenerji.net"; // 🔥 DÜZELTİLDİ
+            _ = Task.Run(async () => {
+                try {
+                    using var scope = _scopeFactory.CreateScope();
+                    var emailSvc = scope.ServiceProvider.GetRequiredService<IEmailService>();
+                    await emailSvc.SendToDepartmentsAsync(senderEmail, targetDepts, subject, body);
+                } catch (Exception ex) {
+                    Console.WriteLine($"Background email failure (create): {ex.Message}");
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Email notification failed: {ex.Message}");
+        }
 
-    await _emailService.SendToDepartmentsAsync(
-    senderEmail,
-    targetDepts,
-    subject,
-    body
-);
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"Email notification failed: {ex.Message}");
-}
-
+        Console.WriteLine($"[CREATE-PERF] Step6 TOTAL: {sw.ElapsedMilliseconds}ms");
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created.Id);
     }
 

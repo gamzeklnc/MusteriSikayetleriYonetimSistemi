@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "dgSpecHash": "yR/pkRalAEM=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\gamze.kılınc\\Desktop\\Müşteri Şikayetleri Yönetim Sistemi\\scratch\\SmtpTest\\SmtpTest.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\gamze.kılınc\\.nuget\\packages\\bouncycastle.cryptography\\2.6.2\\bouncycastle.cryptography.2.6.2.nupkg.sha512",
+    "C:\\Users\\gamze.kılınc\\.nuget\\packages\\mailkit\\4.16.0\\mailkit.4.16.0.nupkg.sha512",
+    "C:\\Users\\gamze.kılınc\\.nuget\\packages\\mimekit\\4.16.0\\mimekit.4.16.0.nupkg.sha512",
+    "C:\\Users\\gamze.kılınc\\.nuget\\packages\\system.formats.asn1\\10.0.2\\system.formats.asn1.10.0.2.nupkg.sha512",
+    "C:\\Users\\gamze.kılınc\\.nuget\\packages\\system.security.cryptography.pkcs\\10.0.0\\system.security.cryptography.pkcs.10.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

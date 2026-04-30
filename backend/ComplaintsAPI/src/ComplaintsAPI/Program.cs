@@ -18,10 +18,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // ── Serilog ─────────────────────────────────────────────
 Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+    .MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Warning)
     .Enrich.FromLogContext()
     .WriteTo.Console()
-    .WriteTo.File("logs/app-.log", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 builder.Host.UseSerilog();
@@ -126,9 +127,11 @@ builder.Services.AddCors(options =>
 // ── APP ────────────────────────────────────────────────
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+try
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.SetCommandTimeout(10); // 10 saniye timeout
     db.Database.ExecuteSqlRaw(@"
 IF COL_LENGTH('dbo.ComplaintBarcodeResults', 'Factory') IS NULL
 BEGIN
@@ -146,28 +149,41 @@ BEGIN
     VALUES ('20260421120000_AddFactoryToBarcodeResults', '8.0.0');
 END
 ");
+    Console.WriteLine("Startup SQL: başarılı.");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Startup SQL atlandı (DB erişilemiyor): {ex.Message}");
 }
 
-
+Console.WriteLine("[STARTUP] Middleware kayıt başlıyor...");
 // 🔥 SWAGGER ROOT
 app.UseSwagger();
+Console.WriteLine("[STARTUP] UseSwagger OK");
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "ComplaintsAPI v1");
     c.RoutePrefix = ""; // root
 });
-
+Console.WriteLine("[STARTUP] UseSwaggerUI OK");
 
 // ── Middleware ─────────────────────────────────────────
 app.UseSerilogRequestLogging();
+Console.WriteLine("[STARTUP] UseSerilog OK");
 app.UseStaticFiles();
+Console.WriteLine("[STARTUP] UseStaticFiles OK");
 app.UseCors("LocalNetworkPolicy");
+Console.WriteLine("[STARTUP] UseCors OK");
 
 app.UseAuthentication();
+Console.WriteLine("[STARTUP] UseAuthentication OK");
 app.UseAuthorization();
+Console.WriteLine("[STARTUP] UseAuthorization OK");
 
 app.MapControllers();
+Console.WriteLine("[STARTUP] MapControllers OK");
 
 app.MapGet("/", () => "API çalışıyor 🚀");
 
+Console.WriteLine("[STARTUP] app.Run() çağrılıyor...");
 app.Run();
