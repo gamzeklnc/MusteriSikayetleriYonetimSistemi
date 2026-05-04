@@ -385,33 +385,59 @@ public class DashboardController : ControllerBase
         // Customer-Error Analysis (8th Quadrant)
         var customerComplaints = await query
             .Where(c => !string.IsNullOrEmpty(c.ErrorDefinition))
-            .Select(c => new { c.CustomerName, c.ErrorDefinition })
+            .Select(c => new { c.CustomerName, c.ErrorDefinition, c.DefectiveQuantity })
             .ToListAsync();
 
-        var customerErrorCounts = new Dictionary<string, int>();
+        System.Console.WriteLine($"[DEBUG] Card8: Query matches {customerComplaints.Count} complaints.");
+
+        var trCulture = new System.Globalization.CultureInfo("tr-TR");
+        var customerErrorCounts = new Dictionary<string, (int ComplaintCount, int ProductCount)>();
+        
         foreach (var c in customerComplaints)
         {
-            var errors = c.ErrorDefinition!.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            var cust = c.CustomerName.Trim().ToUpper();
+            var errors = (c.ErrorDefinition ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var cust = (c.CustomerName ?? "Bilinmiyor").Trim().ToUpper(trCulture);
             
+            // Debug: Log if defective quantity is unexpectedly 0
+            if (c.DefectiveQuantity == 0) {
+                // This might be normal for some data, but let's see if it happens often
+                // System.Console.WriteLine($"[DEBUG] Complaint {c.CustomerName} has 0 defective quantity.");
+            }
+
             foreach (var err in errors)
             {
+                var errUpper = err.Trim().ToUpper(trCulture);
+                
                 // If targetError label is specified in query, we can filter further
-                if (!string.IsNullOrWhiteSpace(normalizedError) && err.ToUpper() != normalizedError) continue;
+                if (!string.IsNullOrWhiteSpace(normalizedError)) 
+                {
+                    var normErrUpper = normalizedError.Trim().ToUpper(trCulture);
+                    if (!errUpper.Contains(normErrUpper)) continue;
+                }
 
                 // Label logic: If a single customer is selected, show error breakdown. Otherwise show customer distribution.
-                string label = string.IsNullOrWhiteSpace(normalizedCustomer) ? cust : err;
+                string label = string.IsNullOrWhiteSpace(normalizedCustomer) ? cust : err.Trim();
                 
-                if (!customerErrorCounts.ContainsKey(label)) customerErrorCounts[label] = 0;
-                customerErrorCounts[label]++;
+                if (!customerErrorCounts.ContainsKey(label)) customerErrorCounts[label] = (0, 0);
+                var current = customerErrorCounts[label];
+                customerErrorCounts[label] = (current.ComplaintCount + 1, current.ProductCount + c.DefectiveQuantity);
             }
         }
 
         var customerErrorStats = customerErrorCounts
-            .Select(x => new CustomerErrorStatDto(x.Key, x.Value))
-            .OrderByDescending(x => x.Count)
+            .Select(x => new CustomerErrorStatDto(x.Key, x.Value.ComplaintCount, x.Value.ProductCount))
+            .OrderByDescending(x => x.ProductCount)
             .Take(10)
             .ToList();
+
+        if (customerErrorStats.Count > 0)
+        {
+            System.Console.WriteLine($"[DEBUG] Card8: Result count: {customerErrorStats.Count}, Top: {customerErrorStats[0].Label} ({customerErrorStats[0].ProductCount} products)");
+        }
+        else 
+        {
+            System.Console.WriteLine("[DEBUG] Card8: NO RESULTS generated after processing.");
+        }
 
         var allCustomers = await _context.Complaints
             .AsNoTracking()

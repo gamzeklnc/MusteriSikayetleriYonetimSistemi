@@ -245,6 +245,7 @@ export interface SourceStat {
 export interface CustomerErrorStat {
     label: string;
     count: number;
+    productCount: number;
 }
 
 export interface DashboardStats {

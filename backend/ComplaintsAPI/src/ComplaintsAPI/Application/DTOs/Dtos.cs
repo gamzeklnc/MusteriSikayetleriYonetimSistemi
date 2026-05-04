@@ -250,7 +250,7 @@ public record BrandBreakdownDto(string BrandName, int Count);
 
 public record SourceStatDto(string SourceLabel, int TotalCount, int JustifiedCount, long ProductionCount = 0, double JustificationRate = 0);
 
-public record CustomerErrorStatDto(string Label, int Count);
+public record CustomerErrorStatDto(string Label, int Count, int ProductCount);
 
 public record YearlyJustificationDto(int Year, double Rate, long ProductionCount);
 

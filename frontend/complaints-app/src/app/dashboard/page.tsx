@@ -38,6 +38,7 @@ function GenericBarChart({ title, subtitle, data, children, paddingBottom = 40, 
     const chartMax = maxVal > 0 ? maxVal * 1.15 : 1; 
 
     const formatValue = (val: number) => {
+        if (val === undefined || val === null) return '0';
         if (!isRate) return val.toLocaleString(); // Just the number for counts
         if (val === 0) return '0';
         if (val < 0.001) return val.toFixed(5);
@@ -515,8 +516,18 @@ function ComboChart({ title, subtitle, data, targetLineValue, children, paddingB
 function StackedErrorBarChart({ title, subtitle, data, allBrands, children }: { title: string, subtitle?: string, data: ErrorStat[], allBrands: string[], children?: React.ReactNode }) {
     const brandColors: Record<string, string> = {};
     const colorPalette = [
-        'bg-blue-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 
-        'bg-violet-500', 'bg-indigo-500', 'bg-orange-500', 'bg-teal-500'
+        'bg-blue-600',    // Blue
+        'bg-emerald-500', // Green
+        'bg-amber-500',   // Amber
+        'bg-rose-500',    // Red
+        'bg-violet-600',  // Violet
+        'bg-orange-500',  // Orange
+        'bg-indigo-600',  // Indigo
+        'bg-teal-500',    // Teal
+        'bg-fuchsia-500', // Fuchsia
+        'bg-sky-500',     // Sky Blue
+        'bg-lime-500',    // Lime
+        'bg-pink-500'     // Pink
     ];
     allBrands.forEach((b, i) => brandColors[b] = colorPalette[i % colorPalette.length]);
 
@@ -533,11 +544,11 @@ function StackedErrorBarChart({ title, subtitle, data, allBrands, children }: { 
                     <p className="text-[9px] text-slate-400 font-bold pl-5 uppercase">{subtitle || 'Hata Dağılımı'}</p>
                 </div>
                 <div className="flex items-center gap-4">
-                    <div className="flex flex-wrap justify-end gap-x-2 gap-y-1 max-w-[280px]">
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 mr-2 border-r border-slate-100 pr-4">
                         {allBrands.map(b => (
-                            <div key={b} className="flex items-center gap-1.5 px-2 py-1 bg-slate-50 rounded border border-slate-100 shadow-sm transition-all hover:bg-white">
-                                <div className={`w-2 h-2 rounded-full ${brandColors[b] || 'bg-slate-300'} shadow-sm`} />
-                                <span className="text-[8px] font-black text-slate-700 uppercase tracking-tighter">{b}</span>
+                            <div key={b} className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full ${brandColors[b] || 'bg-slate-300'} shadow-sm flex-shrink-0`} />
+                                <span className="text-[8px] font-black text-slate-700 uppercase tracking-tighter truncate max-w-[80px]">{b}</span>
                             </div>
                         ))}
                     </div>
@@ -568,7 +579,7 @@ function StackedErrorBarChart({ title, subtitle, data, allBrands, children }: { 
                                         return (
                                             <div 
                                                 key={bi}
-                                                className={`${brandColors[b.brandName]} w-full transition-all group-hover:brightness-110 flex items-center justify-center relative`}
+                                                className={`${brandColors[b.brandName] || 'bg-slate-400'} w-full transition-all group-hover:brightness-110 flex items-center justify-center relative`}
                                                 style={{ height: `${segmentH}%` }}
                                                 title={`${b.brandName}: ${b.count}`}
                                             >
@@ -641,7 +652,6 @@ export default function DashboardPage() {
 
     const fetchBrandStats = useCallback(async () => {
         try {
-            if (brandYear === 'Hepsi' && brandFilter === 'Hepsi') return;
             let sDate = undefined, eDate = undefined;
             if (brandYear !== 'Hepsi') { sDate = `${brandYear}-01-01`; eDate = `${brandYear}-12-31`; }
             const brnd = brandFilter === 'Hepsi' ? undefined : brandFilter;
@@ -652,7 +662,6 @@ export default function DashboardPage() {
 
     const fetchErrorStats = useCallback(async () => {
         try {
-            if (errorYear === 'Hepsi') return;
             let sDate = undefined, eDate = undefined;
             if (errorYear !== 'Hepsi') { sDate = `${errorYear}-01-01`; eDate = `${errorYear}-12-31`; }
             const data = await complaintService.getDashboardStats(sDate, eDate);
@@ -662,7 +671,6 @@ export default function DashboardPage() {
 
     const fetchSourceStats = useCallback(async () => {
         try {
-            if (sourceYear === 'Hepsi') return;
             let sDate = undefined, eDate = undefined;
             if (sourceYear !== 'Hepsi') { sDate = `${sourceYear}-01-01`; eDate = `${sourceYear}-12-31`; }
             const data = await complaintService.getDashboardStats(sDate, eDate);
@@ -672,12 +680,12 @@ export default function DashboardPage() {
 
     const fetchC8Stats = useCallback(async () => {
         try {
-            if (c8Year === 'Hepsi' && c8Customer === 'Hepsi' && c8Error === 'Hepsi') return;
             let sDate = undefined, eDate = undefined;
             if (c8Year !== 'Hepsi') { sDate = `${c8Year}-01-01`; eDate = `${c8Year}-12-31`; }
             const cust = c8Customer === 'Hepsi' ? undefined : c8Customer;
             const err = c8Error === 'Hepsi' ? undefined : c8Error;
             const data = await complaintService.getDashboardStats(sDate, eDate, undefined, cust, err);
+            console.log('DEBUG C8 DATA:', data.customerErrorStats);
             setStats(prev => prev ? { ...prev, customerErrorStats: data.customerErrorStats } : data);
         } catch (error) { console.error(error); }
     }, [c8Year, c8Customer, c8Error]);
@@ -839,7 +847,7 @@ export default function DashboardPage() {
                                 barColor="from-violet-600 to-purple-400"
                                 rotateLabels={true} paddingBottom={70}
                                 isRate={false}
-                                data={(stats?.customerErrorStats || []).map(c => ({ label: c.label, value: c.count }))}
+                                data={(stats?.customerErrorStats || []).map(c => ({ label: c.label, value: c.productCount }))}
                             >
                                 <div className="flex items-center gap-1">
                                     <select className="text-[8px] font-black text-violet-600 bg-violet-50 border border-violet-100 rounded px-1 py-1 outline-none"
