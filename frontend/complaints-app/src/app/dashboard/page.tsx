@@ -827,8 +827,8 @@ export default function DashboardPage() {
                             data={(stats?.sourceStats || []).map(s => ({ 
                                 label: s.sourceLabel, 
                                 v1: s.totalCount, 
-                                v2: s.sourceLabel === 'DİĞER' ? s.justifiedCount : (s.justificationRate || 0),
-                                v2IsRate: s.sourceLabel !== 'DİĞER'
+                                v2: s.justificationRate || 0,
+                                v2IsRate: true
                             }))}
                         >
                             <select className="text-[9px] font-black text-indigo-600 bg-indigo-50 border border-indigo-100 rounded px-1 py-1 outline-none"

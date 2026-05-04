@@ -377,9 +377,9 @@ public class DashboardController : ControllerBase
 
         var sourceStats = new List<SourceStatDto>
         {
-            new SourceStatDto("HSA1", sourceRaw?.H1Total ?? 0, sourceRaw?.H1Just ?? 0, h1Prod, h1Prod > 0 ? (double)(sourceRaw?.H1Just ?? 0) * 100 / h1Prod : 0),
-            new SourceStatDto("HSA2", sourceRaw?.H2Total ?? 0, sourceRaw?.H2Just ?? 0, h2Prod, h2Prod > 0 ? (double)(sourceRaw?.H2Just ?? 0) * 100 / h2Prod : 0),
-            new SourceStatDto("DİĞER", sourceRaw?.OTotal ?? 0, sourceRaw?.OJust ?? 0)
+            new SourceStatDto("HSA1", sourceRaw?.H1Total ?? 0, sourceRaw?.H1Just ?? 0, h1Prod, (sourceRaw?.H1Total ?? 0) > 0 ? (double)(sourceRaw?.H1Just ?? 0) * 100 / (sourceRaw?.H1Total ?? 1) : 0),
+            new SourceStatDto("HSA2", sourceRaw?.H2Total ?? 0, sourceRaw?.H2Just ?? 0, h2Prod, (sourceRaw?.H2Total ?? 0) > 0 ? (double)(sourceRaw?.H2Just ?? 0) * 100 / (sourceRaw?.H2Total ?? 1) : 0),
+            new SourceStatDto("DİĞER", sourceRaw?.OTotal ?? 0, sourceRaw?.OJust ?? 0, 0, (sourceRaw?.OTotal ?? 0) > 0 ? (double)(sourceRaw?.OJust ?? 0) * 100 / (sourceRaw?.OTotal ?? 1) : 0)
         };
 
         // Customer-Error Analysis (8th Quadrant)
