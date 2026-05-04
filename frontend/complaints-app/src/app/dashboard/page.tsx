@@ -50,7 +50,7 @@ function GenericBarChart({ title, subtitle, data, children, paddingBottom = 40, 
 
     return (
         <div className="w-full h-full flex flex-col">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-4">
                 <div className="flex flex-col gap-0.5">
                     <h3 className="text-[12px] font-black text-slate-800 flex items-center gap-2">
                         <BarChart3 className="w-3.5 h-3.5 text-blue-600" />
@@ -88,7 +88,7 @@ function GenericBarChart({ title, subtitle, data, children, paddingBottom = 40, 
                                     style={{ height: `${Math.max(heightPercent, 2)}%` }}
                                 />
                                 <div className="absolute w-0 overflow-visible" style={{ top: '100%', left: '50%', paddingTop: '6px' }}>
-                                    <span className="font-black text-slate-600 uppercase tracking-tighter text-[8px] whitespace-nowrap inline-block text-right" style={{ transform: 'translateX(-100%) rotate(-45deg)', transformOrigin: 'top right' }}>
+                                    <span title={item.label} className="font-black text-slate-600 uppercase tracking-tighter text-[7px] sm:text-[8px] whitespace-nowrap inline-block text-right" style={{ transform: 'translateX(-100%) rotate(-45deg)', transformOrigin: 'top right' }}>
                                         {item.label}
                                     </span>
                                 </div>
@@ -179,7 +179,7 @@ function DualBarChart({ title, subtitle, data, children, v1Label, v2Label }: {
     
     return (
         <div className="w-full h-full flex flex-col">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4">
                 <div className="flex flex-col gap-0.5">
                     <h3 className="text-[12px] font-black text-slate-800 flex items-center gap-2">
                         <BarChart3 className="w-3.5 h-3.5 text-blue-600" />
@@ -204,7 +204,7 @@ function DualBarChart({ title, subtitle, data, children, v1Label, v2Label }: {
             
             <div className="flex-1 flex gap-2 relative">
                 {/* Sol Eksen (Şikayet Adedi) */}
-                <div className="flex flex-col justify-between h-full pr-3 min-w-[50px] z-10 border-r border-slate-100" style={{ paddingBottom: '100px' }}>
+                <div className="flex flex-col justify-between h-full pr-3 min-w-[50px] z-10 border-r border-slate-100" style={{ paddingBottom: '80px' }}>
                     {[...Array.from({ length: 6 }, (_, i) => (chartMaxV1 / 5) * i)].reverse().map((step, idx) => (
                         <span key={idx} className="text-[8px] font-black text-slate-500 text-right leading-none">
                             {Math.round(step).toLocaleString()}
@@ -213,9 +213,9 @@ function DualBarChart({ title, subtitle, data, children, v1Label, v2Label }: {
                 </div>
 
                 {/* Bar + Line Alanı */}
-                <div className="flex-1 relative" style={{ paddingBottom: '100px' }}>
+                <div className="flex-1 relative" style={{ paddingBottom: '80px' }}>
                     {/* SVG Çizgi Katmanı */}
-                    <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none" style={{ bottom: '100px' }}>
+                    <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none" style={{ bottom: '80px' }}>
                         <svg className="w-full h-full overflow-visible" preserveAspectRatio="none">
                             {data.map((item, idx) => {
                                 const x = `${(idx + 0.5) * (100 / data.length)}%`;
@@ -253,7 +253,7 @@ function DualBarChart({ title, subtitle, data, children, v1Label, v2Label }: {
                     </div>
 
                     {/* Çizgi Nokta Etiketleri (Haklılık Oranı) */}
-                    <div className="absolute top-0 left-0 right-0 z-30 pointer-events-none" style={{ bottom: '100px' }}>
+                    <div className="absolute top-0 left-0 right-0 z-30 pointer-events-none" style={{ bottom: '80px' }}>
                         {lineLabels.map((lbl) => {
                             const isHovered = hoveredIdx === lbl.idx;
                             const show = lbl.isVisible || isHovered;
@@ -272,7 +272,7 @@ function DualBarChart({ title, subtitle, data, children, v1Label, v2Label }: {
                     </div>
 
                     {/* Sütunlar (Şikayet Adedi) */}
-                    <div className="absolute top-0 left-0 right-0 flex items-end justify-around pointer-events-none" style={{ bottom: '100px' }}>
+                    <div className="absolute top-0 left-0 right-0 flex items-end justify-around pointer-events-none" style={{ bottom: '80px' }}>
                         {data.map((item, idx) => {
                             const barH = chartMaxV1 > 0 ? (item.v1 / chartMaxV1) * 100 : 0;
                             return (
@@ -286,7 +286,7 @@ function DualBarChart({ title, subtitle, data, children, v1Label, v2Label }: {
                                     <div className="w-full rounded-t-sm bg-gradient-to-t from-blue-600 to-blue-400 shadow-sm transition-all duration-300 group-hover:brightness-110 group-hover:opacity-100 opacity-90 relative z-10" style={{ height: `${Math.max(barH, 2)}%` }} />
                                     {/* Alt X Ekseni Etiketi */}
                                     <div className="absolute w-0 overflow-visible" style={{ top: '100%', left: '50%', paddingTop: '6px' }}>
-                                        <span className="text-[8px] sm:text-[9px] font-black text-slate-600 uppercase tracking-tighter whitespace-nowrap inline-block text-right transition-colors group-hover:text-blue-600" style={{ transform: 'translateX(-100%) rotate(-45deg)', transformOrigin: 'top right' }}>
+                                        <span title={item.label} className="font-black text-slate-600 uppercase tracking-tighter text-[7px] sm:text-[8px] whitespace-nowrap inline-block text-right transition-colors group-hover:text-blue-600" style={{ transform: 'translateX(-100%) rotate(-45deg)', transformOrigin: 'top right' }}>
                                             {item.label}
                                         </span>
                                     </div>
@@ -298,7 +298,7 @@ function DualBarChart({ title, subtitle, data, children, v1Label, v2Label }: {
                 </div>
 
                 {/* Sağ Eksen (Boş - değerler mutlak konumla üzerine biniyor) */}
-                <div className="flex flex-col justify-between h-full min-w-[50px] z-10 border-l border-slate-100" style={{ paddingBottom: '100px' }}>
+                <div className="flex flex-col justify-between h-full min-w-[50px] z-10 border-l border-slate-100" style={{ paddingBottom: '80px' }}>
                 </div>
             </div>
         </div>
@@ -412,7 +412,7 @@ function ComboChart({ title, subtitle, data, targetLineValue, children, paddingB
 
                 <div className="flex-1 relative" style={{ paddingBottom: `${paddingBottom}px` }}>
                     {/* SVG Katmanı */}
-                    <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none" style={{ bottom: `0px` }}>
+                    <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none" style={{ bottom: `${paddingBottom}px` }}>
                         <svg className="w-full h-full overflow-visible" preserveAspectRatio="none">
                             {data.map((item, idx) => {
                                 const x = `${(idx + 0.5) * (100 / data.length)}%`;
@@ -451,14 +451,16 @@ function ComboChart({ title, subtitle, data, targetLineValue, children, paddingB
                     </div>
 
                     {/* Hedef Çizgisi Etiketi */}
-                    <div className="absolute z-20 right-0 pointer-events-none translate-x-[45px] sm:translate-x-0" style={{ bottom: `calc(${(targetLineValue / chartMaxLine) * 100}% + 2px)` }}>
-                        <span className="text-[8px] font-bold text-red-500 bg-white/90 backdrop-blur-sm px-1 py-0.5 rounded shadow-sm border border-red-100 whitespace-nowrap">
-                            Hedef: %{targetLineValue}
-                        </span>
+                    <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none" style={{ bottom: `${paddingBottom}px` }}>
+                        <div className="absolute z-20 right-0 pointer-events-none translate-x-[45px] sm:translate-x-0" style={{ bottom: `calc(${(targetLineValue / chartMaxLine) * 100}% + 2px)` }}>
+                            <span className="text-[8px] font-bold text-red-500 bg-white/90 backdrop-blur-sm px-1 py-0.5 rounded shadow-sm border border-red-100 whitespace-nowrap">
+                                Hedef: %{targetLineValue}
+                            </span>
+                        </div>
                     </div>
 
                     {/* Çizgi Nokta Etiketleri (Hata Oranı) */}
-                    <div className="absolute top-0 left-0 right-0 z-30 pointer-events-none" style={{ bottom: `0px` }}>
+                    <div className="absolute top-0 left-0 right-0 z-30 pointer-events-none" style={{ bottom: `${paddingBottom}px` }}>
                         {lineLabels.map((lbl) => {
                             const isHovered = hoveredIdx === lbl.idx;
                             const show = lbl.isVisible || isHovered;
@@ -477,7 +479,7 @@ function ComboChart({ title, subtitle, data, targetLineValue, children, paddingB
                     </div>
 
                     {/* Sütunlar (Modül Sayısı) */}
-                    <div className="absolute top-0 left-0 right-0 flex items-end justify-around pointer-events-none" style={{ bottom: `0px` }}>
+                    <div className="absolute top-0 left-0 right-0 flex items-end justify-around pointer-events-none" style={{ bottom: `${paddingBottom}px` }}>
                         {data.map((item, idx) => {
                             const barH = chartMaxBar > 0 ? (item.barValue / chartMaxBar) * 100 : 0;
                             return (
@@ -491,7 +493,7 @@ function ComboChart({ title, subtitle, data, targetLineValue, children, paddingB
                                     <div className="w-full rounded-t-sm bg-gradient-to-t from-blue-600 to-blue-400 shadow-sm transition-all duration-300 group-hover:brightness-110 group-hover:opacity-100 opacity-90 relative z-10" style={{ height: `${Math.max(barH, 2)}%` }} />
                                     {/* Alt X Ekseni Etiketi */}
                                     <div className="absolute w-0 overflow-visible" style={{ top: '100%', left: '50%', paddingTop: '6px' }}>
-                                        <span className="text-[8px] sm:text-[9px] font-black text-slate-600 uppercase tracking-tighter whitespace-nowrap inline-block text-right transition-colors group-hover:text-blue-600" style={{ transform: 'translateX(-100%) rotate(-45deg)', transformOrigin: 'top right' }}>
+                                        <span title={item.label} className="font-black text-slate-600 uppercase tracking-tighter text-[7px] sm:text-[8px] whitespace-nowrap inline-block text-right transition-colors group-hover:text-blue-600" style={{ transform: 'translateX(-100%) rotate(-45deg)', transformOrigin: 'top right' }}>
                                             {item.label}
                                         </span>
                                     </div>
@@ -522,7 +524,7 @@ function StackedErrorBarChart({ title, subtitle, data, allBrands, children }: { 
 
     return (
         <div className="w-full h-full flex flex-col">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4">
                 <div className="flex flex-col gap-0.5">
                     <h3 className="text-[12px] font-black text-slate-800 flex items-center gap-2">
                         <AlertCircle className="w-3.5 h-3.5 text-red-600" />
@@ -544,13 +546,13 @@ function StackedErrorBarChart({ title, subtitle, data, allBrands, children }: { 
             </div>
 
             <div className="flex-1 flex gap-2 relative">
-                <div className="absolute left-[38px] top-0 bottom-24 w-[1.5px] bg-slate-300 z-10" />
-                <div className="flex flex-col justify-between h-full pb-24 pr-3 min-w-[38px]">
+                <div className="absolute left-[38px] top-0 bottom-20 w-[1.5px] bg-slate-300 z-10" />
+                <div className="flex flex-col justify-between h-full pb-20 pr-3 min-w-[38px]">
                     <span className="text-[8px] font-black text-slate-400 text-right">{maxTotal}</span>
                     <span className="text-[8px] font-black text-slate-400 text-right">{Math.round(maxTotal/2)}</span>
                     <span className="text-[8px] font-black text-slate-400 text-right">0</span>
                 </div>
-                <div className="flex-1 relative flex items-end justify-around pb-24">
+                <div className="flex-1 relative flex items-end justify-around pb-20">
                     {data.map((item) => {
                         const totalH = (item.totalCount / (maxTotal * 1.1)) * 100;
                         return (
@@ -580,14 +582,14 @@ function StackedErrorBarChart({ title, subtitle, data, allBrands, children }: { 
                                     })}
                                 </div>
                                 <div className="absolute w-0 overflow-visible" style={{ top: '100%', left: '50%', paddingTop: '6px' }}>
-                                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-tighter whitespace-nowrap inline-block text-right" style={{ transform: 'translateX(-100%) rotate(-45deg)', transformOrigin: 'top right' }}>
+                                    <span title={item.errorLabel} className="font-black text-slate-500 uppercase tracking-tighter text-[7px] sm:text-[8px] whitespace-nowrap inline-block text-right" style={{ transform: 'translateX(-100%) rotate(-45deg)', transformOrigin: 'top right' }}>
                                         {item.errorLabel}
                                     </span>
                                 </div>
                             </div>
                         );
                     })}
-                    <div className="absolute bottom-24 left-0 right-0 h-[1.5px] bg-slate-300" />
+                    <div className="absolute bottom-20 left-0 right-0 h-[1.5px] bg-slate-300" />
                 </div>
             </div>
         </div>
@@ -702,9 +704,9 @@ export default function DashboardPage() {
             <div className="space-y-4 -mt-6">
                 <div className="flex items-center justify-between"><h1 className="text-3xl font-black text-slate-900 tracking-tight">Dashboard</h1></div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-12" style={{ height: 'calc(100vh - 90px)', minHeight: '600px', gridTemplateRows: 'repeat(2, minmax(0, 1fr))' }}>
                     {/* Q1, Q2, Q3, Q4 remain the same */}
-                    <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[350px]">
+                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-0 overflow-hidden">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-[12px] font-black text-slate-800 flex items-center gap-2">
                                 <Activity className="w-3.5 h-3.5 text-blue-600" />
@@ -730,7 +732,7 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[350px]">
+                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-0 overflow-hidden">
                         {stats?.justificationChart ? (
                             <GenericBarChart title="Haklılık Oranı (%)" subtitle="Yıllık Dönemsel Durum"
                                 data={[
@@ -742,7 +744,7 @@ export default function DashboardPage() {
                         ) : <div className="flex-1 flex items-center justify-center text-slate-400">Veri Yüklenemedi</div>}
                     </div>
 
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[350px]">
+                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-0 overflow-hidden">
                         {stats?.yearlyStats ? (
                             <ComboChart title="Yıllık Haklılık Oranı" subtitle="Tüm Yılların Karşılaştırması" paddingBottom={40} targetLineValue={0.04}
                                 data={stats.yearlyStats.map(y => ({ label: y.year.toString(), barValue: y.productionCount, lineValue: y.rate }))}
@@ -750,7 +752,7 @@ export default function DashboardPage() {
                         ) : <div className="flex-1 flex items-center justify-center text-slate-400">Yıllık Veri Bekleniyor...</div>}
                     </div>
 
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[350px]">
+                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-0 overflow-hidden">
                         {stats?.monthlyJustificationStats ? (
                             <ComboChart paddingBottom={40} targetLineValue={0.04}
                                 title={`${endDate ? new Date(endDate).getFullYear() : new Date().getFullYear()} Aylık Haklılık Oranı`} 
@@ -766,9 +768,12 @@ export default function DashboardPage() {
                             </ComboChart>
                         ) : <div className="flex-1 flex items-center justify-center text-slate-400">Aylık Veri Bekleniyor...</div>}
                     </div>
+                </div>
 
-                    {/* 5. Brand */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[500px]">
+                <div className="analytics-section">
+                    <div className="analytics-grid">
+                        {/* 5. Brand */}
+                        <div className="analytics-card">
                         <DualBarChart 
                             title="Marka Bazlı Şikayet & Haklılık" 
                             v1Label="Şikayet (Adet)" v2Label="Haklılık (%)"
@@ -781,7 +786,7 @@ export default function DashboardPage() {
                                     <option value="Hepsi">YIL: HEPSİ</option>
                                     {(stats?.yearlyStats || []).map(y => ( <option key={y.year} value={y.year}>{y.year}</option> ))}
                                 </select>
-                                <select className="text-[9px] font-black text-emerald-600 bg-emerald-50 border border-emerald-100 rounded px-1 py-1 outline-none max-w-[80px]"
+                                <select className="text-[9px] font-black text-emerald-600 bg-emerald-50 border border-emerald-100 rounded px-1 py-1 outline-none"
                                     value={brandFilter} onChange={(e) => setBrandFilter(e.target.value)}>
                                     <option value="Hepsi">MARKA: HEPSİ</option>
                                     {(stats?.allBrands || []).map(b => ( <option key={b} value={b}>{b}</option> ))}
@@ -790,8 +795,8 @@ export default function DashboardPage() {
                         </DualBarChart>
                     </div>
 
-                    {/* 6. Error Analysis */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[500px]">
+                        {/* 6. Error Analysis */}
+                        <div className="analytics-card">
                         <StackedErrorBarChart 
                             title="Hata Tanımları & Marka Kıyaslaması" 
                             subtitle={errorYear === 'Hepsi' ? "Tüm Zamanlar Hata Dağılımı" : `${errorYear} Yılı Hata Analizi`}
@@ -805,8 +810,8 @@ export default function DashboardPage() {
                         </StackedErrorBarChart>
                     </div>
 
-                    {/* 7. Production Site */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[500px]">
+                        {/* 7. Production Site */}
+                        <div className="analytics-card">
                         <DualBarChart 
                             title="Şikayet - Üretim Tesisi Dağılışı" 
                             subtitle={sourceYear === 'Hepsi' ? "HSA1, HSA2 ve Diğer Kaynak Analizi" : `${sourceYear} Yılı HSA Analizi`}
@@ -826,34 +831,35 @@ export default function DashboardPage() {
                         </DualBarChart>
                     </div>
 
-                    {/* 8. Customer Error Analysis */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[500px]">
-                        <GenericBarChart 
-                            title="Müşteriye Göre Hata Tanımı" 
-                            subtitle={c8Customer !== 'Hepsi' ? `${c8Customer} Hata Dağılımı` : c8Error !== 'Hepsi' ? `${c8Error} Bildiren Müşteriler` : "Müşteri ve Hata Yoğunluğu"}
-                            barColor="from-violet-600 to-purple-400"
-                            rotateLabels={true} paddingBottom={80}
-                            isRate={false}
-                            data={(stats?.customerErrorStats || []).map(c => ({ label: c.label, value: c.count }))}
-                        >
-                            <div className="flex items-center gap-1">
-                                <select className="text-[8px] font-black text-violet-600 bg-violet-50 border border-violet-100 rounded px-1 py-1 outline-none max-w-[70px]"
-                                    value={c8Year} onChange={(e) => setC8Year(e.target.value)}>
-                                    <option value="Hepsi">YIL</option>
-                                    {(stats?.yearlyStats || []).map(y => ( <option key={y.year} value={y.year}>{y.year}</option> ))}
-                                </select>
-                                <select className="text-[8px] font-black text-violet-600 bg-violet-50 border border-violet-100 rounded px-1 py-1 outline-none max-w-[70px]"
-                                    value={c8Customer} onChange={(e) => setC8Customer(e.target.value)}>
-                                    <option value="Hepsi">MÜŞTERİ</option>
-                                    {(stats?.allCustomers || []).map(c => ( <option key={c} value={c}>{c}</option> ))}
-                                </select>
-                                <select className="text-[8px] font-black text-violet-600 bg-violet-50 border border-violet-100 rounded px-1 py-1 outline-none max-w-[70px]"
-                                    value={c8Error} onChange={(e) => setC8Error(e.target.value)}>
-                                    <option value="Hepsi">HATA</option>
-                                    {(stats?.allErrorLabels || []).map(e => ( <option key={e} value={e}>{e}</option> ))}
-                                </select>
-                            </div>
-                        </GenericBarChart>
+                        {/* 8. Customer Error Analysis */}
+                        <div className="analytics-card">
+                            <GenericBarChart 
+                                title="Müşteriye Göre Hata Tanımı" 
+                                subtitle={c8Customer !== 'Hepsi' ? `${c8Customer} Hata Dağılımı` : c8Error !== 'Hepsi' ? `${c8Error} Bildiren Müşteriler` : "Müşteri ve Hata Yoğunluğu"}
+                                barColor="from-violet-600 to-purple-400"
+                                rotateLabels={true} paddingBottom={70}
+                                isRate={false}
+                                data={(stats?.customerErrorStats || []).map(c => ({ label: c.label, value: c.count }))}
+                            >
+                                <div className="flex items-center gap-1">
+                                    <select className="text-[8px] font-black text-violet-600 bg-violet-50 border border-violet-100 rounded px-1 py-1 outline-none"
+                                        value={c8Year} onChange={(e) => setC8Year(e.target.value)}>
+                                        <option value="Hepsi">YIL</option>
+                                        {(stats?.yearlyStats || []).map(y => ( <option key={y.year} value={y.year}>{y.year}</option> ))}
+                                    </select>
+                                    <select className="text-[8px] font-black text-violet-600 bg-violet-50 border border-violet-100 rounded px-1 py-1 outline-none"
+                                        value={c8Customer} onChange={(e) => setC8Customer(e.target.value)}>
+                                        <option value="Hepsi">MÜŞTERİ</option>
+                                        {(stats?.allCustomers || []).map(c => ( <option key={c} value={c}>{c}</option> ))}
+                                    </select>
+                                    <select className="text-[8px] font-black text-violet-600 bg-violet-50 border border-violet-100 rounded px-1 py-1 outline-none"
+                                        value={c8Error} onChange={(e) => setC8Error(e.target.value)}>
+                                        <option value="Hepsi">HATA</option>
+                                        {(stats?.allErrorLabels || []).map(e => ( <option key={e} value={e}>{e}</option> ))}
+                                    </select>
+                                </div>
+                            </GenericBarChart>
+                        </div>
                     </div>
                 </div>
             </div>
