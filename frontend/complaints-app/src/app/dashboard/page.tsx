@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { complaintService } from '@/services/complaintService';
 import { DashboardStats, ErrorStat } from '@/types/complaint';
@@ -129,6 +129,53 @@ function DualBarChart({ title, subtitle, data, children, v1Label, v2Label }: {
         if (val < 1) return val.toFixed(3);
         return val.toFixed(2);
     };
+
+    const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+
+    const lineLabels = useMemo(() => {
+        const labels = data.map((item, idx) => {
+            const yPct = chartMaxV2 > 0 ? (item.v2 / chartMaxV2) * 100 : 0;
+            return { idx, item, yPct, staggeredY: yPct, isVisible: true };
+        });
+        const sortedLabels = [...labels].sort((a, b) => a.yPct - b.yPct);
+        const MIN_DIST = 8;
+        for (let i = 1; i < sortedLabels.length; i++) {
+            const prev = sortedLabels[i - 1];
+            const curr = sortedLabels[i];
+            if (curr.yPct - prev.yPct < MIN_DIST) {
+                const isCurrSmall = curr.yPct < 15;
+                const isPrevSmall = prev.yPct < 15;
+                if (isCurrSmall && !isPrevSmall) curr.isVisible = false;
+                else if (isPrevSmall && !isCurrSmall) prev.isVisible = false;
+                else if (isCurrSmall && isPrevSmall) {
+                    if (curr.item.v2 < prev.item.v2) curr.isVisible = false;
+                    else prev.isVisible = false;
+                }
+            }
+        }
+        const visibleLabels = sortedLabels.filter(l => l.isVisible);
+        for (let i = 1; i < visibleLabels.length; i++) {
+            const prev = visibleLabels[i - 1];
+            const curr = visibleLabels[i];
+            if (curr.staggeredY - prev.staggeredY < MIN_DIST) {
+                curr.staggeredY = prev.staggeredY + MIN_DIST;
+            }
+        }
+        const maxStagger = Math.max(...visibleLabels.map(l => l.staggeredY), 0);
+        if (maxStagger > 100) {
+            const overflow = maxStagger - 100;
+            for (let i = visibleLabels.length - 1; i >= 0; i--) {
+                visibleLabels[i].staggeredY -= overflow;
+                if (i < visibleLabels.length - 1) {
+                    const next = visibleLabels[i + 1];
+                    if (next.staggeredY - visibleLabels[i].staggeredY < MIN_DIST) {
+                        visibleLabels[i].staggeredY = next.staggeredY - MIN_DIST;
+                    }
+                }
+            }
+        }
+        return labels.sort((a, b) => a.idx - b.idx);
+    }, [data, chartMaxV2]);
     
     return (
         <div className="w-full h-full flex flex-col">
@@ -168,7 +215,7 @@ function DualBarChart({ title, subtitle, data, children, v1Label, v2Label }: {
                 {/* Bar + Line Alanı */}
                 <div className="flex-1 relative" style={{ paddingBottom: '100px' }}>
                     {/* SVG Çizgi Katmanı */}
-                    <div className="absolute top-0 left-0 right-0 z-10 pointer-events-none" style={{ bottom: '100px' }}>
+                    <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none" style={{ bottom: '100px' }}>
                         <svg className="w-full h-full overflow-visible" preserveAspectRatio="none">
                             {data.map((item, idx) => {
                                 const x = `${(idx + 0.5) * (100 / data.length)}%`;
@@ -185,62 +232,73 @@ function DualBarChart({ title, subtitle, data, children, v1Label, v2Label }: {
                                 const x = `${(idx + 0.5) * (100 / data.length)}%`;
                                 const y = `${100 - ((item.v2 / chartMaxV2) * 100)}%`;
                                 return (
-                                    <circle key={`dot-${idx}`} cx={x} cy={y} r="4" fill="#f97316" stroke="#ffffff" strokeWidth="2" />
+                                    <circle key={`dot-${idx}`} cx={x} cy={y} r="5" fill="#f97316" stroke="#ffffff" strokeWidth="2.5" className="drop-shadow-sm" />
+                                );
+                            })}
+                            
+                            {/* Staggered Leader Lines */}
+                            {lineLabels.map((lbl) => {
+                                const isHovered = hoveredIdx === lbl.idx;
+                                const show = lbl.isVisible || isHovered;
+                                if (!show) return null;
+                                const x1 = `${(lbl.idx + 0.5) * (100 / data.length)}%`;
+                                const y1 = `${100 - lbl.yPct}%`;
+                                const x2 = `100%`;
+                                const y2 = `${100 - (lbl.isVisible ? lbl.staggeredY : lbl.yPct)}%`;
+                                return (
+                                    <line key={`leader-${lbl.idx}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#fb923c" strokeWidth="1.5" strokeDasharray="3 3" className={`transition-all duration-300 ${isHovered ? 'opacity-100' : 'opacity-60'}`} />
                                 );
                             })}
                         </svg>
                     </div>
 
                     {/* Çizgi Nokta Etiketleri (Haklılık Oranı) */}
-                    <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none" style={{ bottom: '100px' }}>
-                        {data.map((item, idx) => {
-                            const lineH = chartMaxV2 > 0 ? (item.v2 / chartMaxV2) * 100 : 0;
+                    <div className="absolute top-0 left-0 right-0 z-30 pointer-events-none" style={{ bottom: '100px' }}>
+                        {lineLabels.map((lbl) => {
+                            const isHovered = hoveredIdx === lbl.idx;
+                            const show = lbl.isVisible || isHovered;
+                            const currentY = lbl.isVisible ? lbl.staggeredY : lbl.yPct;
                             return (
-                                <div key={`linelabel-${idx}`} className="absolute flex flex-col items-center justify-center transform -translate-x-1/2" style={{ bottom: `calc(${lineH}% + 8px)`, left: `calc(${(idx + 0.5) * (100 / data.length)}%)` }}>
-                                    <span className="text-[8px] font-black text-orange-600 bg-white/95 backdrop-blur-sm px-1 py-0.5 rounded border border-orange-100 shadow-sm whitespace-nowrap z-20">
-                                        {item.v2IsRate ? `%${formatRate(item.v2)}` : item.v2}
-                                    </span>
+                                <div key={`linelabel-${lbl.idx}`} className={`absolute flex items-center justify-end pointer-events-none transition-all duration-300 ${show ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`} style={{ bottom: `calc(${currentY}%)`, right: '0px', transform: 'translateY(50%)' }}>
+                                    <div className="w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[4px] border-l-orange-500" />
+                                    <div className="absolute left-full ml-2 flex items-center">
+                                        <span className={`text-[8px] sm:text-[9px] font-black text-orange-500 whitespace-nowrap z-30 transition-all duration-200 ${isHovered ? 'scale-110 text-orange-600' : ''}`}>
+                                            {lbl.item.v2IsRate ? `%${formatRate(lbl.item.v2)}` : lbl.item.v2}
+                                        </span>
+                                    </div>
                                 </div>
                             );
                         })}
                     </div>
 
                     {/* Sütunlar (Şikayet Adedi) */}
-                    <div className="absolute top-0 left-0 right-0 flex items-end justify-around" style={{ bottom: '100px' }}>
+                    <div className="absolute top-0 left-0 right-0 flex items-end justify-around pointer-events-none" style={{ bottom: '100px' }}>
                         {data.map((item, idx) => {
                             const barH = chartMaxV1 > 0 ? (item.v1 / chartMaxV1) * 100 : 0;
                             return (
-                                <div key={`bar-${idx}`} className="flex-1 flex flex-col items-center group relative h-full justify-end px-1 z-0" style={{ maxWidth: '50px' }}>
+                                <div key={`bar-${idx}`} className="flex-1 flex flex-col items-center group relative h-full justify-end px-1 pointer-events-auto" style={{ maxWidth: '50px' }} onMouseEnter={() => setHoveredIdx(idx)} onMouseLeave={() => setHoveredIdx(null)}>
                                     {/* Sütun Etiketi */}
-                                    <div className="absolute z-10 pointer-events-none mb-1 transition-all duration-200 opacity-0 group-hover:opacity-100 group-hover:scale-110" style={{ bottom: `${Math.max(barH, 2)}%` }}>
-                                        <span className="text-[8px] font-black text-blue-700 bg-blue-50/90 backdrop-blur-sm px-1 py-0.5 rounded border border-blue-100 shadow-sm whitespace-nowrap">
+                                    <div className="absolute z-40 pointer-events-none mb-1 transition-all opacity-90 group-hover:opacity-100 group-hover:-translate-y-1" style={{ bottom: `${Math.max(barH, 2)}%` }}>
+                                        <span className="text-[8px] sm:text-[9px] font-black text-blue-700 bg-blue-50/95 backdrop-blur-sm px-1.5 py-0.5 rounded border border-blue-200 shadow-sm whitespace-nowrap">
                                             {item.v1.toLocaleString()}
                                         </span>
                                     </div>
-                                    <div 
-                                        className="w-full rounded-t-sm bg-gradient-to-t from-blue-600 to-blue-400 shadow-sm transition-all duration-1000 group-hover:brightness-110"
-                                        style={{ height: `${Math.max(barH, 2)}%` }}
-                                    />
+                                    <div className="w-full rounded-t-sm bg-gradient-to-t from-blue-600 to-blue-400 shadow-sm transition-all duration-300 group-hover:brightness-110 group-hover:opacity-100 opacity-90 relative z-10" style={{ height: `${Math.max(barH, 2)}%` }} />
                                     {/* Alt X Ekseni Etiketi */}
                                     <div className="absolute w-0 overflow-visible" style={{ top: '100%', left: '50%', paddingTop: '6px' }}>
-                                        <span className="text-[8px] font-black text-slate-600 uppercase tracking-tighter whitespace-nowrap inline-block text-right" style={{ transform: 'translateX(-100%) rotate(-45deg)', transformOrigin: 'top right' }}>
+                                        <span className="text-[8px] sm:text-[9px] font-black text-slate-600 uppercase tracking-tighter whitespace-nowrap inline-block text-right transition-colors group-hover:text-blue-600" style={{ transform: 'translateX(-100%) rotate(-45deg)', transformOrigin: 'top right' }}>
                                             {item.label}
                                         </span>
                                     </div>
                                 </div>
                             );
                         })}
-                        <div className="absolute left-0 right-0 h-[1.5px] bg-slate-400 bottom-0" />
+                        <div className="absolute left-0 right-0 h-[1.5px] bg-slate-400 bottom-0 pointer-events-none" />
                     </div>
                 </div>
 
-                {/* Sağ Eksen (Haklılık Oranı %) */}
-                <div className="flex flex-col justify-between h-full pl-3 min-w-[50px] z-10 border-l border-slate-100" style={{ paddingBottom: '100px' }}>
-                    {[...Array.from({ length: 6 }, (_, i) => (chartMaxV2 / 5) * i)].reverse().map((step, idx) => (
-                        <span key={idx} className="text-[8px] font-black text-slate-500 text-left leading-none">
-                            %{formatRate(step)}
-                        </span>
-                    ))}
+                {/* Sağ Eksen (Boş - değerler mutlak konumla üzerine biniyor) */}
+                <div className="flex flex-col justify-between h-full min-w-[50px] z-10 border-l border-slate-100" style={{ paddingBottom: '100px' }}>
                 </div>
             </div>
         </div>
@@ -275,6 +333,53 @@ function ComboChart({ title, subtitle, data, targetLineValue, children, paddingB
         return val.toFixed(2);
     };
 
+    const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+
+    const lineLabels = useMemo(() => {
+        const labels = data.map((item, idx) => {
+            const yPct = chartMaxLine > 0 ? (item.lineValue / chartMaxLine) * 100 : 0;
+            return { idx, item, yPct, staggeredY: yPct, isVisible: true };
+        });
+        const sortedLabels = [...labels].sort((a, b) => a.yPct - b.yPct);
+        const MIN_DIST = 8;
+        for (let i = 1; i < sortedLabels.length; i++) {
+            const prev = sortedLabels[i - 1];
+            const curr = sortedLabels[i];
+            if (curr.yPct - prev.yPct < MIN_DIST) {
+                const isCurrSmall = curr.yPct < 15;
+                const isPrevSmall = prev.yPct < 15;
+                if (isCurrSmall && !isPrevSmall) curr.isVisible = false;
+                else if (isPrevSmall && !isCurrSmall) prev.isVisible = false;
+                else if (isCurrSmall && isPrevSmall) {
+                    if (curr.item.lineValue < prev.item.lineValue) curr.isVisible = false;
+                    else prev.isVisible = false;
+                }
+            }
+        }
+        const visibleLabels = sortedLabels.filter(l => l.isVisible);
+        for (let i = 1; i < visibleLabels.length; i++) {
+            const prev = visibleLabels[i - 1];
+            const curr = visibleLabels[i];
+            if (curr.staggeredY - prev.staggeredY < MIN_DIST) {
+                curr.staggeredY = prev.staggeredY + MIN_DIST;
+            }
+        }
+        const maxStagger = Math.max(...visibleLabels.map(l => l.staggeredY), 0);
+        if (maxStagger > 100) {
+            const overflow = maxStagger - 100;
+            for (let i = visibleLabels.length - 1; i >= 0; i--) {
+                visibleLabels[i].staggeredY -= overflow;
+                if (i < visibleLabels.length - 1) {
+                    const next = visibleLabels[i + 1];
+                    if (next.staggeredY - visibleLabels[i].staggeredY < MIN_DIST) {
+                        visibleLabels[i].staggeredY = next.staggeredY - MIN_DIST;
+                    }
+                }
+            }
+        }
+        return labels.sort((a, b) => a.idx - b.idx);
+    }, [data, chartMaxLine]);
+
     return (
         <div className="w-full h-full flex flex-col relative">
             <div className="flex items-center justify-between mb-8">
@@ -307,7 +412,7 @@ function ComboChart({ title, subtitle, data, targetLineValue, children, paddingB
 
                 <div className="flex-1 relative" style={{ paddingBottom: `${paddingBottom}px` }}>
                     {/* SVG Katmanı */}
-                    <div className="absolute top-0 left-0 right-0 z-10" style={{ bottom: `0px` }}>
+                    <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none" style={{ bottom: `0px` }}>
                         <svg className="w-full h-full overflow-visible" preserveAspectRatio="none">
                             {data.map((item, idx) => {
                                 const x = `${(idx + 0.5) * (100 / data.length)}%`;
@@ -324,10 +429,24 @@ function ComboChart({ title, subtitle, data, targetLineValue, children, paddingB
                                 const x = `${(idx + 0.5) * (100 / data.length)}%`;
                                 const y = `${100 - ((item.lineValue / chartMaxLine) * 100)}%`;
                                 return (
-                                    <circle key={`dot-${idx}`} cx={x} cy={y} r="3" fill="#eab308" stroke="#ffffff" strokeWidth="1" />
+                                    <circle key={`dot-${idx}`} cx={x} cy={y} r="4.5" fill="#f97316" stroke="#ffffff" strokeWidth="2" className="drop-shadow-sm" />
                                 );
                             })}
-                            <line x1="0" y1={`${100 - ((targetLineValue / chartMaxLine) * 100)}%`} x2="100%" y2={`${100 - ((targetLineValue / chartMaxLine) * 100)}%`} stroke="#ef4444" strokeWidth="1" strokeDasharray="4 4" />
+                            <line x1="0" y1={`${100 - ((targetLineValue / chartMaxLine) * 100)}%`} x2="100%" y2={`${100 - ((targetLineValue / chartMaxLine) * 100)}%`} stroke="#ef4444" strokeWidth="1.5" strokeDasharray="4 4" />
+                            
+                            {/* Staggered Leader Lines */}
+                            {lineLabels.map((lbl) => {
+                                const isHovered = hoveredIdx === lbl.idx;
+                                const show = lbl.isVisible || isHovered;
+                                if (!show) return null;
+                                const x1 = `${(lbl.idx + 0.5) * (100 / data.length)}%`;
+                                const y1 = `${100 - lbl.yPct}%`;
+                                const x2 = `100%`;
+                                const y2 = `${100 - (lbl.isVisible ? lbl.staggeredY : lbl.yPct)}%`;
+                                return (
+                                    <line key={`leader-${lbl.idx}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#fb923c" strokeWidth="1.5" strokeDasharray="3 3" className={`transition-all duration-300 ${isHovered ? 'opacity-100' : 'opacity-60'}`} />
+                                );
+                            })}
                         </svg>
                     </div>
 
@@ -339,55 +458,52 @@ function ComboChart({ title, subtitle, data, targetLineValue, children, paddingB
                     </div>
 
                     {/* Çizgi Nokta Etiketleri (Hata Oranı) */}
-                    <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none" style={{ bottom: `0px` }}>
-                        {data.map((item, idx) => {
-                            const lineH = chartMaxLine > 0 ? (item.lineValue / chartMaxLine) * 100 : 0;
+                    <div className="absolute top-0 left-0 right-0 z-30 pointer-events-none" style={{ bottom: `0px` }}>
+                        {lineLabels.map((lbl) => {
+                            const isHovered = hoveredIdx === lbl.idx;
+                            const show = lbl.isVisible || isHovered;
+                            const currentY = lbl.isVisible ? lbl.staggeredY : lbl.yPct;
                             return (
-                                <div key={`linelabel-${idx}`} className="absolute flex flex-col items-center justify-center transform -translate-x-1/2" style={{ bottom: `calc(${lineH}% + 8px)`, left: `calc(${(idx + 0.5) * (100 / data.length)}%)` }}>
-                                    <span className="text-[9px] font-black text-orange-600 bg-white/95 backdrop-blur-sm px-1 py-0.5 rounded border border-orange-100 shadow-sm whitespace-nowrap z-20">
-                                        %{formatRate(item.lineValue)}
-                                    </span>
+                                <div key={`linelabel-${lbl.idx}`} className={`absolute flex items-center justify-end pointer-events-none transition-all duration-300 ${show ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`} style={{ bottom: `calc(${currentY}%)`, right: '0px', transform: 'translateY(50%)' }}>
+                                    <div className="w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[4px] border-l-orange-500" />
+                                    <div className="absolute left-full ml-2 flex items-center">
+                                        <span className={`text-[9px] font-black text-orange-500 whitespace-nowrap z-30 transition-all duration-200 ${isHovered ? 'scale-110 text-orange-600' : ''}`}>
+                                            %{formatRate(lbl.item.lineValue)}
+                                        </span>
+                                    </div>
                                 </div>
                             );
                         })}
                     </div>
 
                     {/* Sütunlar (Modül Sayısı) */}
-                    <div className="absolute top-0 left-0 right-0 flex items-end justify-around" style={{ bottom: `0px` }}>
+                    <div className="absolute top-0 left-0 right-0 flex items-end justify-around pointer-events-none" style={{ bottom: `0px` }}>
                         {data.map((item, idx) => {
                             const barH = chartMaxBar > 0 ? (item.barValue / chartMaxBar) * 100 : 0;
                             return (
-                                <div key={`bar-${idx}`} className="flex-1 flex flex-col items-center group relative h-full justify-end px-1 z-0 w-full" style={{ maxWidth: '45px' }}>
+                                <div key={`bar-${idx}`} className="flex-1 flex flex-col items-center group relative h-full justify-end px-1 pointer-events-auto w-full" style={{ maxWidth: '45px' }} onMouseEnter={() => setHoveredIdx(idx)} onMouseLeave={() => setHoveredIdx(null)}>
                                     {/* Sütun Etiketi */}
-                                    <div className="absolute z-10 pointer-events-none mb-1 transition-all group-hover:scale-110" style={{ bottom: `${Math.max(barH, 2)}%` }}>
-                                        <span className="text-[8px] font-black text-blue-700 bg-blue-50/90 backdrop-blur-sm px-1 py-0.5 rounded border border-blue-100 shadow-sm">
+                                    <div className="absolute z-40 pointer-events-none mb-1 transition-all opacity-90 group-hover:opacity-100 group-hover:-translate-y-1" style={{ bottom: `${Math.max(barH, 2)}%` }}>
+                                        <span className="text-[8px] sm:text-[9px] font-black text-blue-700 bg-blue-50/95 backdrop-blur-sm px-1.5 py-0.5 rounded border border-blue-200 shadow-sm">
                                             {item.barValue.toLocaleString()}
                                         </span>
                                     </div>
-                                    <div 
-                                        className="w-full rounded-t-sm bg-gradient-to-t from-blue-600 to-blue-400 shadow-sm transition-all duration-1000 group-hover:brightness-110"
-                                        style={{ height: `${Math.max(barH, 2)}%` }}
-                                    />
+                                    <div className="w-full rounded-t-sm bg-gradient-to-t from-blue-600 to-blue-400 shadow-sm transition-all duration-300 group-hover:brightness-110 group-hover:opacity-100 opacity-90 relative z-10" style={{ height: `${Math.max(barH, 2)}%` }} />
                                     {/* Alt X Ekseni Etiketi */}
-                                    <div className="absolute top-full pt-4 w-full text-center">
-                                        <span className="font-black text-slate-600 uppercase tracking-tighter block truncate text-[8px]">
+                                    <div className="absolute w-0 overflow-visible" style={{ top: '100%', left: '50%', paddingTop: '6px' }}>
+                                        <span className="text-[8px] sm:text-[9px] font-black text-slate-600 uppercase tracking-tighter whitespace-nowrap inline-block text-right transition-colors group-hover:text-blue-600" style={{ transform: 'translateX(-100%) rotate(-45deg)', transformOrigin: 'top right' }}>
                                             {item.label}
                                         </span>
                                     </div>
                                 </div>
                             );
                         })}
-                        <div className="absolute left-0 right-0 h-[1.5px] bg-slate-400 bottom-0" />
+                        <div className="absolute left-0 right-0 h-[1.5px] bg-slate-400 bottom-0 pointer-events-none" />
                     </div>
                 </div>
 
-                {/* Sağ Eksen (Haklılık Oranı) - 5 adım */}
-                <div className="flex flex-col justify-between h-full pl-3 min-w-[50px] z-10 border-l border-slate-100" style={{ paddingBottom: `${paddingBottom}px` }}>
-                    {[...Array.from({ length: 6 }, (_, i) => (chartMaxLine / 5) * i)].reverse().map((step, idx) => (
-                        <span key={idx} className="text-[8px] font-black text-slate-500 text-left leading-none">
-                            %{formatRate(step)}
-                        </span>
-                    ))}
+                {/* Sağ Eksen (Boş - değerler mutlak konumla üzerine biniyor) */}
+                <div className="flex flex-col justify-between h-full min-w-[50px] z-10 border-l border-slate-100" style={{ paddingBottom: `${paddingBottom}px` }}>
                 </div>
             </div>
         </div>
