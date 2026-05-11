@@ -8,7 +8,8 @@
     ".NETCoreApp,Version=v9.0": {
       "DbCheck/1.0.0": {
         "dependencies": {
-          "Microsoft.EntityFrameworkCore.SqlServer": "8.0.13"
+          "Microsoft.EntityFrameworkCore.SqlServer": "8.0.13",
+          "MiniExcel": "1.43.1"
         },
         "runtime": {
           "DbCheck.dll": {}
@@ -384,6 +385,14 @@
             "assetType": "runtime",
             "assemblyVersion": "6.0.0.0",
             "fileVersion": "6.0.21.52210"
+          }
+        }
+      },
+      "MiniExcel/1.43.1": {
+        "runtime": {
+          "lib/net9.0/MiniExcel.dll": {
+            "assemblyVersion": "1.43.1.0",
+            "fileVersion": "1.43.1.0"
           }
         }
       },
@@ -798,6 +807,13 @@
       "sha512": "sha512-hqTM5628jSsQiv+HGpiq3WKBl2c8v1KZfby2J6Pr7pEPlK9waPdgEO6b8A/+/xn/yZ9ulv8HuqK71ONy2tg67A==",
       "path": "microsoft.win32.systemevents/6.0.0",
       "hashPath": "microsoft.win32.systemevents.6.0.0.nupkg.sha512"
+    },
+    "MiniExcel/1.43.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-1vjq98/3XWGQWzytsN715NIQtqJx2iSpVC5VJcX5KXvCIyPExY4PuuRbzKJYNqECJc266qlXQi2KHs4pzJ06SQ==",
+      "path": "miniexcel/1.43.1",
+      "hashPath": "miniexcel.1.43.1.nupkg.sha512"
     },
     "System.ClientModel/1.0.0": {
       "type": "package",

@@ -6,8 +6,11 @@ import { complaintService } from '@/services/complaintService';
 import { DashboardStats, ErrorStat } from '@/types/complaint';
 import { 
     BarChart3, FileText, CheckCircle2, Clock, AlertCircle, 
-    TrendingUp, Activity
+    TrendingUp, Activity, LogIn
 } from 'lucide-react';
+import Link from 'next/link';
+import { useAuthStore } from '@/store/authStore';
+import ComplaintList from '@/components/complaints/ComplaintList';
 
 interface ChartItem {
     label: string;
@@ -608,6 +611,10 @@ function StackedErrorBarChart({ title, subtitle, data, allBrands, children }: { 
 }
 
 export default function DashboardPage() {
+    const { user } = useAuthStore();
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => { setMounted(true); }, []);
+    
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [summaryStats, setSummaryStats] = useState<DashboardStats | null>(null);
     const [loading, setLoading] = useState(true);
@@ -710,7 +717,15 @@ export default function DashboardPage() {
     return (
         <AppLayout>
             <div className="space-y-4 -mt-6">
-                <div className="flex items-center justify-between"><h1 className="text-3xl font-black text-slate-900 tracking-tight">Dashboard</h1></div>
+                <div className="flex items-center justify-between">
+                    <h1 className="text-3xl font-black text-slate-900 tracking-tight">Dashboard</h1>
+                    {mounted && !user && (
+                        <Link href="/login" className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors shadow-sm">
+                            <LogIn className="w-4 h-4" />
+                            Giriş Yap
+                        </Link>
+                    )}
+                </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-12" style={{ height: 'calc(100vh - 90px)', minHeight: '600px', gridTemplateRows: 'repeat(2, minmax(0, 1fr))' }}>
                     {/* Q1, Q2, Q3, Q4 remain the same */}
@@ -869,6 +884,10 @@ export default function DashboardPage() {
                             </GenericBarChart>
                         </div>
                     </div>
+                </div>
+                
+                <div className="mt-8">
+                    <ComplaintList hideActions={!user} />
                 </div>
             </div>
         </AppLayout>

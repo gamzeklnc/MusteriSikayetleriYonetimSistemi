@@ -1,0 +1,490 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { complaintService } from '@/services/complaintService';
+import { ComplaintDto } from '@/types/complaint';
+import ComplaintDetailModal from '@/components/complaints/ComplaintDetailModal';
+import StatusBadge from '@/components/complaints/StatusBadge';
+
+export default function ComplaintList({ hideActions = false }: { hideActions?: boolean }) {
+    const [complaints, setComplaints] = useState<ComplaintDto[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [selectedComplaint, setSelectedComplaint] = useState<ComplaintDto | null>(null);
+
+    const [filters, setFilters] = useState({
+        complaintNumber: '',
+        registrationDate: '',
+        complaintDate: '',
+        customerName: '',
+        sellerName: '',
+        projectName: '',
+        brand: '',
+        modulePower: '',
+        defectiveQuantity: '',
+        errorDefinition: '',
+        hsa1: '',
+        justifiedHsa1: '',
+        hsa2: '',
+        justifiedHsa2: '',
+        justifiedTotal: '',
+        status: '',
+        currentDepartmentName: ''
+    });
+
+    const handleFilterChange = (key: keyof typeof filters, value: string) => {
+        setFilters(prev => ({ ...prev, [key]: value }));
+    };
+
+    const fetchComplaints = async () => {
+        try {
+            const data = await complaintService.getAll();
+            setComplaints(data);
+        } catch (err: unknown) {
+            console.error('Şikayetler yüklenemedi:', err);
+            setError('Şikayetler listelenirken bir hata oluştu.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchComplaints();
+    }, []);
+
+    const formatDate = (dateString: string) => {
+        if (!dateString) return '';
+        return new Date(dateString).toLocaleDateString('tr-TR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
+    };
+
+    const filteredComplaints = complaints.filter(c => {
+        const safeMatch = (val: string | undefined | null, search: string) =>
+            !search || (val && val.toLowerCase().includes(search.toLowerCase()));
+        const totalJustified = (c.justifiedHsa1Count || 0) + (c.justifiedHsa2Count || 0) + (c.justifiedOtherCount || 0);
+
+        const regDate = formatDate(c.registrationDate);
+        const compDate = formatDate(c.complaintDate);
+        return (
+            safeMatch(c.complaintNumber, filters.complaintNumber) &&
+            safeMatch(regDate, filters.registrationDate) &&
+            safeMatch(compDate, filters.complaintDate) &&
+            safeMatch(c.customerName, filters.customerName) &&
+            safeMatch(c.sellerName, filters.sellerName) &&
+            safeMatch(c.projectName, filters.projectName) &&
+            safeMatch(c.brand, filters.brand) &&
+            safeMatch(c.modulePower, filters.modulePower) &&
+            safeMatch(c.defectiveQuantity?.toString(), filters.defectiveQuantity) &&
+            safeMatch(c.errorDefinition, filters.errorDefinition) &&
+            safeMatch((c.hsa1 || 0).toString(), filters.hsa1) &&
+            safeMatch((c.justifiedHsa1Count || 0).toString(), filters.justifiedHsa1) &&
+            safeMatch((c.hsa2 || 0).toString(), filters.hsa2) &&
+            safeMatch((c.justifiedHsa2Count || 0).toString(), filters.justifiedHsa2) &&
+            safeMatch(totalJustified.toString(), filters.justifiedTotal) &&
+            safeMatch(c.status, filters.status) &&
+            safeMatch(c.currentDepartmentName, filters.currentDepartmentName)
+        );
+    });
+
+    const handleExportExcel = async () => {
+        const XLSX = await import('xlsx-js-style');
+        const exportData = filteredComplaints.map(c => ({
+            'Şikayet No': c.complaintNumber,
+            'Kayıt Tarihi': formatDate(c.registrationDate),
+            'Şikayet Tarihi': formatDate(c.complaintDate),
+            'Müşteri': c.customerName,
+            'Satış Sorumlusu': c.sellerName,
+            'Proje İsmi': c.projectName || '',
+            'Marka': c.brand || '',
+            'Güç': c.modulePower || '',
+            'Sayı': c.defectiveQuantity,
+            'Hata Tanımı': c.errorDefinition || '',
+            'HSA1': c.hsa1 || 0,
+            'HSA1/Haklı': c.justifiedHsa1Count || 0,
+            'HSA2': c.hsa2 || 0,
+            'HSA2/Haklı': c.justifiedHsa2Count || 0,
+            'Toplam Haklı': (c.justifiedHsa1Count || 0) + (c.justifiedHsa2Count || 0) + (c.justifiedOtherCount || 0),
+            'Durum': c.status,
+            'Aşama': c.isCustomerFeedbackDone ? (c.operationalStage || 'Aksiyon Planı') : (
+                c.currentDepartmentName === 'Kalite Raporlaması' ? 'Kalite Raporlaması Bekleniyor' :
+                c.currentDepartmentName === 'Yönetim Onayı' ? 'Yönetim Onayı Bekleniyor' :
+                c.currentDepartmentName === 'Müşteri Geri Dönüşü' ? 'Müşteri Geri Dönüşü Bekleniyor' :
+                c.currentDepartmentName
+            )
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+        // Header styling
+        const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+            const address = XLSX.utils.encode_cell({ c: C, r: 0 });
+            if (!worksheet[address]) continue;
+            worksheet[address].s = {
+                font: { bold: true, color: { rgb: "FFFFFF" } },
+                fill: { fgColor: { rgb: "4F81BD" } }
+            };
+        }
+
+        // Adjust column widths
+        const wscols = [
+            { wch: 15 }, // Şikayet No
+            { wch: 15 }, // Kayıt Tarihi
+            { wch: 15 }, // Şikayet Tarihi
+            { wch: 25 }, // Müşteri
+            { wch: 20 }, // Satış Sorumlusu
+            { wch: 20 }, // Proje İsmi
+            { wch: 15 }, // Marka
+            { wch: 10 }, // Güç
+            { wch: 10 }, // Sayı
+            { wch: 30 }, // Hata Tanımı
+            { wch: 10 }, // HSA1
+            { wch: 12 }, // HSA1/Haklı
+            { wch: 10 }, // HSA2
+            { wch: 12 }, // HSA2/Haklı
+            { wch: 14 }, // Toplam Haklı
+            { wch: 15 }, // Durum
+            { wch: 20 }, // Aşama
+        ];
+        worksheet['!cols'] = wscols;
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Şikayetler');
+
+        XLSX.writeFile(workbook, `Sikayet_Listesi_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
+
+    return (
+        <>
+            <div className="space-y-6 max-w-full overflow-x-hidden">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Şikayet Listesi</h1>
+                        <p className="text-slate-900 font-medium text-sm mt-1">Sistemde kayıtlı tüm müşteri şikayetleri.</p>
+                    </div>
+                    {!hideActions && (
+                        <div className="flex flex-wrap items-center gap-3 xl:justify-end">
+                            <button
+                                onClick={handleExportExcel}
+                                className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2  tracking-wider"title="Excel&apos;e Aktar"
+                            >
+                                <svg className="w-4 h-4"fill="none"viewBox="0 0 24 24"stroke="currentColor">
+                                    <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                EXCEL&apos;E AKTAR
+                            </button>
+                            <Link
+                                href="/complaints/new"className="px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2  tracking-wider"
+                            >
+                                <svg className="w-4 h-4"fill="none"viewBox="0 0 24 24"stroke="currentColor">
+                                    <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M12 4v16m8-8H4" />
+                                </svg>
+                                YENİ ŞİKAYET KAYDI
+                            </Link>
+                        </div>
+                    )}
+                </div>
+
+                {/* Durum Açıklama Paneli */}
+                <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-x-6 gap-y-2 text-[10px] font-bold tracking-wide">
+                    <div className="flex items-center gap-1.5">
+                        <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-100">Açık/ZD</span>
+                        <span className="text-slate-500 font-medium">: Zamanında Devam Ediyor</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <span className="px-1.5 py-0.5 rounded bg-red-50 text-red-600 border border-red-100">Açık/YG</span>
+                        <span className="text-slate-500 font-medium">: Yanıt Gecikti</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <span className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 border border-amber-100">Açık/GD</span>
+                        <span className="text-slate-500 font-medium">: Gecikerek Devam Ediyor</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <span className="px-1.5 py-0.5 rounded bg-purple-50 text-purple-600 border border-purple-100">Kapalı/GT</span>
+                        <span className="text-slate-500 font-medium">: Gecikerek Tamamlandı</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-100">Kapalı/ZT</span>
+                        <span className="text-slate-500 font-medium">: Zamanında Tamamlandı</span>
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    {error && (
+                        <div className="p-4 bg-red-50 text-red-600 text-sm border-b border-red-100 flex items-center gap-2">
+                            <svg className="w-4 h-4"fill="none"viewBox="0 0 24 24"stroke="currentColor">
+                                <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {error}
+                        </div>
+                    )}
+
+                    <div className="overflow-hidden">
+                        <table className="complaints-fit-table w-full table-fixed text-left text-[10px]">
+                            <colgroup>
+                                <col style={{ width: '6.2%' }} />
+                                <col style={{ width: '5.1%' }} />
+                                <col style={{ width: '5.1%' }} />
+                                <col style={{ width: '7.2%' }} />
+                                <col style={{ width: '5.8%' }} />
+                                <col style={{ width: '6.2%' }} />
+                                <col style={{ width: '4.4%' }} />
+                                <col style={{ width: '3.8%' }} />
+                                <col style={{ width: '3.3%' }} />
+                                <col style={{ width: '7.2%' }} />
+                                <col style={{ width: '3.3%' }} />
+                                <col style={{ width: '4.2%' }} />
+                                <col style={{ width: '3.3%' }} />
+                                <col style={{ width: '4.2%' }} />
+                                <col style={{ width: '4.8%' }} />
+                                <col style={{ width: '5.2%' }} />
+                                <col style={{ width: '8.5%' }} />
+                                <col style={{ width: '5.4%' }} />
+                            </colgroup>
+                            <thead className="bg-slate-50 text-[10px]  font-bold text-slate-500 border-b border-slate-200 tracking-wider">
+                                <tr>
+                                    <th className="px-1.5 py-1.5 align-bottom">
+                                        <div className="mb-2 text-slate-500">Şikayet No</div>
+                                        <input type="text"placeholder="Ara..."value={filters.complaintNumber} onChange={e => handleFilterChange('complaintNumber', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-1.5 py-1.5 align-bottom">
+                                        <div className="mb-2 text-slate-500">Kayıt Tarihi</div>
+                                        <input type="text"placeholder="Ara..."value={filters.registrationDate} onChange={e => handleFilterChange('registrationDate', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-1.5 py-1.5 align-bottom">
+                                        <div className="mb-2 text-slate-500">Şikayet Tarihi</div>
+                                        <input type="text"placeholder="Ara..."value={filters.complaintDate} onChange={e => handleFilterChange('complaintDate', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-1.5 py-1.5 align-bottom">
+                                        <div className="mb-2 text-slate-500">Müşteri</div>
+                                        <input type="text"placeholder="Ara..."value={filters.customerName} onChange={e => handleFilterChange('customerName', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-1.5 py-1.5 align-bottom">
+                                        <div className="mb-2 text-slate-500">Satış Sorumlusu</div>
+                                        <input type="text"placeholder="Ara..."value={filters.sellerName} onChange={e => handleFilterChange('sellerName', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-1.5 py-1.5 align-bottom">
+                                        <div className="mb-2 text-slate-500">Proje İsmi</div>
+                                        <input type="text"placeholder="Ara..."value={filters.projectName} onChange={e => handleFilterChange('projectName', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+
+                                    <th className="px-1.5 py-1.5 align-bottom">
+                                        <div className="mb-2 text-slate-500">Marka</div>
+                                        <input type="text"placeholder="Ara..."value={filters.brand} onChange={e => handleFilterChange('brand', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-1.5 py-1.5 align-bottom">
+                                        <div className="mb-2 text-slate-500">Güç</div>
+                                        <input type="text"placeholder="Ara..."value={filters.modulePower} onChange={e => handleFilterChange('modulePower', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-1.5 py-1.5 align-bottom">
+                                        <div className="mb-2 text-slate-500">Sayı</div>
+                                        <input type="text"placeholder="Ara..."value={filters.defectiveQuantity} onChange={e => handleFilterChange('defectiveQuantity', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-1.5 py-1.5 align-bottom">
+                                        <div className="mb-2 text-slate-500 leading-tight">Hata Tanımı</div>
+                                        <input type="text"placeholder="Ara..."value={filters.errorDefinition} onChange={e => handleFilterChange('errorDefinition', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-1.5 py-1.5 align-bottom">
+                                        <div className="mb-2 text-slate-500">HSA1</div>
+                                        <input type="text" placeholder="Ara..." value={filters.hsa1} onChange={e => handleFilterChange('hsa1', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-1.5 py-1.5 align-bottom">
+                                        <div className="mb-2 text-emerald-600 font-bold leading-tight text-center">
+                                            <span className="block">HSA1</span>
+                                            <span className="block">Haklı</span>
+                                        </div>
+                                        <input type="text" placeholder="Ara..." value={filters.justifiedHsa1} onChange={e => handleFilterChange('justifiedHsa1', e.target.value)} className="w-full px-1 py-1 border border-emerald-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-emerald-400 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-1.5 py-1.5 align-bottom">
+                                        <div className="mb-2 text-slate-500">HSA2</div>
+                                        <input type="text" placeholder="Ara..." value={filters.hsa2} onChange={e => handleFilterChange('hsa2', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-1.5 py-1.5 align-bottom">
+                                        <div className="mb-2 text-indigo-600 font-bold leading-tight text-center">
+                                            <span className="block">HSA2</span>
+                                            <span className="block">Haklı</span>
+                                        </div>
+                                        <input type="text" placeholder="Ara..." value={filters.justifiedHsa2} onChange={e => handleFilterChange('justifiedHsa2', e.target.value)} className="w-full px-1 py-1 border border-indigo-200 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-indigo-400 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-1.5 py-1.5 align-bottom">
+                                        <div className="mb-2 text-slate-700 font-bold leading-tight text-center">
+                                            <span className="block">Toplam</span>
+                                            <span className="block">Haklı</span>
+                                        </div>
+                                        <input type="text" placeholder="Ara..." value={filters.justifiedTotal} onChange={e => handleFilterChange('justifiedTotal', e.target.value)} className="w-full px-1 py-1 border border-slate-300 rounded text-[10px] font-medium bg-white focus:ring-1 focus:ring-slate-400 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-1.5 py-1.5 align-bottom">
+                                        <div className="mb-2 text-slate-500">Durum</div>
+                                        <input type="text"placeholder="Ara..."value={filters.status} onChange={e => handleFilterChange('status', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    <th className="px-1.5 py-1.5 align-bottom">
+                                        <div className="mb-2 text-slate-500">Aşama</div>
+                                        <input type="text"placeholder="Ara..."value={filters.currentDepartmentName} onChange={e => handleFilterChange('currentDepartmentName', e.target.value)} className="w-full px-1 py-1 border border-slate-200 rounded text-[10px] font-medium lowercase bg-white focus:ring-1 focus:ring-blue-500 outline-none transition-all" />
+                                    </th>
+                                    {!hideActions && (
+                                        <th className="px-1.5 py-1.5 text-right align-bottom pb-6 whitespace-nowrap">İşlem</th>
+                                    )}
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan={18} className="px-6 py-20 text-center">
+                                            <div className="flex flex-col items-center justify-center text-slate-400">
+                                                <div className="w-10 h-10 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+                                                <span className="text-xs font-bold  tracking-widest">Veriler yükleniyor...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : filteredComplaints.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={18} className="px-6 py-20 text-center text-slate-400 text-xs  tracking-widest font-bold">
+                                            Arama kriterlerine uygun şikayet bulunamadı.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    filteredComplaints.map((complaint) => {
+                                        const isTargetOverdue = complaint.status.startsWith('Açık') && complaint.targetDate && new Date(complaint.targetDate) < new Date();
+                                        return (
+                                            <tr key={complaint.id} className={`${isTargetOverdue ? 'bg-red-50/80 hover:bg-red-100/80' : 'hover:bg-blue-50/30'} transition-colors group text-[11px] text-slate-700`}>
+                                            <td className="px-1.5 py-1.5 font-semibold text-slate-900">
+                                                {complaint.complaintNumber}
+                                            </td>
+                                            <td className="px-1.5 py-1.5 whitespace-nowrap text-slate-500 text-[10px]">
+                                                {formatDate(complaint.registrationDate)}
+                                            </td>
+                                            <td className="px-1.5 py-1.5 whitespace-nowrap text-slate-500 text-[10px]">
+                                                {formatDate(complaint.complaintDate)}
+                                            </td>
+                                            <td className="px-1.5 py-1.5 font-medium text-slate-800">
+                                                {complaint.customerName}
+                                            </td>
+                                            <td className="px-1.5 py-1.5 text-slate-600">
+                                                {complaint.sellerName}
+                                            </td>
+                                            <td className="px-1.5 py-1.5 text-slate-500 text-[10px]">
+                                                {complaint.projectName || '-'}
+                                            </td>
+
+                                            <td className="px-1.5 py-1.5 text-slate-600 whitespace-nowrap">
+                                                {complaint.brand || '-'}
+                                            </td>
+                                            <td className="px-1.5 py-1.5 text-slate-600 whitespace-nowrap">
+                                                {complaint.modulePower || '-'}
+                                            </td>
+                                            <td className="px-1.5 py-1.5 font-medium text-slate-800 text-center">
+                                                {complaint.defectiveQuantity}
+                                            </td>
+                                            <td className="px-1.5 py-1.5 text-slate-600">
+                                                {complaint.errorDefinition || '-'}
+                                            </td>
+                                            <td className="px-1.5 py-1.5 font-medium text-emerald-700 text-center">
+                                                {complaint.hsa1 || '-'}
+                                            </td>
+                                            <td className="px-1.5 py-1.5 font-bold text-emerald-600 text-center">
+                                                {complaint.justifiedHsa1Count || '-'}
+                                            </td>
+                                            <td className="px-1.5 py-1.5 font-medium text-indigo-700 text-center">
+                                                {complaint.hsa2 || '-'}
+                                            </td>
+                                            <td className="px-1.5 py-1.5 font-bold text-indigo-600 text-center">
+                                                {complaint.justifiedHsa2Count || '-'}
+                                            </td>
+                                            <td className="px-1.5 py-1.5 font-medium text-slate-800 text-center">
+                                                {((complaint.justifiedHsa1Count || 0) + (complaint.justifiedHsa2Count || 0) + (complaint.justifiedOtherCount || 0)) || '-'}
+                                            </td>
+                                            <td className="px-1.5 py-1.5">
+                                                <StatusBadge status={complaint.status} className="max-w-full truncate" />
+                                            </td>
+                                            <td className="px-1.5 py-1.5">
+                                                {(complaint.status?.toLowerCase().startsWith('kapali') || complaint.status?.toLowerCase().startsWith('kapalı')) ? (
+                                                    <span className="inline-flex max-w-full items-center gap-1 px-1.5 py-1 rounded-md text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 truncate">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+                                                        Aşamalar Tamamlandı
+                                                    </span>
+                                                ) : complaint.isCustomerFeedbackDone ? (
+                                                    <span className="inline-flex max-w-full items-center gap-1 px-1.5 py-1 rounded-md text-[9px] font-bold bg-orange-50 text-orange-700 border border-orange-200 truncate">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-orange-500 inline-block"></span>
+                                                        {complaint.operationalStage || 'Aksiyon Planı'}
+                                                    </span>
+                                                ) : complaint.currentDepartmentName === 'Müşteri Geri Dönüşü' ? (
+                                                    <span className="inline-flex max-w-full items-center gap-1 px-1.5 py-1 rounded-md text-[9px] font-bold bg-purple-50 text-purple-700 border border-purple-200 truncate">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-purple-500 inline-block"></span>
+                                                        Müşteri Geri Dönüşü Bekleniyor
+                                                    </span>
+                                                ) : complaint.currentDepartmentName === 'Yönetim Onayı' ? (
+                                                    <span className="inline-flex max-w-full items-center gap-1 px-1.5 py-1 rounded-md text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200 truncate">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block"></span>
+                                                        Yönetim Onayı Bekleniyor
+                                                    </span>
+                                                ) : complaint.currentDepartmentName === 'Kalite Raporlaması' ? (
+                                                    <span className="inline-flex max-w-full items-center gap-1 px-1.5 py-1 rounded-md text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 truncate">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+                                                        Kalite Raporlaması Bekleniyor
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex max-w-full items-center gap-1 px-1.5 py-1 rounded-md text-[9px] font-bold bg-slate-50 text-slate-700 border border-slate-200 truncate">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-500 inline-block"></span>
+                                                        Yeni Kayıt
+                                                    </span>
+                                                )}
+                                            </td>
+                                            {!hideActions && (
+                                                <td className="px-1.5 py-1.5 text-right">
+                                                    <button
+                                                        onClick={() => setSelectedComplaint(complaint)}
+                                                        className="inline-flex max-w-full items-center justify-center gap-1 px-1.5 py-1.5 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"title="Detaylar&apos;ı Görüntüle"
+                                                    >
+                                                        <svg className="w-4 h-4"fill="none"viewBox="0 0 24 24"stroke="currentColor">
+                                                            <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            <path strokeLinecap="round"strokeLinejoin="round"strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                        </svg>
+                                                        Detay
+                                                    </button>
+                                                </td>
+                                            )}
+                                        </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {selectedComplaint && (
+                <ComplaintDetailModal
+                    complaint={selectedComplaint}
+                    onClose={() => setSelectedComplaint(null)}
+                    onUpload={(newDoc) => {
+                        setSelectedComplaint({
+                            ...selectedComplaint,
+                            documents: [...(selectedComplaint.documents || []), newDoc]
+                        });
+                        setComplaints(prev => prev.map(c => 
+                            c.id === selectedComplaint.id 
+                            ? { ...c, documents: [...(c.documents || []), newDoc] } 
+                            : c
+                        ));
+                    }}
+                    onDelete={(docId: number) => {
+                        setSelectedComplaint({
+                            ...selectedComplaint,
+                            documents: selectedComplaint.documents?.filter(d => d.id !== docId) || []
+                        });
+                        setComplaints(prev => prev.map(c => 
+                            c.id === selectedComplaint.id 
+                            ? { ...c, documents: c.documents?.filter(d => d.id !== docId) || [] } 
+                            : c
+                        ));
+                    }}
+                />
+            )}
+        </>
+    );
+}

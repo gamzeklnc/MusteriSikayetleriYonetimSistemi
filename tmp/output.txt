@@ -1,0 +1,41 @@
+Loading Old File: C:\Users\yasin\MusteriSikayetleriYonetimSistemi\Excel_Aktar\KG-LST-002 MUSTERI SIKAYETLERI TAKIP SONN (JÜLİDE).xlsx
+Loading New File: C:\Users\yasin\MusteriSikayetleriYonetimSistemi\Excel_Aktar\KG-LST-002 MUSTERI SIKAYETLERI TAKIP SONN  GÜNCELFORM (JÜLİDE).xlsx
+
+--- Sheet Names ---
+Old file sheets: ['ŞİKAYETLER', 'ÜRETİM ADETLERİ', 'Pivot', 'Sayfa2']
+New file sheets: ['ŞİKAYETLER', 'ÜRETİM ADETLERİ', 'Pivot', 'Sayfa2']
+
+OLD FILE ANALYSIS
+
+--- Analysis for Old File Main Sheet ---
+Found header at row index 0
+Columns found: ['NO', 'ŞIRKET', 'PROJE', 'PROJELOKASYONU', 'ŞIKAYETTARIHI', 'ÜRETICIFIRMA', 'FABRIKA', 'ÜRÜNİSMI', 'KUSURLUÜRÜNMIKTARI', 'ÜRETIMTARIHI', 'ÜRETIMAYI', 'ÜRETIM', 'FARK(GÜN)', 'ÇEYREK', 'KUSURLUPANELSERINO', 'ŞİKAYETAÇIKLAMASI', 'HATATANIMI', 'HAKLI/HAKSIZŞİKAYET', 'DURUM', 'YORUM', 'SONCEVAPTARIHI', 'AYLIKÜRETIMMIKTARI']
+Number of unique NOs (complaints): 162
+Total valid rows (items): 2102
+Durum column found: 'HAKLI/HAKSIZŞİKAYET'
+Durum values:
+ HAKLI/HAKSIZŞİKAYET
+√      1214
+x       460
+X       374
+nan     156
+?       130
+
+NEW FILE ANALYSIS
+
+--- Analysis for New File Main Sheet ---
+Found header at row index 0
+Columns found: ['NO', 'ŞIRKET', 'PROJE', 'PROJELOKASYONU', 'ŞIKAYETTARIHI', 'ÜRETICIFIRMA', 'FABRIKA', 'ÜRÜNİSMI', 'MODÜL GÜCÜ', 'KUSURLUÜRÜNMIKTARI', 'ÜRETIMTARIHI', 'ÜRETIM AYI', 'ÜRETIM', 'FARK(GÜN)', 'ÇEYREK', 'KUSURLUPANELSERINO', 'ŞİKAYETAÇIKLAMASI', 'HATATANIMI', 'HAKLI/HAKSIZŞİKAYET', 'DURUM', 'YORUM', 'SONCEVAPTARIHI', 'AYLIKÜRETIMMIKTARI']
+Number of unique NOs (complaints): 152
+Total valid rows (items): 2013
+Durum column found: 'HAKLI/HAKSIZŞİKAYET'
+Durum values:
+ HAKLI/HAKSIZŞİKAYET
+√               1154
+X                319
+x                286
+nan              229
+Haksız           218
+?                102
+Haklı             10
+Devam Ediyor       1

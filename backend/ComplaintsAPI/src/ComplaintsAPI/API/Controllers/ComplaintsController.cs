@@ -52,6 +52,7 @@ public class ComplaintsController : ControllerBase
     }
 
     /// <summary>Şikayetleri listele — departman ve durum filtresi</summary>
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] int? departmentId, [FromQuery] string? status)
     {

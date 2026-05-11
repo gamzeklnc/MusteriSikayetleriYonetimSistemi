@@ -8,7 +8,6 @@ using System.Globalization;
 
 namespace ComplaintsAPI.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ProductionCountsController : ControllerBase

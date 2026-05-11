@@ -63,3 +63,4 @@ C:\Users\yasin\MusteriSikayetleriYonetimSistemi\tmp\DbCheck\obj\Debug\net9.0\ref
 C:\Users\yasin\MusteriSikayetleriYonetimSistemi\tmp\DbCheck\obj\Debug\net9.0\DbCheck.pdb
 C:\Users\yasin\MusteriSikayetleriYonetimSistemi\tmp\DbCheck\obj\Debug\net9.0\DbCheck.genruntimeconfig.cache
 C:\Users\yasin\MusteriSikayetleriYonetimSistemi\tmp\DbCheck\obj\Debug\net9.0\ref\DbCheck.dll
+C:\Users\yasin\MusteriSikayetleriYonetimSistemi\tmp\DbCheck\bin\Debug\net9.0\MiniExcel.dll

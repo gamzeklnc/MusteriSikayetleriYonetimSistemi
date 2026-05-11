@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.13" />
+    <PackageReference Include="MiniExcel" Version="1.43.1" />
   </ItemGroup>
 
 </Project>

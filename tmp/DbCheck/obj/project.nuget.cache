@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "4ceGgWu6ZJA=",
+  "dgSpecHash": "+amtIBHy0d8=",
   "success": true,
   "projectFilePath": "C:\\Users\\yasin\\MusteriSikayetleriYonetimSistemi\\tmp\\DbCheck\\DbCheck.csproj",
   "expectedPackageFiles": [
@@ -36,6 +36,7 @@
     "C:\\Users\\yasin\\.nuget\\packages\\microsoft.netcore.targets\\1.1.0\\microsoft.netcore.targets.1.1.0.nupkg.sha512",
     "C:\\Users\\yasin\\.nuget\\packages\\microsoft.sqlserver.server\\1.0.0\\microsoft.sqlserver.server.1.0.0.nupkg.sha512",
     "C:\\Users\\yasin\\.nuget\\packages\\microsoft.win32.systemevents\\6.0.0\\microsoft.win32.systemevents.6.0.0.nupkg.sha512",
+    "C:\\Users\\yasin\\.nuget\\packages\\miniexcel\\1.43.1\\miniexcel.1.43.1.nupkg.sha512",
     "C:\\Users\\yasin\\.nuget\\packages\\system.clientmodel\\1.0.0\\system.clientmodel.1.0.0.nupkg.sha512",
     "C:\\Users\\yasin\\.nuget\\packages\\system.configuration.configurationmanager\\6.0.1\\system.configuration.configurationmanager.6.0.1.nupkg.sha512",
     "C:\\Users\\yasin\\.nuget\\packages\\system.diagnostics.diagnosticsource\\6.0.1\\system.diagnostics.diagnosticsource.6.0.1.nupkg.sha512",

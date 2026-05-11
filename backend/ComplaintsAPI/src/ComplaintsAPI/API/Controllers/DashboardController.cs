@@ -29,6 +29,7 @@ public class DashboardController : ControllerBase
         return normalized.StartsWith("kapali") || normalized.StartsWith("kapal\u0131");
     }
 
+    [AllowAnonymous]
     [HttpGet("stats")]
     public async Task<ActionResult<DashboardStatsDto>> GetStats(
         [FromQuery] DateTime? startDate = null, 

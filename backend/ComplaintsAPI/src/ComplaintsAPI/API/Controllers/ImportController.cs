@@ -144,7 +144,7 @@ public class ImportController : ControllerBase
 
                 // Tüm gruptaki barkodları birleştir
                 var allBarcodes = group
-                    .Select(d => GetValue(d, "O", "KusurluPanelSeriNo", "SeriNo", "Barkod"))
+                    .Select(d => GetValue(d, "KusurluPanelSeriNo", "SeriNo", "Barkod"))
                     .Where(b => !string.IsNullOrWhiteSpace(b))
                     .Distinct()
                     .ToList();
@@ -168,7 +168,7 @@ public class ImportController : ControllerBase
                     ErrorDefinition = NormalizeErrorDefinition(GetValue(firstRow, "HATATANIMI", "Hata")),
                     StockCode = null,
                     SellerName = string.Empty,
-                    InitialNote = GetValue(firstRow, "P", "ŞikayetNotu", "SikayetNotu", "ŞikayetNotları", "SikayetNotlari", "Not"),
+                    InitialNote = GetValue(firstRow, "ŞİKAYETAÇIKLAMASI", "SikayetAciklamasi", "ŞikayetNotu", "SikayetNotu", "ŞikayetNotları", "SikayetNotlari", "Not"),
                     CreatedById = adminUserId,
                     Status = "Kapali/ZT",
                     RegistrationDate = complaintDate,
@@ -185,30 +185,31 @@ public class ImportController : ControllerBase
 
                 foreach (var row in group)
                 {
-                    var barcode = GetValue(row, "O", "KusurluPanelSeriNo", "SeriNo", "Barkod");
-                    var factory = NormalizeKey(GetValue(row, "G", "Fabrika", "FABRİKA", "FABRIKA"));
-                    var decision = GetValue(row, "R", "Haklı/Haksız", "Hakli/Haksiz", "Durum");
+                    int rowMiktar = ParseInt(GetValue(row, "KusurluÜrünMiktarı", "KusurluUrunMiktari", "Miktar"));
+                    if (rowMiktar <= 0) rowMiktar = 1;
 
-                    if (!string.IsNullOrWhiteSpace(barcode))
-                    {
-                        if (IsHsa1Factory(factory)) hsa1++;
-                        else if (IsHsa2Factory(factory)) hsa2++;
-                    }
+                    var barcode = GetValue(row, "KusurluPanelSeriNo", "SeriNo", "Barkod");
+                    var factory = NormalizeKey(GetValue(row, "Fabrika", "FABRİKA", "FABRIKA"));
+                    var decision = GetValue(row, "Haklı/Haksız", "Hakli/Haksiz", "Durum", "HAKLI/HAKSIZŞİKAYET", "HAKLI/HAKSIZSIKAYET");
+
+                    // Barkod sütunu boş olsa bile miktar kadar fabrika üretimine ekle
+                    if (IsHsa1Factory(factory)) hsa1 += rowMiktar;
+                    else if (IsHsa2Factory(factory)) hsa2 += rowMiktar;
 
                     bool? isJustified = null;
                     if (IsCheckedDecision(decision))
                     {
                         isJustified = true;
-                        if (IsHsa1Factory(factory)) jHsa1++;
-                        else if (IsHsa2Factory(factory)) jHsa2++;
-                        else jOther++;
+                        if (IsHsa1Factory(factory)) jHsa1 += rowMiktar;
+                        else if (IsHsa2Factory(factory)) jHsa2 += rowMiktar;
+                        else jOther += rowMiktar;
                     }
                     else if (IsRejectedDecision(decision))
                     {
                         isJustified = false;
-                        if (IsHsa1Factory(factory)) uHsa1++;
-                        else if (IsHsa2Factory(factory)) uHsa2++;
-                        else uOther++;
+                        if (IsHsa1Factory(factory)) uHsa1 += rowMiktar;
+                        else if (IsHsa2Factory(factory)) uHsa2 += rowMiktar;
+                        else uOther += rowMiktar;
                     }
 
                     if (!string.IsNullOrWhiteSpace(barcode) && isJustified != null)
