@@ -29,6 +29,7 @@ public class ImportController : ControllerBase
             await _context.ComplaintHistories.ExecuteDeleteAsync();
             await _context.UserActivityLogs.ExecuteDeleteAsync();
             await _context.ProductionCounts.ExecuteDeleteAsync();
+            await _context.ShipmentCounts.ExecuteDeleteAsync();
             await _context.Complaints.ExecuteDeleteAsync();
 
             await transaction.CommitAsync();

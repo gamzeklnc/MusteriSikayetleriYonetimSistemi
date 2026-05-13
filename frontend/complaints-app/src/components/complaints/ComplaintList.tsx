@@ -6,12 +6,16 @@ import { complaintService } from '@/services/complaintService';
 import { ComplaintDto } from '@/types/complaint';
 import ComplaintDetailModal from '@/components/complaints/ComplaintDetailModal';
 import StatusBadge from '@/components/complaints/StatusBadge';
+import { useAuthStore } from '@/store/authStore';
 
 export default function ComplaintList({ hideActions = false }: { hideActions?: boolean }) {
     const [complaints, setComplaints] = useState<ComplaintDto[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedComplaint, setSelectedComplaint] = useState<ComplaintDto | null>(null);
+    const [shipmentUploading, setShipmentUploading] = useState(false);
+    const { user } = useAuthStore();
+    const isKG = user?.departmentId === 3;
 
     const [filters, setFilters] = useState({
         complaintNumber: '',
@@ -168,6 +172,35 @@ export default function ComplaintList({ hideActions = false }: { hideActions?: b
                     </div>
                     {!hideActions && (
                         <div className="flex flex-wrap items-center gap-3 xl:justify-end">
+                            {isKG && (
+                                <label className="cursor-pointer">
+                                    <div className={`px-4 py-2.5 bg-orange-600 text-white text-sm font-bold rounded-xl hover:bg-orange-700 transition-all shadow-lg shadow-orange-500/20 flex items-center gap-2 tracking-wider ${shipmentUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                        </svg>
+                                        {shipmentUploading ? 'Yükleniyor...' : 'SEVK VERİSİ YÜKLE'}
+                                    </div>
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        accept=".xlsx, .xls"
+                                        onChange={async (e) => {
+                                            const file = e.target.files?.[0];
+                                            if (!file) return;
+                                            if (confirm('Sevk Edilenler Excel dosyası yüklenecektir. Müşteri adları mevcut şikayet kayıtlarınızla eşleştirilecek. Devam edilsin mi?')) {
+                                                try {
+                                                    setShipmentUploading(true);
+                                                    const result = await complaintService.importShipmentExcel(file);
+                                                    alert(result.message);
+                                                } catch (err: unknown) {
+                                                    alert('Hata: ' + ((err as { response?: { data?: string } })?.response?.data || 'Yükleme başarısız.'));
+                                                } finally { setShipmentUploading(false); }
+                                            }
+                                            e.target.value = '';
+                                        }}
+                                    />
+                                </label>
+                            )}
                             <button
                                 onClick={handleExportExcel}
                                 className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2  tracking-wider"title="Excel&apos;e Aktar"

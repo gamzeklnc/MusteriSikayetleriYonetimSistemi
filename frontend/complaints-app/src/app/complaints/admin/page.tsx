@@ -389,11 +389,11 @@ export default function AdminPage() {
                                 </div>
 
                                 {/* İçe Aktarma Seçenekleri */}
-                                <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
                                     {/* Excel'den İçe Aktar (Tip-1) */}
                                     <div className="space-y-4 p-4 border border-blue-100 bg-blue-50/30 rounded-xl">
                                         <div>
-                                            <h3 className="text-sm font-bold text-blue-900">Excel'den İçe Aktar (Tip-1)</h3>
+                                            <h3 className="text-sm font-bold text-blue-900">Excel&apos;den İçe Aktar (Tip-1)</h3>
                                             <p className="text-xs text-blue-700 mt-1 font-medium">Klasik Excel dosyasındaki yeni verileri sisteme yükler. Mevcut şikayetler etkilenmez, sadece yeni kayıtlar eklenir.</p>
                                         </div>
                                         <div className="flex items-center gap-3">
@@ -414,8 +414,8 @@ export default function AdminPage() {
                                                                 const result = await complaintService.importFromExcel(file);
                                                                 alert(result.message);
                                                                 fetchData();
-                                                            } catch (err: any) {
-                                                                alert('Hata: ' + (err.response?.data || 'Yükleme başarısiz.'));
+                                                            } catch (err: unknown) {
+                                                                alert('Hata: ' + ((err as { response?: { data?: string } })?.response?.data || 'Yükleme başarısiz.'));
                                                             } finally { setLoading(false); }
                                                         }
                                                         e.target.value = ''; // Reset input
@@ -428,7 +428,7 @@ export default function AdminPage() {
                                     {/* Excel'den İçe Aktar (Tip-2) */}
                                     <div className="space-y-4 p-4 border border-indigo-100 bg-indigo-50/30 rounded-xl">
                                         <div>
-                                            <h3 className="text-sm font-bold text-indigo-900">Excel'den İçe Aktar (Tip-2)</h3>
+                                            <h3 className="text-sm font-bold text-indigo-900">Excel&apos;den İçe Aktar (Tip-2)</h3>
                                             <p className="text-xs text-indigo-700 mt-1 font-medium">Yeni (KG-LST-002) tip Excel formatını destekler. Mevcut şikayetler etkilenmez, sadece yeni kayıtlar eklenir.</p>
                                         </div>
                                         <div className="flex items-center gap-3">
@@ -449,8 +449,8 @@ export default function AdminPage() {
                                                                 const result = await complaintService.importType2Excel(file);
                                                                 alert(result.message);
                                                                 fetchData();
-                                                            } catch (err: any) {
-                                                                alert('Hata: ' + (err.response?.data || 'Yükleme başarısiz.'));
+                                                            } catch (err: unknown) {
+                                                                alert('Hata: ' + ((err as { response?: { data?: string } })?.response?.data || 'Yükleme başarısiz.'));
                                                             } finally { setLoading(false); }
                                                         }
                                                         e.target.value = ''; // Reset input
@@ -463,7 +463,7 @@ export default function AdminPage() {
                                     {/* Excel'den İçe Aktar (Tip-3) */}
                                     <div className="space-y-4 p-4 border border-emerald-100 bg-emerald-50/30 rounded-xl">
                                         <div>
-                                            <h3 className="text-sm font-bold text-emerald-900">Excel'den İçe Aktar (Tip-3)</h3>
+                                            <h3 className="text-sm font-bold text-emerald-900">Excel&apos;den İçe Aktar (Tip-3)</h3>
                                             <p className="text-xs text-emerald-700 mt-1 font-medium">Mevcut şikayetlerin Barkodlarını (E) ve Haklı/Haksız (O) durumlarını günceller. Sadece eşleşenleri değiştirir.</p>
                                         </div>
                                         <div className="flex items-center gap-3">
@@ -484,8 +484,43 @@ export default function AdminPage() {
                                                                 const result = await complaintService.importType3Excel(file);
                                                                 alert(result.message);
                                                                 fetchData();
-                                                            } catch (err: any) {
-                                                                alert('Hata: ' + (err.response?.data || 'Yükleme başarısız.'));
+                                                            } catch (err: unknown) {
+                                                                alert('Hata: ' + ((err as { response?: { data?: string } })?.response?.data || 'Yükleme başarısız.'));
+                                                            } finally { setLoading(false); }
+                                                        }
+                                                        e.target.value = ''; // Reset input
+                                                    }}
+                                                />
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    {/* Sevk Verileri İçe Aktar */}
+                                    <div className="space-y-4 p-4 border border-orange-100 bg-orange-50/30 rounded-xl">
+                                        <div>
+                                            <h3 className="text-sm font-bold text-orange-900">Sevk Verileri İçe Aktar</h3>
+                                            <p className="text-xs text-orange-700 mt-1 font-medium">Sevk Edilenler Excel dosyasından müşteri sevk adetlerini yükler. Müşteri isimleri mevcut şikayet kayıtlarıyla eşleştirilir.</p>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <label className="flex-1 cursor-pointer">
+                                                <div className="flex items-center justify-center gap-2 px-4 py-2 bg-white border-2 border-dashed border-orange-200 rounded-lg text-xs font-bold text-orange-600 hover:bg-orange-50 transition-colors">
+                                                    <ClipboardList size={16} /> Sevk Dosyası Seç...
+                                                </div>
+                                                <input 
+                                                    type="file" 
+                                                    className="hidden" 
+                                                    accept=".xlsx, .xls"
+                                                    onChange={async (e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (!file) return;
+                                                        if (confirm('Sevk Edilenler Excel dosyası yüklenecektir. Müşteri adları mevcut şikayet kayıtlarınızla eşleştirilecek. Devam edilsin mi?')) {
+                                                            try {
+                                                                setLoading(true);
+                                                                const result = await complaintService.importShipmentExcel(file);
+                                                                alert(result.message);
+                                                                fetchData();
+                                                            } catch (err: unknown) {
+                                                                alert('Hata: ' + ((err as { response?: { data?: string } })?.response?.data || 'Yükleme başarısız.'));
                                                             } finally { setLoading(false); }
                                                         }
                                                         e.target.value = ''; // Reset input

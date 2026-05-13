@@ -157,5 +157,23 @@ export const complaintService = {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
         return res.data;
+    },
+
+    importShipmentExcel: async (file: File): Promise<{message: string}> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await apiClient.post<{message: string}>('/api/shipmentcounts/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return res.data;
+    },
+
+    getShipmentCounts: async (): Promise<{ id: number; customerName: string; shipmentDate: string; shipmentQuantity: number }[]> => {
+        const res = await apiClient.get('/api/shipmentcounts');
+        return res.data;
+    },
+
+    deleteAllShipments: async (): Promise<void> => {
+        await apiClient.delete('/api/shipmentcounts');
     }
 };

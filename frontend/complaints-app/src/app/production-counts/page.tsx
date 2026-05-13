@@ -89,7 +89,7 @@ export default function ProductionCountsPage() {
             // Check if record exists BEFORE saving to determines the success message
             const existsBefore = records.some(r => Number(r.year) === Number(selectedYear) && Number(r.month) === Number(selectedMonth));
             
-            const totalCount = h1 + h2;
+            const totalCount = (h1 ?? 0) + (h2 ?? 0);
             await productionCountService.create(dto);
 
             if (existsBefore) {
@@ -132,10 +132,11 @@ export default function ProductionCountsPage() {
             await fetchRecords();
             // Reset input
             if (fileInputRef.current) fileInputRef.current.value = '';
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Yükleme hatası:', err);
-            const msg = err.response?.data?.message || err.response?.data || 'Excel yüklenirken bir hata oluştu.';
-            setError(typeof msg === 'string' ? msg : 'Excel yüklenirken bir hata oluştu.');
+            const msg = (err as { response?: { data?: { message?: string } | string } })?.response?.data;
+            const errorMsg = typeof msg === 'object' && msg !== null ? (msg as { message?: string }).message : msg;
+            setError(typeof errorMsg === 'string' ? errorMsg : 'Excel yüklenirken bir hata oluştu.');
         } finally {
             setSaving(false);
         }
@@ -394,7 +395,7 @@ export default function ProductionCountsPage() {
                                         className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-xl hover:bg-slate-50 transition-all shadow-sm disabled:opacity-50"
                                     >
                                         <FileSpreadsheet size={16} className="text-emerald-600" />
-                                        Excel'den Yükle ({selectedYear})
+                                        Excel&apos;den Yükle ({selectedYear})
                                     </button>
                                     <p className="text-[10px] text-slate-400 text-center mt-2">
                                         Excel formatı: B (Yıl), C (Ay), G (HSA1), H (HSA2), I (Toplam). Başlıklar 2. satırda olmalıdır.

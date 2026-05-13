@@ -17,6 +17,7 @@ public class AppDbContext : DbContext
     public DbSet<ComplaintDocument> ComplaintDocuments => Set<ComplaintDocument>();
     public DbSet<ComplaintBarcodeResult> ComplaintBarcodeResults => Set<ComplaintBarcodeResult>();
     public DbSet<ProductionCount> ProductionCounts => Set<ProductionCount>();
+    public DbSet<ShipmentCount> ShipmentCounts => Set<ShipmentCount>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -175,6 +176,16 @@ public class AppDbContext : DbContext
             e.HasKey(x => x.Id);
             e.HasIndex(x => new { x.Year, x.Month }).IsUnique();
             e.Property(x => x.Count).IsRequired();
+        });
+
+        // ShipmentCount
+        modelBuilder.Entity<ShipmentCount>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.CustomerName).IsRequired().HasMaxLength(300);
+            e.Property(x => x.ShipmentQuantity).IsRequired();
+            e.HasIndex(x => x.CustomerName);
+            e.HasIndex(x => x.ShipmentDate);
         });
 
         // Seed Error Options
