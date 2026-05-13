@@ -162,6 +162,7 @@ public class ImportController : ControllerBase
                     ProjectName = GetValue(firstRow, "Proje"),
                     ProjectLocation = GetValue(firstRow, "ProjeLokasyonu", "ProjeLokasyon"),
                     Brand = GetValue(firstRow, "ÜrünİSmi", "UrunIsmi", "UrunAdi", "Marka", "Brand"),
+                    ModulePower = GetValue(firstRow, "I", "Modül Gücü", "Modul Gucu", "Güç", "Guc", "Power"),
                     ComplaintDate = complaintDate,
                     Barcodes = mergedBarcodes,
                     ProductionDate = ParseDate(GetValue(firstRow, "ÜretimTarihi", "UretimTarihi")),
