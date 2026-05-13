@@ -14,6 +14,7 @@ import {
     Settings,
     Activity,
     Factory,
+    Truck,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
@@ -117,6 +118,12 @@ export default function Sidebar() {
                 <Link href="/production-counts" className={linkClass('/production-counts')}>
                     <Factory size={18} />
                     Üretim Adetleri
+                </Link>
+
+                {/* Sevk Sayıları */}
+                <Link href="/shipment-counts" className={linkClass('/shipment-counts')}>
+                    <Truck size={18} />
+                    Sevk Adetleri
                 </Link>
 
                 {mounted && user?.role === 'Admin' && (

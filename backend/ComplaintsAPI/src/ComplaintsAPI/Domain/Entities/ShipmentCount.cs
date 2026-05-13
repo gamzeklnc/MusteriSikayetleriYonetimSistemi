@@ -13,5 +13,8 @@ public class ShipmentCount
     /// <summary>Sevk Edilen Adet — Excel'den alınır</summary>
     public int ShipmentQuantity { get; set; }
 
+    /// <summary>Sistemdeki bir müşteriyle eşleşip eşleşmediği</summary>
+    public bool IsMatched { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

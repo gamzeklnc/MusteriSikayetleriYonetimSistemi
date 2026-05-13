@@ -48,6 +48,10 @@ public class ShipmentCountsController : ControllerBase
         {
             Console.WriteLine($"\n---> SEVK IMPORT BAŞLADI: {file.FileName}");
 
+            // 0. ESKİ KAYITLARI OTOMATİK SİL (Yeni talep: Her yüklemede sıfırla)
+            await _context.ShipmentCounts.ExecuteDeleteAsync();
+            Console.WriteLine("---> Eski sevk kayıtları temizlendi.");
+
             // 1. Veritabanındaki benzersiz müşteri isimlerini al
             var dbCustomerNames = await _context.Complaints
                 .Select(c => c.CustomerName)
@@ -106,12 +110,9 @@ public class ShipmentCountsController : ControllerBase
 
             Console.WriteLine($"---> Eşleşen kolonlar: Müşteri={musteriCol}, SevkTarihi={sevkTarihiCol}, SevkAdet={sevkAdetCol}");
 
-            // 3. Mevcut sevk kayıtlarını al (duplicate kontrolü için)
-            var existingShipments = await _context.ShipmentCounts.ToListAsync();
-
             // 4. Her veri satırını işle
             var shipments = new List<ShipmentCount>();
-            int matched = 0, skipped = 0, duplicateSkipped = 0;
+            int matched = 0, skipped = 0;
 
             foreach (var rawRow in rawRows.Skip(1))
             {
@@ -126,50 +127,27 @@ public class ShipmentCountsController : ControllerBase
                     continue;
                 }
 
-                // Veritabanındaki müşteri ile eşleştir (case-insensitive contains)
+                // Veritabanındaki müşteri ile eşleştir
                 var matchedCustomer = FindMatchingCustomer(excelMusteri, dbCustomerNames);
-                if (matchedCustomer == null)
-                {
-                    skipped++;
-                    continue;
-                }
+                
+                // Sevk Tarihi ve Adedi
+                var sevkTarihi = ParseDate(row.ContainsKey(sevkTarihiCol) ? row[sevkTarihiCol] : null);
+                int sevkAdet = ParseInt(row.ContainsKey(sevkAdetCol) ? row[sevkAdetCol] : null);
 
-                // Sevk Tarihi
-                var sevkTarihiRaw = row.ContainsKey(sevkTarihiCol) ? row[sevkTarihiCol] : null;
-                var sevkTarihi = ParseDate(sevkTarihiRaw);
-
-                // Sevk Adedi
-                var sevkAdetRaw = row.ContainsKey(sevkAdetCol) ? row[sevkAdetCol] : null;
-                int sevkAdet = ParseInt(sevkAdetRaw);
-                if (sevkAdet <= 0)
-                {
-                    skipped++;
-                    continue;
-                }
-
-                // Duplicate kontrolü: aynı müşteri + aynı tarih + aynı adet varsa atla
-                bool isDuplicate = existingShipments.Any(s =>
-                    s.CustomerName.Equals(matchedCustomer, StringComparison.OrdinalIgnoreCase) &&
-                    s.ShipmentDate.Date == sevkTarihi.Date &&
-                    s.ShipmentQuantity == sevkAdet);
-
-                if (isDuplicate)
-                {
-                    duplicateSkipped++;
-                    continue;
-                }
-
+                // Kaydı her halükarda ekliyoruz (Tüm sevkleri toplamak için)
                 shipments.Add(new ShipmentCount
                 {
-                    CustomerName = matchedCustomer,
+                    // Eğer eşleştiyse DB ismini kullan, yoksa Excel ismini
+                    CustomerName = matchedCustomer ?? excelMusteri,
                     ShipmentDate = sevkTarihi,
-                    ShipmentQuantity = sevkAdet
+                    ShipmentQuantity = sevkAdet,
+                    IsMatched = matchedCustomer != null
                 });
 
-                matched++;
+                if (matchedCustomer != null) matched++;
             }
 
-            Console.WriteLine($"---> Eşleşen: {matched}, Atlanan: {skipped}, Mükerrer: {duplicateSkipped}");
+            Console.WriteLine($"---> Toplam Excel Satırı: {shipments.Count}, Eşleşen Müşteri: {matched}, Boş Satır: {skipped}");
 
             if (shipments.Any())
             {
@@ -180,7 +158,7 @@ public class ShipmentCountsController : ControllerBase
 
             return Ok(new
             {
-                Message = $"{shipments.Count} sevk kaydı başarıyla eklendi. ({skipped} satır eşleşmedi, {duplicateSkipped} mükerrer atlandı)"
+                Message = $"{shipments.Count} sevk kaydı başarıyla eklendi. ({matched} tanesi sistemdeki müşterilerle eşleşti)"
             });
         }
         catch (Exception ex)
@@ -191,38 +169,49 @@ public class ShipmentCountsController : ControllerBase
     }
 
     /// <summary>
-    /// Excel'deki müşteri adını, veritabanındaki müşteri adlarıyla case-insensitive contains ile eşleştirir.
-    /// Önce tam eşleşme aranır, sonra contains ile en uzun eşleşen seçilir.
+    /// Excel'deki müşteri adını, veritabanındaki müşteri adlarıyla süper-esnek bir şekilde eşleştirir.
+    /// Boşlukları, noktalamaları kaldırır ve Türkçe karakterleri normalize eder.
     /// </summary>
     private string? FindMatchingCustomer(string excelCustomer, List<string> dbCustomerNames)
     {
-        var excelNormalized = excelCustomer.Trim().ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(excelCustomer)) return null;
 
-        // 1. Önce tam eşleşme (case-insensitive)
-        var exactMatch = dbCustomerNames.FirstOrDefault(db =>
-            db.Equals(excelCustomer, StringComparison.OrdinalIgnoreCase));
-        if (exactMatch != null) return exactMatch;
+        var normalizedExcel = CleanForComparison(excelCustomer);
+        if (string.IsNullOrEmpty(normalizedExcel)) return null;
 
-        // 2. Contains eşleşme — DB'deki isim Excel'in içinde geçiyor mu?
-        //    Birden fazla eşleşme varsa en uzun olanı seç (daha spesifik eşleşme)
-        var containsMatches = dbCustomerNames
-            .Where(db => excelNormalized.Contains(db.ToLowerInvariant()))
-            .OrderByDescending(db => db.Length)
-            .ToList();
+        // Kullanıcının istediği kesin mantık:
+        // Database'deki her müşterinin normalize hali, Excel'deki ismin içinde GEÇİYOR MU?
+        foreach (var dbName in dbCustomerNames)
+        {
+            var normalizedDb = CleanForComparison(dbName);
+            if (string.IsNullOrEmpty(normalizedDb)) continue;
 
-        if (containsMatches.Any())
-            return containsMatches.First();
-
-        // 3. Tersi: Excel'deki isim DB'nin içinde geçiyor mu?
-        var reverseMatches = dbCustomerNames
-            .Where(db => db.ToLowerInvariant().Contains(excelNormalized))
-            .OrderBy(db => db.Length)
-            .ToList();
-
-        if (reverseMatches.Any())
-            return reverseMatches.First();
+            if (normalizedExcel.Contains(normalizedDb) || normalizedDb.Contains(normalizedExcel))
+            {
+                return dbName;
+            }
+        }
 
         return null;
+    }
+
+    private string CleanForComparison(string input)
+    {
+        if (string.IsNullOrEmpty(input)) return "";
+
+        // 1. Türkçe karakter hassasiyetiyle küçük harfe çevir
+        string result = input.ToLower(new System.Globalization.CultureInfo("tr-TR"));
+
+        // 2. Türkçe karakterleri normalize et
+        result = result
+            .Replace("ş", "s").Replace("ç", "c")
+            .Replace("ı", "i").Replace("ü", "u")
+            .Replace("ö", "o").Replace("ğ", "g")
+            .Replace("İ", "i").Replace("I", "i");
+
+        // 3. Boşlukları ve tüm noktalama işaretlerini kaldır (Sadece harf ve rakam kalsın)
+        var charArray = result.Where(c => char.IsLetterOrDigit(c)).ToArray();
+        return new string(charArray);
     }
 
     // DELETE: api/shipmentcounts/{id}
