@@ -381,6 +381,7 @@ public class ImportController : ControllerBase
                         ProjectName = GetValue(dict, "PROJE") == "" ? "-" : GetValue(dict, "PROJE"),
                         ProjectLocation = GetValue(dict, "PROJELOKASYONU", "PROJELOKASYON") == "" ? "-" : GetValue(dict, "PROJELOKASYONU", "PROJELOKASYON"),
                         Brand = GetValue(dict, "MARKA", "ÜRÜNİSMİ", "URUNISMI", "URUNADI"),
+                        ModulePower = GetModulePowerFromColumnM(rawRow as IDictionary<string, object>),
                         ComplaintDate = complaintDate,
                         ProductionDate = complaintDate,
                         DefectiveQuantity = ParseInt(GetValue(dict, "KUSURLUÜRÜNMİKTARI", "KUSURLUURUNMIKTARI", "KUSURLUMİKTAR")),
@@ -529,6 +530,8 @@ public class ImportController : ControllerBase
                 {
                     if (columnMap.TryGetValue(kv.Key, out var realName))
                         dict[realName] = kv.Value ?? "";
+                    if (kv.Key.Equals("M", StringComparison.OrdinalIgnoreCase))
+                        dict[kv.Key] = kv.Value ?? "";
                 }
 
                 string rowNo = GetValue(dict, "NO");
@@ -604,6 +607,7 @@ public class ImportController : ControllerBase
                     ProjectName = GetValue(firstRow, "PROJE") == "" ? "-" : GetValue(firstRow, "PROJE"),
                     ProjectLocation = GetValue(firstRow, "PROJELOKASYONU", "PROJELOKASYON") == "" ? "-" : GetValue(firstRow, "PROJELOKASYONU", "PROJELOKASYON"),
                     Brand = GetValue(firstRow, "MARKA", "ÜRÜNİSMİ", "URUNISMI", "URUNADI"),
+                    ModulePower = GetModulePowerFromColumnM(firstRow),
                     ComplaintDate = complaintDate,
                     Barcodes = mergedBarcodes,
                     ProductionDate = complaintDate, // Placeholder since Type-2 doesn't specify Production Date explicitly
@@ -684,6 +688,14 @@ public class ImportController : ControllerBase
             }
         }
         return "";
+    }
+
+    private string GetModulePowerFromColumnM(IDictionary<string, object>? row)
+    {
+        if (row == null || !row.TryGetValue("M", out var value)) return "-";
+
+        var modulePower = value?.ToString()?.Trim();
+        return string.IsNullOrWhiteSpace(modulePower) ? "-" : modulePower;
     }
 
     private static void MarkImportedComplaintWorkflowAsCompleted(Complaint complaint, int systemUserId)

@@ -1,10 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "sv5zd7OY0GI=",
+  "dgSpecHash": "RZJCFqYbFK4=",
   "success": true,
-  "projectFilePath": "C:\\Users\\yasin\\MusteriSikayetleriYonetimSistemi\\tmp\\ExcelCheck\\ExcelCheck.csproj",
+  "projectFilePath": "C:\\Users\\gamze.kılınc\\Desktop\\Müşteri Şikayetleri Yönetim Sistemi\\tmp\\ExcelCheck\\ExcelCheck.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\yasin\\.nuget\\packages\\miniexcel\\1.34.2\\miniexcel.1.34.2.nupkg.sha512"
+    "C:\\Users\\gamze.kılınc\\.nuget\\packages\\miniexcel\\1.34.2\\miniexcel.1.34.2.nupkg.sha512",
+    "C:\\Users\\gamze.kılınc\\.nuget\\packages\\microsoft.netcore.app.ref\\9.0.10\\microsoft.netcore.app.ref.9.0.10.nupkg.sha512",
+    "C:\\Users\\gamze.kılınc\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\9.0.10\\microsoft.windowsdesktop.app.ref.9.0.10.nupkg.sha512",
+    "C:\\Users\\gamze.kılınc\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\9.0.10\\microsoft.aspnetcore.app.ref.9.0.10.nupkg.sha512",
+    "C:\\Users\\gamze.kılınc\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\9.0.10\\microsoft.netcore.app.host.win-x64.9.0.10.nupkg.sha512"
   ],
   "logs": []
 }
