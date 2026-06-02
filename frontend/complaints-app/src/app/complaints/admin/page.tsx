@@ -100,7 +100,7 @@ export default function AdminPage() {
                 'A sutunu -> Sikayet numarasi, ornek 2504 => 25-04',
                 'E sutunu -> Barkodlar, AAAA degeri yok sayilir',
                 'G sutunu -> Fabrika, HSA-1/HSA-2 sayilari icin kullanilir',
-                'O sutunu -> Hakli/Haksiz/Devam Ediyor durumu',
+                'P sutunu -> Hakli/Haksiz/Devam Ediyor durumu',
                 'Sistemde numara yoksa satir atlanir; sadece eslesen sikayetler guncellenir'
             ]
         }
@@ -514,7 +514,7 @@ export default function AdminPage() {
                                     <div className="space-y-4 p-4 border border-emerald-100 bg-emerald-50/30 rounded-xl">
                                         <div>
                                             <h3 className="text-sm font-bold text-emerald-900">Excel&apos;den İçe Aktar (Tip-3)</h3>
-                                            <p className="text-xs text-emerald-700 mt-1 font-medium">Mevcut şikayetlerin Barkodlarını (E) ve Haklı/Haksız (O) durumlarını günceller. Sadece eşleşenleri değiştirir.</p>
+                                            <p className="text-xs text-emerald-700 mt-1 font-medium">Mevcut şikayetlerin Barkodlarını (E) ve Haklı/Haksız (P) durumlarını günceller. Sadece eşleşenleri değiştirir.</p>
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <label className="flex-1 cursor-pointer">

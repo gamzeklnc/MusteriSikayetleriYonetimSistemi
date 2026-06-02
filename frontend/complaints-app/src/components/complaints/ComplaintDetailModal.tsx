@@ -524,14 +524,34 @@ export default function ComplaintDetailModal({
                                             </div>
                                         </div>
 
-                                        <div className="col-span-2 pt-2 mt-2 border-t border-slate-200 grid grid-cols-2 gap-3">
+                                        <div className="col-span-2 pt-2 mt-2 border-t border-slate-200 grid grid-cols-3 gap-3">
                                             <div>
-                                                <div className="text-[10px] text-slate-900  font-black">HSA1 Miktarı</div>
-                                                <div className="font-bold text-emerald-600">{complaint.hsa1 || 0}</div>
+                                                <div className="text-[10px] text-slate-900  font-black">Haklı HSA1</div>
+                                                <div className="font-bold text-emerald-600">{complaint.justifiedHsa1Count || 0}</div>
                                             </div>
                                             <div>
-                                                <div className="text-[10px] text-slate-900  font-black">HSA2 Miktarı</div>
-                                                <div className="font-bold text-indigo-600">{complaint.hsa2 || 0}</div>
+                                                <div className="text-[10px] text-slate-900  font-black">Haklı HSA2</div>
+                                                <div className="font-bold text-indigo-600">{complaint.justifiedHsa2Count || 0}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-[10px] text-slate-900  font-black">Toplam Haklı</div>
+                                                <div className="font-bold text-slate-900">
+                                                    {(complaint.justifiedHsa1Count || 0) + (complaint.justifiedHsa2Count || 0) + (complaint.justifiedOtherCount || 0)}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-[10px] text-slate-900  font-black">Haksız HSA1</div>
+                                                <div className="font-bold text-red-600">{complaint.unjustifiedHsa1Count || 0}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-[10px] text-slate-900  font-black">Haksız HSA2</div>
+                                                <div className="font-bold text-red-600">{complaint.unjustifiedHsa2Count || 0}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-[10px] text-slate-900  font-black">Toplam Haksız</div>
+                                                <div className="font-bold text-slate-900">
+                                                    {(complaint.unjustifiedHsa1Count || 0) + (complaint.unjustifiedHsa2Count || 0) + (complaint.unjustifiedOtherCount || 0)}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

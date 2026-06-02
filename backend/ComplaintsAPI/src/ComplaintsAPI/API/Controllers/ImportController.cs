@@ -840,7 +840,7 @@ public class ImportController : ControllerBase
             // Sütunlar:
             // A sütunu: Şikayet Numarası (Örn: 2504 -> 25-04)
             // E sütunu: Barkodlar ("AAAA" ise yoksayılacak)
-            // O sütunu: Haklı/Haksız durumu
+            // P sütunu: Haklı/Haksız durumu
 
             var allComplaints = await _context.Complaints.ToListAsync();
             var complaintDict = allComplaints.ToDictionary(c => c.ComplaintNumber, c => c, StringComparer.OrdinalIgnoreCase);
@@ -930,11 +930,15 @@ public class ImportController : ControllerBase
                         fabrika = NormalizeKey(row["G"].ToString());
                     }
 
-                    // O Sütunu: Durum (Haklı, Haksız, Devam Ediyor)
+                    // P Sütunu: Durum (Haklı, Haksız, Devam Ediyor)
+                    var barcode = row.ContainsKey("E") ? row["E"]?.ToString()?.Trim() : null;
+                    var hasValidBarcode = !string.IsNullOrWhiteSpace(barcode)
+                        && !barcode.Equals("AAAA", StringComparison.OrdinalIgnoreCase);
+
                     string durum = "";
-                    if (row.ContainsKey("O") && row["O"] != null)
+                    if (row.ContainsKey("P") && row["P"] != null)
                     {
-                        durum = NormalizeKey(row["O"].ToString());
+                        durum = NormalizeKey(row["P"].ToString());
                     }
 
                     bool? isJustified = null;
@@ -942,6 +946,7 @@ public class ImportController : ControllerBase
                     {
                         isJustified = true;
                         if (!hasBarcodeInImport) jOther++;
+                        else if (!hasValidBarcode) { }
                         else if (IsHsa1Factory(fabrika)) jHsa1++;
                         else if (IsHsa2Factory(fabrika)) jHsa2++;
                         else jOther++;
@@ -950,19 +955,16 @@ public class ImportController : ControllerBase
                     {
                         isJustified = false;
                         if (!hasBarcodeInImport) uOther++;
+                        else if (!hasValidBarcode) { }
                         else if (IsHsa1Factory(fabrika)) uHsa1++;
                         else if (IsHsa2Factory(fabrika)) uHsa2++;
                         else uOther++;
                     }
                     // "devam ediyor" vb. ise sayaca ekleme (atla)
 
-                    if (row.ContainsKey("E") && row["E"] != null)
+                    if (hasValidBarcode)
                     {
-                        var rowBarcode = row["E"].ToString()?.Trim();
-                        if (!string.IsNullOrWhiteSpace(rowBarcode) && !rowBarcode.Equals("AAAA", StringComparison.OrdinalIgnoreCase))
-                        {
-                            barcodeDecisions[rowBarcode] = (isJustified, NormalizeFactoryLabel(fabrika));
-                        }
+                        barcodeDecisions[barcode!] = (isJustified, NormalizeFactoryLabel(fabrika));
                     }
                 }
 
