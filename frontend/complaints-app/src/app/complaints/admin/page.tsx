@@ -12,7 +12,7 @@ import { Department } from '@/types/department';
 import { User, CreateUserRequest, UpdateUserRequest } from '@/types/user';
 import { ErrorDefinitionOption } from '@/types/errorOption';
 import { UserActivityLogDto } from '@/types/userActivityLog';
-import { ClipboardList, Settings, Plus, Edit2, Trash2, ShieldAlert, CheckCircle2, XCircle, RotateCcw, ChevronDown, ChevronUp, UserPlus, History } from 'lucide-react';
+import { ClipboardList, Settings, Plus, Edit2, Trash2, ShieldAlert, CheckCircle2, XCircle, RotateCcw, ChevronDown, ChevronUp, UserPlus, History, Info } from 'lucide-react';
 import DocumentSection from '@/components/complaints/DocumentSection';
 import StatusBadge from '@/components/complaints/StatusBadge';
 import { ComplaintDocument } from '@/types/complaint';
@@ -55,6 +55,56 @@ export default function AdminPage() {
     const [complaintFilters] = useState({
         complaintNumber: '', customerName: '', status: '', currentDepartmentName: ''
     });
+
+    const importMappings = [
+        {
+            title: 'Tip-1',
+            tone: 'blue',
+            summary: 'Tek sayfali klasik format. Baslik satiri 2. satir kabul edilir, satirlar No alanina gore gruplanir.',
+            fields: [
+                'No -> Sikayet numarasi, tarih yilindan YY-000 formatina cevrilir',
+                'Sirket/Musteri -> Musteri adi',
+                'Proje, ProjeLokasyonu -> Proje bilgileri',
+                'UrunIsmi/UrunAdi/Marka -> Marka',
+                'I/Modul Gucu/Guc/Power -> Modul gucu',
+                'SikayetTarihi, UretimTarihi -> Tarihler',
+                'KusurluPanelSeriNo/SeriNo/Barkod -> Barkodlar',
+                'KusurluUrunMiktari/Miktar -> Kusurlu miktar',
+                'HATATANIMI/Hata -> Hata tanimi',
+                'Hakli/Haksiz/Durum + Fabrika -> HSA1/HSA2 ve hakli-haksiz sayilari'
+            ]
+        },
+        {
+            title: 'Tip-2',
+            tone: 'indigo',
+            summary: 'KG-LST-002 format. Oncelik GENEL LISTE + BARKODLAR sayfalaridir; bu iki sayfa bulunamazsa tek sayfali eski formata duser.',
+            fields: [
+                'GENEL LISTE: NO -> Sikayet numarasi, ornek 2504 => 25-04',
+                'GENEL LISTE: Sirket/Musteri, Proje, ProjeLokasyonu, Marka/UrunIsmi',
+                'GENEL LISTE: Modul gucu basligi okunur; bulunamazsa H sutunu kullanilir',
+                'GENEL LISTE: SikayetTarihi veya SikayetYil + SikayetAy -> Sikayet tarihi',
+                'GENEL LISTE: KusurluUrunMiktari, HataTanimi(Ozet), SikayetNotlari',
+                'BARKODLAR: NO alanlari GENEL LISTE NO ile birebir eslesirse baglanir',
+                'BARKODLAR: ModulSeriNo/SeriNo -> Barkodlar',
+                'BARKODLAR: Fabrika -> HSA-1/HSA-2 sayilari',
+                'BARKODLAR: Hakli/HaksizSikayet/Durum -> Hakli-haksiz dagilimi',
+                'Tek sayfali eski formatta modul gucu M sutunundan okunur'
+            ],
+            warning: 'Tip-2 sorununda ilk bakilacak yer: sayfa adlari GENEL LISTE ve BARKODLAR mi, iki sayfadaki NO degerleri ayni formatta mi, barkod sayfasinda ModulSeriNo/Fabrika/Durum basliklari beklenen adlarla geliyor mu.'
+        },
+        {
+            title: 'Tip-3',
+            tone: 'emerald',
+            summary: 'Yeni kayit acmaz; mevcut sikayetleri sikayet numarasindan bulup barkod ve hakli/haksiz bilgisini gunceller.',
+            fields: [
+                'A sutunu -> Sikayet numarasi, ornek 2504 => 25-04',
+                'E sutunu -> Barkodlar, AAAA degeri yok sayilir',
+                'G sutunu -> Fabrika, HSA-1/HSA-2 sayilari icin kullanilir',
+                'O sutunu -> Hakli/Haksiz/Devam Ediyor durumu',
+                'Sistemde numara yoksa satir atlanir; sadece eslesen sikayetler guncellenir'
+            ]
+        }
+    ];
 
     const fetchData = async () => {
         try {
@@ -528,6 +578,39 @@ export default function AdminPage() {
                                                 />
                                             </label>
                                         </div>
+                                    </div>
+                                </div>
+
+                                <div className="md:col-span-2 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <Info size={16} className="text-slate-500" />
+                                        <h3 className="text-sm font-black text-slate-900 tracking-widest uppercase">Excel Alan Eslesme Rehberi</h3>
+                                    </div>
+                                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+                                        {importMappings.map(mapping => {
+                                            const colorClasses = mapping.tone === 'blue'
+                                                ? 'border-blue-100 bg-blue-50/60 text-blue-900 marker:text-blue-500'
+                                                : mapping.tone === 'indigo'
+                                                    ? 'border-indigo-100 bg-indigo-50/60 text-indigo-900 marker:text-indigo-500'
+                                                    : 'border-emerald-100 bg-emerald-50/60 text-emerald-900 marker:text-emerald-500';
+
+                                            return (
+                                                <div key={mapping.title} className={`rounded-xl border p-4 ${colorClasses}`}>
+                                                    <h4 className="text-sm font-black">{mapping.title}</h4>
+                                                    <p className="mt-1 text-xs leading-5 font-semibold opacity-80">{mapping.summary}</p>
+                                                    <ul className="mt-3 list-disc pl-4 space-y-1.5 text-[11px] leading-4 font-medium">
+                                                        {mapping.fields.map(field => (
+                                                            <li key={field}>{field}</li>
+                                                        ))}
+                                                    </ul>
+                                                    {mapping.warning && (
+                                                        <div className="mt-3 rounded-lg border border-indigo-200 bg-white/70 px-3 py-2 text-[11px] leading-4 font-bold text-indigo-800">
+                                                            {mapping.warning}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             </div>

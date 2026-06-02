@@ -310,9 +310,10 @@ public class ImportController : ControllerBase
 
             using var stream = file.OpenReadStream();
             var sheetNames = MiniExcel.GetSheetNames(stream);
+            var genelListeSheetName = sheetNames.FirstOrDefault(s => NormalizeKey(s) == "genelliste");
+            var barkodlarSheetName = sheetNames.FirstOrDefault(s => NormalizeKey(s) == "barkodlar");
 
-            bool isMultiSheetFormat = sheetNames.Any(s => s.Equals("GENEL LİSTE", StringComparison.OrdinalIgnoreCase)) &&
-                                      sheetNames.Any(s => s.Equals("BARKODLAR", StringComparison.OrdinalIgnoreCase));
+            bool isMultiSheetFormat = genelListeSheetName != null && barkodlarSheetName != null;
 
             if (isMultiSheetFormat)
             {
@@ -320,8 +321,10 @@ public class ImportController : ControllerBase
                 var complaints = new List<Complaint>();
                 int adminUserId = 1;
 
-                var genelListeRaw = stream.Query(useHeaderRow: false, sheetName: "GENEL LİSTE").ToList();
-                var barkodlarRaw = stream.Query(useHeaderRow: false, sheetName: "BARKODLAR").ToList();
+                stream.Position = 0;
+                var genelListeRaw = stream.Query(useHeaderRow: false, sheetName: genelListeSheetName).ToList();
+                stream.Position = 0;
+                var barkodlarRaw = stream.Query(useHeaderRow: false, sheetName: barkodlarSheetName).ToList();
 
                 if (genelListeRaw.Count < 2) return BadRequest("GENEL LİSTE sayfası boş.");
                 
@@ -381,7 +384,7 @@ public class ImportController : ControllerBase
                         ProjectName = GetValue(dict, "PROJE") == "" ? "-" : GetValue(dict, "PROJE"),
                         ProjectLocation = GetValue(dict, "PROJELOKASYONU", "PROJELOKASYON") == "" ? "-" : GetValue(dict, "PROJELOKASYONU", "PROJELOKASYON"),
                         Brand = GetValue(dict, "MARKA", "ÜRÜNİSMİ", "URUNISMI", "URUNADI"),
-                        ModulePower = GetModulePowerFromColumnM(rawRow as IDictionary<string, object>),
+                        ModulePower = GetModulePower(dict, rawRow as IDictionary<string, object>, "H"),
                         ComplaintDate = complaintDate,
                         ProductionDate = complaintDate,
                         DefectiveQuantity = ParseInt(GetValue(dict, "KUSURLUÜRÜNMİKTARI", "KUSURLUURUNMIKTARI", "KUSURLUMİKTAR")),
@@ -607,7 +610,7 @@ public class ImportController : ControllerBase
                     ProjectName = GetValue(firstRow, "PROJE") == "" ? "-" : GetValue(firstRow, "PROJE"),
                     ProjectLocation = GetValue(firstRow, "PROJELOKASYONU", "PROJELOKASYON") == "" ? "-" : GetValue(firstRow, "PROJELOKASYONU", "PROJELOKASYON"),
                     Brand = GetValue(firstRow, "MARKA", "ÜRÜNİSMİ", "URUNISMI", "URUNADI"),
-                    ModulePower = GetModulePowerFromColumnM(firstRow),
+                    ModulePower = GetModulePower(firstRow, null, "M"),
                     ComplaintDate = complaintDate,
                     Barcodes = mergedBarcodes,
                     ProductionDate = complaintDate, // Placeholder since Type-2 doesn't specify Production Date explicitly
@@ -690,12 +693,32 @@ public class ImportController : ControllerBase
         return "";
     }
 
-    private string GetModulePowerFromColumnM(IDictionary<string, object>? row)
+    private string GetModulePowerFromColumn(IDictionary<string, object>? row, string column)
     {
-        if (row == null || !row.TryGetValue("M", out var value)) return "-";
+        if (row == null || !row.TryGetValue(column, out var value)) return "-";
 
         var modulePower = value?.ToString()?.Trim();
         return string.IsNullOrWhiteSpace(modulePower) ? "-" : modulePower;
+    }
+
+    private string GetModulePower(IDictionary<string, object> mappedRow, IDictionary<string, object>? rawRow, string fallbackColumn)
+    {
+        var modulePower = GetValue(
+            mappedRow,
+            "MODÜLGÜCÜ",
+            "MODULGUCU",
+            "MODÜL GÜCÜ",
+            "MODUL GUCU",
+            "GÜÇ",
+            "GUC",
+            "POWER",
+            "WP"
+        );
+
+        if (!string.IsNullOrWhiteSpace(modulePower))
+            return modulePower;
+
+        return GetModulePowerFromColumn(rawRow ?? mappedRow, fallbackColumn);
     }
 
     private static void MarkImportedComplaintWorkflowAsCompleted(Complaint complaint, int systemUserId)
@@ -717,6 +740,7 @@ public class ImportController : ControllerBase
         
         // Türkçe karakterleri temizle (Daha garanti eşleşme için)
         return normalized
+            .Replace("\u0307", "")
             .Replace("\u015f", "s").Replace("\u00e7", "c")
             .Replace("\u0131", "i").Replace("\u00fc", "u")
             .Replace("\u00f6", "o").Replace("\u011f", "g")

@@ -57,9 +57,9 @@ export default function ShipmentCountsPage() {
             toast.success(response.message);
             await fetchRecords();
             if (fileInputRef.current) fileInputRef.current.value = '';
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Yükleme hatası:', err);
-            const msg = err.response?.data || 'Excel yüklenirken bir hata oluştu.';
+            const msg = (err as { response?: { data?: string } })?.response?.data || 'Excel yüklenirken bir hata oluştu.';
             toast.error(msg);
         } finally {
             setUploading(false);
@@ -103,7 +103,7 @@ export default function ShipmentCountsPage() {
                             </div>
                             Sevk Adetleri
                         </h1>
-                        <p className="text-slate-500 font-medium text-sm mt-1 ml-12">Excel'deki tüm sevkiyatları ve sistemdeki müşterilerle eşleşenleri takip edin.</p>
+                        <p className="text-slate-500 font-medium text-sm mt-1 ml-12">Excel&apos;deki tüm sevkiyatları ve sistemdeki müşterilerle eşleşenleri takip edin.</p>
                     </div>
 
                     {isAdmin && records.length > 0 && (

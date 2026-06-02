@@ -168,7 +168,7 @@ export const complaintService = {
         return res.data;
     },
 
-    getShipmentCounts: async (): Promise<{ id: number; customerName: string; shipmentDate: string; shipmentQuantity: number }[]> => {
+    getShipmentCounts: async (): Promise<{ id: number; customerName: string; shipmentDate: string; shipmentQuantity: number; isMatched: boolean }[]> => {
         const res = await apiClient.get('/api/shipmentcounts');
         return res.data;
     },
