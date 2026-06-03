@@ -858,11 +858,11 @@ export default function DashboardPage() {
                         <div className="analytics-card">
                             <GenericBarChart 
                                 title="Müşteriye Göre Hata Tanımı" 
-                                subtitle={c8Customer !== 'Hepsi' ? `${c8Customer} Hata Dağılımı` : c8Error !== 'Hepsi' ? `${c8Error} Bildiren Müşteriler` : "Müşteri ve Hata Yoğunluğu"}
+                                subtitle={c8Customer !== 'Hepsi' ? `${c8Customer} Hata Dağılımı` : c8Error !== 'Hepsi' ? `${c8Error} Bildiren Müşteriler` : "Müşteri ve Hata Oranı"}
                                 barColor="from-violet-600 to-purple-400"
                                 rotateLabels={true} paddingBottom={70}
-                                isRate={false}
-                                data={(stats?.customerErrorStats || []).map(c => ({ label: c.label, value: c.productCount }))}
+                                isRate={true}
+                                data={(stats?.customerErrorStats || []).map(c => ({ label: c.label, value: c.defectRate }))}
                             >
                                 <div className="flex items-center gap-1">
                                     <select className="text-[8px] font-black text-violet-600 bg-violet-50 border border-violet-100 rounded px-1 py-1 outline-none"

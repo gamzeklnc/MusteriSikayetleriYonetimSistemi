@@ -393,6 +393,20 @@ public class DashboardController : ControllerBase
 
         var trCulture = new System.Globalization.CultureInfo("tr-TR");
         var customerErrorCounts = new Dictionary<string, (int ComplaintCount, int ProductCount)>();
+        var shipmentQuery = _context.ShipmentCounts.AsNoTracking().AsQueryable();
+        if (startDate.HasValue)
+            shipmentQuery = shipmentQuery.Where(s => s.ShipmentDate >= startDate.Value);
+        if (endDate.HasValue)
+            shipmentQuery = shipmentQuery.Where(s => s.ShipmentDate <= endDate.Value);
+
+        var shipmentRows = await shipmentQuery
+            .Where(s => !string.IsNullOrWhiteSpace(s.CustomerName))
+            .Select(s => new { s.CustomerName, s.ShipmentQuantity })
+            .ToListAsync();
+
+        var shipmentTotals = shipmentRows
+            .GroupBy(s => s.CustomerName.Trim().ToUpper(trCulture))
+            .ToDictionary(g => g.Key, g => g.Sum(s => (long)s.ShipmentQuantity));
         
         foreach (var c in customerComplaints)
         {
@@ -426,8 +440,14 @@ public class DashboardController : ControllerBase
         }
 
         var customerErrorStats = customerErrorCounts
-            .Select(x => new CustomerErrorStatDto(x.Key, x.Value.ComplaintCount, x.Value.ProductCount))
-            .OrderByDescending(x => x.ProductCount)
+            .Select(x =>
+            {
+                var shipmentKey = string.IsNullOrWhiteSpace(normalizedCustomer) ? x.Key : normalizedCustomer;
+                var shipmentQuantity = shipmentTotals.TryGetValue(shipmentKey, out var totalShipment) ? totalShipment : 0;
+                var defectRate = shipmentQuantity > 0 ? (double)x.Value.ProductCount / shipmentQuantity : 0;
+                return new CustomerErrorStatDto(x.Key, x.Value.ComplaintCount, x.Value.ProductCount, shipmentQuantity, defectRate);
+            })
+            .OrderByDescending(x => x.DefectRate)
             .Take(10)
             .ToList();
 

@@ -246,6 +246,8 @@ export interface CustomerErrorStat {
     label: string;
     count: number;
     productCount: number;
+    shipmentQuantity: number;
+    defectRate: number;
 }
 
 export interface DashboardStats {
